@@ -10,6 +10,7 @@ if (session_status() === PHP_SESSION_NONE) {
 use App\ConectionBD\ConectionDB;
 use App\Model\Person;
 use App\Model\User;
+use App\Services\MailerService;
 use Exception;
 use mysqli_sql_exception;
 use Throwable;
@@ -98,6 +99,13 @@ class AuthController
                 }
                 foreach ($datosCompletos as $key => $value) {
                     $_SESSION[$key] = $value;
+                }
+                // Guardar foto de perfil en la sesión si existe
+                if (isset($datosCompletos['foto_perfil_url'])) {
+                    $_SESSION['foto_perfil_url'] = $datosCompletos['foto_perfil_url'];
+                }
+                if (isset($datosCompletos['foto_perfil_public_id'])) {
+                    $_SESSION['foto_perfil_public_id'] = $datosCompletos['foto_perfil_public_id'];
                 }
                 $_SESSION['usuario'] = $datosCompletos['email'];
                 $_SESSION['user_id'] = $datosCompletos['id_usuario'];
@@ -229,7 +237,6 @@ class AuthController
             $this->conn->commit();
 
             // Notificar al usuario por email que su registro fue recibido y está pendiente
-            require_once __DIR__ . '/../Public/Utilities/envioMail.php';
 
             $subject = 'Registro recibido en IFTS15 — pendiente de habilitación';
             $body = '<p>Hola ' . htmlspecialchars($nombre) . ',</p>';
@@ -237,7 +244,8 @@ class AuthController
             $body .= '<p>En cuanto te habiliten recibirás un correo de confirmación.</p>';
             $body .= '<p>Saludos,<br>Equipo IFTS15</p>';
 
-            envio_mail($email, $subject, $body, $_ENV['MAIL_FROM'] ?? null, $_ENV['MAIL_FROM_NAME'] ?? null, true, $email);
+            $mailer = new MailerService();
+            $mailer->send($email, $subject, $body, true, $email);
             
             // Notificar admins
             $admins = array_map('trim', explode(',', $_ENV['ADMIN_EMAILS'] ?? ''));
@@ -245,7 +253,7 @@ class AuthController
                 $subjectAdmin = 'Nuevo registro pendiente en IFTS15';
                 $bodyAdmin = '<p>Se registró un nuevo usuario: <b>' . htmlspecialchars($nombre . ' ' . $apellido) . '</b> (' . htmlspecialchars($email) . ').</p>';
                 $bodyAdmin .= '<p>Revisá el panel de administración para habilitarlo.</p>';
-                envio_mail($admins, $subjectAdmin, $bodyAdmin);
+                $mailer->send($admins, $subjectAdmin, $bodyAdmin);
             }
             
             // Indicar que el registro quedó pendiente de habilitación administrativa

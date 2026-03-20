@@ -21,7 +21,7 @@ require_once __DIR__ . '/../Model/Consulta.php';
 use App\Model\Consulta;
 use App\ConectionBD\ConectionDB;
 // Utilidad de correo
-require_once __DIR__ . '/../Public/Utilities/envioMail.php';
+use App\Services\MailerService;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = trim($_POST['nombre'] ?? '');
@@ -81,11 +81,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('No hay destinatario configurado (ADMIN_EMAILS o MAIL_USERNAME)');
         }
         
-        $result = envio_mail($destinatario, $subject, $cuerpoMensaje, $consulta->getEmail(), $consulta->getNombre(), true, $consulta->getEmail());
+        $mailer = new MailerService();
+        $result = $mailer->send($destinatario, $subject, $cuerpoMensaje, true, $consulta->getEmail());
         if ($result['success']) {
             $_SESSION['consultas_message'] = '¡Consulta enviada correctamente! Te responderemos a la brevedad a tu email: ' . htmlspecialchars($consulta->getEmail());
         } else {
-            error_log('Error envio_mail en consultas: ' . ($result['message'] ?? 'sin detalle'));
+            error_log('Error MailerService en consultas: ' . ($result['message'] ?? 'sin detalle'));
             $_SESSION['consultas_message'] = 'No se pudo enviar el mensaje. Por favor intenta nuevamente más tarde.';
         }
 

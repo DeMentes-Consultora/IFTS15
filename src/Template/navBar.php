@@ -32,6 +32,7 @@ if (isset($_SESSION['usuario'])) {
     $userIdRol = null;
 }
 // ...existing code...
+?>
 <!-- Navbar Bootstrap 5 minimalista y robusta -->
 <nav class="navbar navbar-gradient fixed-top">
     <div class="container-fluid d-flex justify-content-between align-items-center position-relative">

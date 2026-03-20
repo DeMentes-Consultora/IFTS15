@@ -8,6 +8,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 use App\ConectionBD\ConectionDB;
 use App\Model\User;
+use App\Services\MailerService;
 use Exception;
 
 // Controlador simple para listar usuarios y cambiar habilitado
@@ -116,7 +117,6 @@ class usuarioController
 							$datosUsuario = User::obtenerUsuarioCompleto($this->conn, $id);
 							if ($datosUsuario && !empty($datosUsuario['email'])) {
 								// incluir utilidad de envio de mails
-								require_once __DIR__ . '/../Public/Utilities/envioMail.php';
 								$to = $datosUsuario['email'];
 								$nombre = trim(($datosUsuario['nombre'] ?? '') . ' ' . ($datosUsuario['apellido'] ?? ''));
 								$subject = 'Tu cuenta en IFTS15 ha sido habilitada';
@@ -124,7 +124,8 @@ class usuarioController
 								$body .= '<p>Tu cuenta en el campus IFTS15 ha sido habilitada. Ya podés iniciar sesión con tu correo y contraseña.</p>';
 								$body .= '<p>Si no reconocés esta acción, contactá con el área de soporte.</p>';
 								$body .= '<p>Saludos,<br>Equipo IFTS15</p>';
-								$resMail = envio_mail($to, $subject, $body, $_ENV['MAIL_FROM'] ?? null, $_ENV['MAIL_FROM_NAME'] ?? null, true, $to);
+								$mailer = new MailerService();
+								$resMail = $mailer->send($to, $subject, $body, true, $to);
 								if (!$resMail['success']) {
 									error_log('[usuarioController::toggleHabilitado] Error enviando mail de habilitación: ' . ($resMail['message'] ?? 'sin detalle'));
 								}

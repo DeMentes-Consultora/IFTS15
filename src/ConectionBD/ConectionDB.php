@@ -83,7 +83,7 @@ class ConectionDB
     public function getCarreras()
     {
         $carreras = [];
-        $query = "SELECT id_carrera, carrera FROM carrera WHERE habilitado = 1 AND cancelado = 0 ORDER BY carrera";
+        $query = "SELECT id_carrera, nombreCarrera AS carrera FROM carrera WHERE habilitado = 1 AND cancelado = 0 ORDER BY nombreCarrera";
         
         $result = $this->conn->query($query);
         if ($result) {
