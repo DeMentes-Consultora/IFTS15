@@ -11,7 +11,7 @@ Archivo: src/Css/carruselCss.css
 
 /* Carrusel personalizado */
 .carousel-hero {
-    height: 500px;
+    height: 420px;
     overflow: hidden;
     position: relative;
     width: 100%;
@@ -20,12 +20,12 @@ Archivo: src/Css/carruselCss.css
 }
 
 .carousel-item {
-    height: 500px;
+    height: 420px;
     position: relative;
 }
 
 .carousel-item img {
-    height: 500px;
+    height: 420px;
     object-fit: cover;
     width: 100%;
     display: block;
@@ -85,15 +85,13 @@ Archivo: src/Css/carruselCss.css
 
 @media (max-width: 768px) {
     .carousel-hero {
-        height: 300px;
+        height: 200px;
     }
-    
     .carousel-item {
-        height: 300px;
+        height: 200px;
     }
-    
     .carousel-item img {
-        height: 300px;
+        height: 200px;
     }
     
     .carousel-caption-custom {
