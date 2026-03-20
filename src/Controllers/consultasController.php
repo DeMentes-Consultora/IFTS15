@@ -53,12 +53,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!empty($consulta->getCarrera())) {
             $conectarDB = new ConectionDB();
             $conn = $conectarDB->getConnection();
-            $stmt = $conn->prepare("SELECT nombreCarrera FROM carrera WHERE id_carrera = ?");
+            $stmt = $conn->prepare("SELECT carrera FROM carrera WHERE id_carrera = ?");
             $stmt->bind_param("i", $carrera);
             $stmt->execute();
             $result = $stmt->get_result();
             if ($row = $result->fetch_assoc()) {
-                $nombreCarrera = $row['nombreCarrera'];
+                $nombreCarrera = $row['carrera'];
             }
             $stmt->close();
         }

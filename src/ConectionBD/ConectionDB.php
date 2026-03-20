@@ -78,12 +78,12 @@ class ConectionDB
     /**
      * Obtener listado de carreras activas
      * 
-     * @return array Array de carreras con id_carrera y nombreCarrera
+    * @return array Array de carreras con id_carrera y carrera
      */
     public function getCarreras()
     {
         $carreras = [];
-        $query = "SELECT id_carrera, nombreCarrera FROM carrera WHERE habilitado = 1 AND cancelado = 0 ORDER BY nombreCarrera";
+        $query = "SELECT id_carrera, carrera FROM carrera WHERE habilitado = 1 AND cancelado = 0 ORDER BY carrera";
         
         $result = $this->conn->query($query);
         if ($result) {

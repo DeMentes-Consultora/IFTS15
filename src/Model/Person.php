@@ -12,6 +12,10 @@ use DateTime;
  * 
  * @package App\Model
  */
+
+use Cloudinary\Cloudinary;
+use Cloudinary\Api\Upload\UploadApi;
+
 class Person
 {
     private $id_persona;
@@ -21,11 +25,12 @@ class Person
     private $dni;
     private $telefono;
     private $edad;
+    // Foto de perfil
+    private $foto_perfil_url;
+    private $foto_perfil_public_id;
 
-    public function __construct($nombre, $apellido, $fecha_nacimiento, $dni, $telefono = null, $direccion = null, $email_contacto = null, $id_persona = null, $edad = null)
+    public function __construct($nombre, $apellido, $fecha_nacimiento, $dni, $telefono = null, $direccion = null, $email_contacto = null, $id_persona = null, $edad = null, $foto_perfil_url = null, $foto_perfil_public_id = null)
     {
-        error_log("CONSTRUCTOR Person - nombre: {$nombre}, apellido: {$apellido}, dni: {$dni}, edad: " . ($edad ?? 'NULL'));
-        
         $this->id_persona = $id_persona;
         $this->nombre = $nombre;
         $this->apellido = $apellido;
@@ -33,9 +38,8 @@ class Person
         $this->dni = $dni;
         $this->telefono = $telefono;
         $this->edad = $edad;
-        // direccion y email_contacto se ignoran, solo están para compatibilidad
-        
-        error_log("CONSTRUCTOR Person - completado exitosamente");
+        $this->foto_perfil_url = $foto_perfil_url;
+        $this->foto_perfil_public_id = $foto_perfil_public_id;
     }
 
     // ========================================
@@ -51,6 +55,12 @@ class Person
     
     public function getNombreCompleto() { 
         return $this->nombre . ' ' . $this->apellido; 
+    }
+    public function getFotoPerfilUrl() {
+        return $this->foto_perfil_url;
+    }
+    public function getFotoPerfilPublicId() {
+        return $this->foto_perfil_public_id;
     }
     
     public function getEdad() {
@@ -69,6 +79,8 @@ class Person
     public function setDni($dni) { $this->dni = $dni; }
     public function setTelefono($telefono) { $this->telefono = $telefono; }
     public function setEdad($edad) { $this->edad = $edad; }
+    public function setFotoPerfilUrl($url) { $this->foto_perfil_url = $url; }
+    public function setFotoPerfilPublicId($pid) { $this->foto_perfil_public_id = $pid; }
 
     // ========================================
     // MÉTODOS DE BASE DE DATOS
@@ -79,28 +91,25 @@ class Person
      */
     public function guardar($conn)
     {
-        $stmt = $conn->prepare("INSERT INTO persona (nombre, apellido, fecha_nacimiento, dni, telefono, edad) VALUES (?, ?, ?, ?, ?, ?)");
-        
-        // Manejar fecha_nacimiento NULL explícitamente
+        $stmt = $conn->prepare("INSERT INTO persona (nombre, apellido, fecha_nacimiento, dni, telefono, edad, foto_perfil_url, foto_perfil_public_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $fecha_param = $this->fecha_nacimiento;
         if (empty($fecha_param)) {
             $fecha_param = null;
         }
-        
-        $stmt->bind_param("sssssi", 
+        $stmt->bind_param("ssssssss", 
             $this->nombre, 
             $this->apellido, 
             $fecha_param, 
             $this->dni, 
             $this->telefono,
-            $this->edad
+            $this->edad,
+            $this->foto_perfil_url,
+            $this->foto_perfil_public_id
         );
-        
         if ($stmt->execute()) {
             $this->id_persona = $conn->insert_id;
             return true;
         } else {
-            // Log del error específico
             error_log("Error al guardar persona: " . $stmt->error . " | SQL: " . $stmt->sqlstate);
             return false;
         }
@@ -111,23 +120,49 @@ class Person
      */
     public function actualizar($conn)
     {
-        // Manejar fecha_nacimiento NULL explícitamente
         $fecha_param = $this->fecha_nacimiento;
         if (empty($fecha_param)) {
             $fecha_param = null;
         }
-        
-        $stmt = $conn->prepare("UPDATE persona SET nombre = ?, apellido = ?, fecha_nacimiento = ?, dni = ?, telefono = ?, edad = ? WHERE id_persona = ?");
-        $stmt->bind_param("sssssii", 
+        $stmt = $conn->prepare("UPDATE persona SET nombre = ?, apellido = ?, fecha_nacimiento = ?, dni = ?, telefono = ?, edad = ?, foto_perfil_url = ?, foto_perfil_public_id = ? WHERE id_persona = ?");
+        $stmt->bind_param("ssssssssi", 
             $this->nombre, 
             $this->apellido, 
             $fecha_param, 
             $this->dni, 
             $this->telefono,
             $this->edad,
+            $this->foto_perfil_url,
+            $this->foto_perfil_public_id,
             $this->id_persona
         );
         return $stmt->execute();
+    }
+
+    /**
+     * Subir foto de perfil a Cloudinary y guardar datos en el objeto
+     */
+    public function subirFotoPerfil($fileTmpPath, $fileName)
+    {
+        $cloudinary = new Cloudinary([
+            'cloud' => [
+                'cloud_name' => $_ENV['CLOUDINARY_CLOUD_NAME'],
+                'api_key'    => $_ENV['CLOUDINARY_API_KEY'],
+                'api_secret' => $_ENV['CLOUDINARY_API_SECRET'],
+            ],
+        ]);
+        $publicId = 'ifts15/perfiles/' . $this->dni . '_' . uniqid();
+        $result = $cloudinary->uploadApi()->upload($fileTmpPath, [
+            'public_id' => $publicId,
+            'folder' => 'ifts15/perfiles',
+            'overwrite' => true,
+            'resource_type' => 'image',
+            'use_filename' => true,
+            'unique_filename' => false
+        ]);
+        $this->foto_perfil_url = $result['secure_url'] ?? null;
+        $this->foto_perfil_public_id = $result['public_id'] ?? null;
+        return $result;
     }
 
     /**
@@ -153,7 +188,6 @@ class Person
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $resultado = $stmt->get_result();
-        
         if ($fila = $resultado->fetch_assoc()) {
             return new Person(
                 $fila['nombre'], 
@@ -164,7 +198,9 @@ class Person
                 null, // direccion no se usa
                 null, // email_contacto ya no se almacena en persona
                 $fila['id_persona'],
-                $fila['edad']
+                $fila['edad'],
+                $fila['foto_perfil_url'] ?? null,
+                $fila['foto_perfil_public_id'] ?? null
             );
         }
         return null;
@@ -179,7 +215,6 @@ class Person
         $stmt->bind_param("s", $dni);
         $stmt->execute();
         $resultado = $stmt->get_result();
-        
         if ($fila = $resultado->fetch_assoc()) {
             return new Person(
                 $fila['nombre'], 
@@ -189,7 +224,10 @@ class Person
                 $fila['telefono'], 
                 null, // direccion no se usa
                 null, // email_contacto ya no se almacena en persona
-                $fila['id_persona']
+                $fila['id_persona'],
+                $fila['edad'],
+                $fila['foto_perfil_url'] ?? null,
+                $fila['foto_perfil_public_id'] ?? null
             );
         }
         return null;
@@ -204,15 +242,12 @@ class Person
         if ($limit) {
             $sql .= " LIMIT ? OFFSET ?";
         }
-        
         $stmt = $conn->prepare($sql);
         if ($limit) {
             $stmt->bind_param("ii", $limit, $offset);
         }
-        
         $stmt->execute();
         $resultado = $stmt->get_result();
-        
         $personas = [];
         while ($fila = $resultado->fetch_assoc()) {
             $personas[] = new Person(
@@ -223,10 +258,12 @@ class Person
                 $fila['telefono'], 
                 null, // direccion no se usa
                 null, // email_contacto ya no se almacena en persona
-                $fila['id_persona']
+                $fila['id_persona'],
+                $fila['edad'],
+                $fila['foto_perfil_url'] ?? null,
+                $fila['foto_perfil_public_id'] ?? null
             );
         }
-        
         return $personas;
     }
 

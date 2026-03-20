@@ -49,7 +49,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Definir BASE_URL desde variable de entorno
 if (!defined('BASE_URL')) {
-    $baseUrl = $_ENV['BASE_URL'] ?? 'http://localhost/Proyectos_DeMentes/IFTS15';
+    $baseUrl = $_ENV['BASE_URL'] ?? 'http://localhost:8000';
     define('BASE_URL', $baseUrl);
 }
 

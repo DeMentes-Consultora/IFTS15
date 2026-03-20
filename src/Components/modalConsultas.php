@@ -92,7 +92,7 @@ try {
                                                 <option value="" disabled style="color:red;">No hay carreras habilitadas</option>
                                             <?php else: ?>
                                                 <?php foreach ($carreras as $carrera): ?>
-                                                    <option value="<?= $carrera['id_carrera'] ?>"><?= htmlspecialchars($carrera['nombreCarrera']) ?></option>
+                                                    <option value="<?= $carrera['id_carrera'] ?>"><?= htmlspecialchars($carrera['carrera']) ?></option>
                                                 <?php endforeach; ?>
                                             <?php endif; ?>
                                         </select>

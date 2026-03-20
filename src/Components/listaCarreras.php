@@ -54,13 +54,13 @@ use App\Model\Materia;
                              onclick="toggleCarrera(<?= $carrera['id_carrera'] ?>)">
                             <div class="d-flex align-items-center">
                                 <i class="bi bi-chevron-down me-2 collapse-icon" id="icon-<?= $carrera['id_carrera'] ?>"></i>
-                                <strong><?= htmlspecialchars($carrera['nombreCarrera']) ?></strong>
+                                <strong><?= htmlspecialchars($carrera['carrera']) ?></strong>
                                 <small class="text-muted ms-2">(<?= count($materiasAsociadas) ?> materias)</small>
                             </div>
                             <div>
                                 <button class="btn btn-sm btn-sm-icon btn-outline-primary me-1 btn-editar-carrera" 
                                         data-id="<?= $carrera['id_carrera'] ?>" 
-                                        data-nombre="<?= htmlspecialchars($carrera['nombreCarrera']) ?>"
+                                        data-nombre="<?= htmlspecialchars($carrera['carrera']) }""
                                         title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </button>
