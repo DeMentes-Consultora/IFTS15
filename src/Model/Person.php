@@ -13,8 +13,7 @@ use DateTime;
  * @package App\Model
  */
 
-use Cloudinary\Cloudinary;
-use Cloudinary\Api\Upload\UploadApi;
+use App\Services\CloudinaryService;
 
 class Person
 {
@@ -144,22 +143,9 @@ class Person
      */
     public function subirFotoPerfil($fileTmpPath, $fileName)
     {
-        $cloudinary = new Cloudinary([
-            'cloud' => [
-                'cloud_name' => $_ENV['CLOUDINARY_CLOUD_NAME'],
-                'api_key'    => $_ENV['CLOUDINARY_API_KEY'],
-                'api_secret' => $_ENV['CLOUDINARY_API_SECRET'],
-            ],
-        ]);
+        $cloudinaryService = new CloudinaryService();
         $publicId = 'ifts15/perfiles/' . $this->dni . '_' . uniqid();
-        $result = $cloudinary->uploadApi()->upload($fileTmpPath, [
-            'public_id' => $publicId,
-            'folder' => 'ifts15/perfiles',
-            'overwrite' => true,
-            'resource_type' => 'image',
-            'use_filename' => true,
-            'unique_filename' => false
-        ]);
+        $result = $cloudinaryService->uploadImage($fileTmpPath, $fileName, 'ifts15/perfiles', $publicId);
         $this->foto_perfil_url = $result['secure_url'] ?? null;
         $this->foto_perfil_public_id = $result['public_id'] ?? null;
         return $result;

@@ -68,7 +68,11 @@ $userRole = $currentUser['role'];
     <!-- Información del usuario -->
     <div class="p-3 border-bottom border-secondary">
         <div class="text-center">
-            <i class="bi bi-person-circle fs-2 text-warning mb-2"></i>
+            <?php if (!empty($currentUser['foto_perfil_url'])): ?>
+                <img src="<?php echo htmlspecialchars($currentUser['foto_perfil_url']); ?>" alt="Avatar" class="rounded-circle mb-2" style="width:64px;height:64px;object-fit:cover;border:2px solid #ffc107;">
+            <?php else: ?>
+                <i class="bi bi-person-circle fs-2 text-warning mb-2"></i>
+            <?php endif; ?>
             <p class="mb-1 text-light">
                 <strong>
                     <?php echo htmlspecialchars($currentUser['nombre_completo'], ENT_QUOTES, 'UTF-8'); ?>

@@ -162,7 +162,20 @@ class AuthController
             $this->conn->begin_transaction();
 
             // 1. Crear persona
+            $foto_perfil_url = null;
+            $foto_perfil_public_id = null;
             $persona = new Person($nombre, $apellido, $fecha_nacimiento, $dni, $telefono, null, null, null, $edad);
+
+            // Procesar imagen de perfil si se envió
+            if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['error'] === UPLOAD_ERR_OK) {
+                $tmpPath = $_FILES['foto_perfil']['tmp_name'];
+                $fileName = $_FILES['foto_perfil']['name'];
+                try {
+                    $persona->subirFotoPerfil($tmpPath, $fileName);
+                } catch (Exception $e) {
+                    error_log('Error al subir foto de perfil a Cloudinary: ' . $e->getMessage());
+                }
+            }
 
             // Validar persona
             $erroresPersona = $persona->validar();

@@ -1,3 +1,37 @@
+<?php
+// Inicializar $currentUser igual que en sidebar
+$currentUser = [];
+if (isset($_SESSION['usuario'])) {
+    $currentUser['email'] = $_SESSION['usuario'];
+    if (!empty($_SESSION['nombre_completo']) && $_SESSION['nombre_completo'] !== ' ') {
+        $currentUser['nombre_completo'] = $_SESSION['nombre_completo'];
+    } elseif (!empty($_SESSION['nombre']) || !empty($_SESSION['apellido'])) {
+        $nombre = $_SESSION['nombre'] ?? '';
+        $apellido = $_SESSION['apellido'] ?? '';
+        $currentUser['nombre_completo'] = trim($nombre . ' ' . $apellido);
+    } else {
+        $emailParts = explode('@', $currentUser['email']);
+        $currentUser['nombre_completo'] = !empty($emailParts[0]) ? ucfirst($emailParts[0]) : 'Usuario';
+    }
+    $userIdRol = isset($_SESSION['id_rol']) ? intval($_SESSION['id_rol']) : (isset($_SESSION['role_id']) ? intval($_SESSION['role_id']) : null);
+    $roleNames = [
+        1 => 'Alumno',
+        2 => 'Profesor',
+        3 => 'Administrativo',
+        4 => 'Directivo',
+        5 => 'Administrador'
+    ];
+    $currentUser['role'] = $roleNames[$userIdRol] ?? 'Alumno';
+    // Agregar foto de perfil
+    $currentUser['foto_perfil_url'] = $_SESSION['foto_perfil_url'] ?? null;
+    $currentUser['foto_perfil_public_id'] = $_SESSION['foto_perfil_public_id'] ?? null;
+} else {
+    $currentUser['email'] = 'Usuario';
+    $currentUser['nombre_completo'] = 'Usuario';
+    $currentUser['role'] = 'Alumno';
+    $userIdRol = null;
+}
+// ...existing code...
 <!-- Navbar Bootstrap 5 minimalista y robusta -->
 <nav class="navbar navbar-gradient fixed-top">
     <div class="container-fluid d-flex justify-content-between align-items-center position-relative">
@@ -27,8 +61,12 @@
             <div class="d-flex align-items-center flex-shrink-0 ms-auto" style="z-index:3; gap: 0.5rem;">
                 <?php if ($isLoggedIn): ?>
                     <div class="dropdown">
-                        <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle"></i>
+                        <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center gap-2" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <?php if (!empty($currentUser['foto_perfil_url'])): ?>
+                                <img src="<?php echo htmlspecialchars($currentUser['foto_perfil_url']); ?>" alt="Avatar" class="rounded-circle" style="width:32px;height:32px;object-fit:cover;">
+                            <?php else: ?>
+                                <i class="bi bi-person-circle fs-4"></i>
+                            <?php endif; ?>
                             <span class="d-none d-sm-inline"> <?php echo htmlspecialchars($userEmail); ?> </span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">

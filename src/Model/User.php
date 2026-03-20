@@ -570,11 +570,14 @@ class User
                 'nombre' => $datos['nombre'] ?? 'Sin nombre',
                 'apellido' => $datos['apellido'] ?? 'Sin apellido',
                 'nombre_completo' => trim(($datos['nombre'] ?? '') . ' ' . ($datos['apellido'] ?? '')),
-                'role_id' => $datos['id_rol'] ?? 1, // Usar el id_rol de la BD real
-                'id_rol' => $datos['id_rol'] ?? 1, // Asegura que $_SESSION['id_rol'] esté disponible
+                'role_id' => $datos['id_rol'] ?? 1,
+                'id_rol' => $datos['id_rol'] ?? 1,
                 'role' => $datos['role_name'] ?? 'Usuario',
                 'logged_in' => true,
-                'last_login' => $this->last_login
+                'last_login' => $this->last_login,
+                // Agregar campos de foto de perfil
+                'foto_perfil_url' => $datos['foto_perfil_url'] ?? null,
+                'foto_perfil_public_id' => $datos['foto_perfil_public_id'] ?? null
             ];
             
         } catch (Exception $e) {

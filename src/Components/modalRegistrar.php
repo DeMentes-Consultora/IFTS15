@@ -85,7 +85,16 @@ try {
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             <?php unset($_SESSION['register_message']); endif; ?>
-            <form action="<?php echo BASE_URL; ?>/src/Controllers/AuthController.php" method="POST" id="formRegistrar">
+            <form action="<?php echo BASE_URL; ?>/src/Controllers/AuthController.php" method="POST" id="formRegistrar" enctype="multipart/form-data">
+                                        <div class="mb-3">
+                                            <label for="registerFotoPerfil" class="form-label">Foto de Perfil (opcional)</label>
+                                            <input type="file"
+                                                   class="form-control"
+                                                   id="registerFotoPerfil"
+                                                   name="foto_perfil"
+                                                   accept="image/*">
+                                            <small class="form-text text-muted">Formatos permitidos: JPG, PNG, GIF. Tamaño máximo recomendado: 2MB.</small>
+                                        </div>
                 <input type="hidden" name="action" value="register">
                 <?php if (isset($modal_included_from)): ?>
                     <input type="hidden" name="modal_included_from" value="<?= htmlspecialchars($modal_included_from) ?>">
