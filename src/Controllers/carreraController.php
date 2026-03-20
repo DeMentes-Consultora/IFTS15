@@ -23,6 +23,17 @@ class CarreraController
     }
 
     /**
+     * Respuesta JSON unificada para endpoints AJAX.
+     */
+    private function jsonResponse(array $payload, int $statusCode = 200): void
+    {
+        http_response_code($statusCode);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($payload);
+        exit;
+    }
+
+    /**
      * Listar carreras (para la vista ABM)
      */
     public function listar()
@@ -39,19 +50,15 @@ class CarreraController
             // Si es petición AJAX, devolver JSON
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
                 strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => true, 'carreras' => $carreras]);
-                exit;
+                $this->jsonResponse(['success' => true, 'carreras' => $carreras]);
             }
             
             // Si no, devolver array para incluir en vista
             return $carreras;
         } catch (Exception $e) {
-            error_log('Error al listar carreras: ' . $e->getMessage());
+            error_log('[CarreraController::listar] ' . $e->getMessage());
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-                http_response_code(500);
-                echo json_encode(['success' => false, 'error' => 'Error interno']);
-                exit;
+                $this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
             }
             return [];
         }
@@ -63,39 +70,30 @@ class CarreraController
     public function crear()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'error' => 'Método no permitido']);
-            exit;
+            $this->jsonResponse(['success' => false, 'error' => 'Método no permitido'], 405);
         }
 
         if (!isLoggedIn() || !isAdminRole()) {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'error' => 'Acceso denegado']);
-            exit;
+            $this->jsonResponse(['success' => false, 'error' => 'Acceso denegado'], 403);
         }
 
         $nombre = trim($_POST['nombre'] ?? '');
         
         if (empty($nombre)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'El nombre es obligatorio']);
-            exit;
+            $this->jsonResponse(['success' => false, 'error' => 'El nombre es obligatorio'], 400);
         }
 
         try {
             $id = Carrera::crear($this->conn, $nombre);
             if ($id) {
-                echo json_encode(['success' => true, 'id' => $id, 'message' => 'Carrera creada exitosamente']);
+                $this->jsonResponse(['success' => true, 'id' => $id, 'message' => 'Carrera creada exitosamente']);
             } else {
-                http_response_code(500);
-                echo json_encode(['success' => false, 'error' => 'No se pudo crear la carrera']);
+                $this->jsonResponse(['success' => false, 'error' => 'No se pudo crear la carrera'], 500);
             }
         } catch (Exception $e) {
-            error_log('Error al crear carrera: ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => 'Error interno']);
+            error_log('[CarreraController::crear] ' . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
         }
-        exit;
     }
 
     /**
@@ -104,40 +102,31 @@ class CarreraController
     public function actualizar()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'error' => 'Método no permitido']);
-            exit;
+            $this->jsonResponse(['success' => false, 'error' => 'Método no permitido'], 405);
         }
 
         if (!isLoggedIn() || !isAdminRole()) {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'error' => 'Acceso denegado']);
-            exit;
+            $this->jsonResponse(['success' => false, 'error' => 'Acceso denegado'], 403);
         }
 
         $id = intval($_POST['id'] ?? 0);
         $nombre = trim($_POST['nombre'] ?? '');
         
         if ($id <= 0 || empty($nombre)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Datos inválidos']);
-            exit;
+            $this->jsonResponse(['success' => false, 'error' => 'Datos inválidos'], 400);
         }
 
         try {
             $ok = Carrera::actualizar($this->conn, $id, $nombre);
             if ($ok) {
-                echo json_encode(['success' => true, 'message' => 'Carrera actualizada exitosamente']);
+                $this->jsonResponse(['success' => true, 'message' => 'Carrera actualizada exitosamente']);
             } else {
-                http_response_code(500);
-                echo json_encode(['success' => false, 'error' => 'No se pudo actualizar']);
+                $this->jsonResponse(['success' => false, 'error' => 'No se pudo actualizar'], 500);
             }
         } catch (Exception $e) {
-            error_log('Error al actualizar carrera: ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => 'Error interno']);
+            error_log('[CarreraController::actualizar] ' . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
         }
-        exit;
     }
 
     /**
@@ -146,39 +135,30 @@ class CarreraController
     public function eliminar()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'error' => 'Método no permitido']);
-            exit;
+            $this->jsonResponse(['success' => false, 'error' => 'Método no permitido'], 405);
         }
 
         if (!isLoggedIn() || !isAdminRole()) {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'error' => 'Acceso denegado']);
-            exit;
+            $this->jsonResponse(['success' => false, 'error' => 'Acceso denegado'], 403);
         }
 
         $id = intval($_POST['id'] ?? 0);
         
         if ($id <= 0) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'ID inválido']);
-            exit;
+            $this->jsonResponse(['success' => false, 'error' => 'ID inválido'], 400);
         }
 
         try {
             $ok = Carrera::eliminar($this->conn, $id);
             if ($ok) {
-                echo json_encode(['success' => true, 'message' => 'Carrera eliminada exitosamente']);
+                $this->jsonResponse(['success' => true, 'message' => 'Carrera eliminada exitosamente']);
             } else {
-                http_response_code(500);
-                echo json_encode(['success' => false, 'error' => 'No se pudo eliminar']);
+                $this->jsonResponse(['success' => false, 'error' => 'No se pudo eliminar'], 500);
             }
         } catch (Exception $e) {
-            error_log('Error al eliminar carrera: ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => 'Error interno']);
+            error_log('[CarreraController::eliminar] ' . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
         }
-        exit;
     }
 
     /**
@@ -187,36 +167,27 @@ class CarreraController
     public function asociarMateria()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'error' => 'Método no permitido']);
-            exit;
+            $this->jsonResponse(['success' => false, 'error' => 'Método no permitido'], 405);
         }
 
         if (!isLoggedIn() || !isAdminRole()) {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'error' => 'Acceso denegado']);
-            exit;
+            $this->jsonResponse(['success' => false, 'error' => 'Acceso denegado'], 403);
         }
 
         $idCarrera = intval($_POST['id_carrera'] ?? 0);
         $idMateria = intval($_POST['id_materia'] ?? 0);
         
         if ($idCarrera <= 0 || $idMateria <= 0) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Datos inválidos']);
-            exit;
+            $this->jsonResponse(['success' => false, 'error' => 'Datos inválidos'], 400);
         }
 
         try {
             $result = Carrera::asociarMateria($this->conn, $idCarrera, $idMateria);
-            header('Content-Type: application/json');
-            echo json_encode($result);
+            $this->jsonResponse($result);
         } catch (Exception $e) {
-            error_log('Error al asociar materia: ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => 'Error interno']);
+            error_log('[CarreraController::asociarMateria] ' . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
         }
-        exit;
     }
 
     /**
@@ -225,40 +196,31 @@ class CarreraController
     public function desasociarMateria()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'error' => 'Método no permitido']);
-            exit;
+            $this->jsonResponse(['success' => false, 'error' => 'Método no permitido'], 405);
         }
 
         if (!isLoggedIn() || !isAdminRole()) {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'error' => 'Acceso denegado']);
-            exit;
+            $this->jsonResponse(['success' => false, 'error' => 'Acceso denegado'], 403);
         }
 
         $idCarrera = intval($_POST['id_carrera'] ?? 0);
         $idMateria = intval($_POST['id_materia'] ?? 0);
         
         if ($idCarrera <= 0 || $idMateria <= 0) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Datos inválidos']);
-            exit;
+            $this->jsonResponse(['success' => false, 'error' => 'Datos inválidos'], 400);
         }
 
         try {
             $ok = Carrera::desasociarMateria($this->conn, $idCarrera, $idMateria);
             if ($ok) {
-                echo json_encode(['success' => true, 'message' => 'Materia desasociada']);
+                $this->jsonResponse(['success' => true, 'message' => 'Materia desasociada']);
             } else {
-                http_response_code(500);
-                echo json_encode(['success' => false, 'error' => 'No se pudo desasociar']);
+                $this->jsonResponse(['success' => false, 'error' => 'No se pudo desasociar'], 500);
             }
         } catch (Exception $e) {
-            error_log('Error al desasociar materia: ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => 'Error interno']);
+            error_log('[CarreraController::desasociarMateria] ' . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
         }
-        exit;
     }
 }
 
@@ -288,6 +250,7 @@ if (basename($_SERVER['PHP_SELF']) === 'carreraController.php') {
             break;
         default:
             http_response_code(400);
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['success' => false, 'error' => 'Acción no válida']);
             break;
     }

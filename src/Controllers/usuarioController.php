@@ -26,6 +26,17 @@ class usuarioController
 	}
 
 	/**
+	 * Respuesta JSON unificada para endpoints AJAX.
+	 */
+	private function jsonResponse(array $payload, int $statusCode = 200): void
+	{
+		http_response_code($statusCode);
+		header('Content-Type: application/json; charset=utf-8');
+		echo json_encode($payload);
+		exit;
+	}
+
+	/**
 	 * Listar usuarios con paginación y mostrar la vista
 	 */
 	public function listar()
@@ -64,9 +75,7 @@ class usuarioController
 	{
 		// Permitir solo POST
 		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-			http_response_code(405);
-			echo json_encode(['success' => false, 'error' => 'Método no permitido']);
-			exit;
+			$this->jsonResponse(['success' => false, 'error' => 'Método no permitido'], 405);
 		}
 
 		// Verificar permisos (roles administrativos)
@@ -74,26 +83,20 @@ class usuarioController
 			require_once __DIR__ . '/../config.php';
 		}
 		if (!isLoggedIn() || !isAdminRole()) {
-			http_response_code(403);
-			echo json_encode(['success' => false, 'error' => 'Acceso denegado']);
-			exit;
+			$this->jsonResponse(['success' => false, 'error' => 'Acceso denegado'], 403);
 		}
 
 		// Validar token CSRF
 		$postedToken = $_POST['csrf_token'] ?? '';
 		if (empty($postedToken) || empty($_SESSION['csrf_usuario_toggle']) || !hash_equals($_SESSION['csrf_usuario_toggle'], $postedToken)) {
-			http_response_code(403);
-			echo json_encode(['success' => false, 'error' => 'Token CSRF inválido']);
-			exit;
+			$this->jsonResponse(['success' => false, 'error' => 'Token CSRF inválido'], 403);
 		}
 
 		$id = intval($_POST['id'] ?? 0);
 		$habilitado = intval($_POST['habilitado'] ?? 0);
 
 		if ($id <= 0) {
-			http_response_code(400);
-			echo json_encode(['success' => false, 'error' => 'ID inválido']);
-			exit;
+			$this->jsonResponse(['success' => false, 'error' => 'ID inválido'], 400);
 		}
 
 		try {
@@ -123,24 +126,21 @@ class usuarioController
 								$body .= '<p>Saludos,<br>Equipo IFTS15</p>';
 								$resMail = envio_mail($to, $subject, $body, $_ENV['MAIL_FROM'] ?? null, $_ENV['MAIL_FROM_NAME'] ?? null, true, $to);
 								if (!$resMail['success']) {
-									error_log('Error enviando mail habilitacion a ' . $to . ': ' . $resMail['message']);
+									error_log('[usuarioController::toggleHabilitado] Error enviando mail de habilitación: ' . ($resMail['message'] ?? 'sin detalle'));
 								}
 							}
 						} catch (Exception $e) {
-							error_log('Excepción al notificar habilitación por mail: ' . $e->getMessage());
+							error_log('[usuarioController::toggleHabilitado] Excepción al notificar habilitación por mail: ' . $e->getMessage());
 						}
 					}
-				echo json_encode(['success' => true, 'new_csrf' => $newToken]);
+				$this->jsonResponse(['success' => true, 'new_csrf' => $newToken]);
 			} else {
-				http_response_code(500);
-				echo json_encode(['success' => false, 'error' => 'No se pudo actualizar']);
+				$this->jsonResponse(['success' => false, 'error' => 'No se pudo actualizar'], 500);
 			}
 		} catch (Exception $e) {
-			error_log('Error toggleHabilitado: ' . $e->getMessage());
-			http_response_code(500);
-			echo json_encode(['success' => false, 'error' => 'Error interno']);
+			error_log('[usuarioController::toggleHabilitado] ' . $e->getMessage());
+			$this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
 		}
-		exit;
 	}
 }
 

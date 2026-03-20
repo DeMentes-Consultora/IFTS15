@@ -23,26 +23,7 @@ use App\ConectionBD\ConectionDB;
 // Utilidad de correo
 require_once __DIR__ . '/../Public/Utilities/envioMail.php';
 
-// Crear directorio de logs si no existe
-if (!file_exists(__DIR__ . '/../../logs')) {
-    mkdir(__DIR__ . '/../../logs', 0755, true);
-}
-
-// DEBUG: Verificar que podemos escribir logs
-file_put_contents(__DIR__ . '/../../logs/debug_test.log', 
-    "[" . date('Y-m-d H:i:s') . "] Controller cargado\n", 
-    FILE_APPEND | LOCK_EX);
-
-// Función helper para logging
-function logMail($message) {
-    $timestamp = date('Y-m-d H:i:s');
-    $logMessage = "[$timestamp] $message" . PHP_EOL;
-    file_put_contents(__DIR__ . '/../../logs/consultas_debug.log', $logMessage, FILE_APPEND | LOCK_EX);
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    logMail("POST recibido: " . print_r($_POST, true));
-
     $nombre = trim($_POST['nombre'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $telefono = trim($_POST['telefono'] ?? '');
@@ -67,11 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $consulta = new Consulta($nombre, $email, $mensaje, $telefono, $carrera);
 
     try {
-        logMail("Intentando enviar email via envio_mail...");
         // Obtener nombre de la carrera si se seleccionó una
         $nombreCarrera = 'Información general';
         if (!empty($consulta->getCarrera())) {
-            $conectarDB = new ConectionDB();
             $conectarDB = new ConectionDB();
             $conn = $conectarDB->getConnection();
             $stmt = $conn->prepare("SELECT nombreCarrera FROM carrera WHERE id_carrera = ?");
@@ -104,17 +83,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $result = envio_mail($destinatario, $subject, $cuerpoMensaje, $consulta->getEmail(), $consulta->getNombre(), true, $consulta->getEmail());
         if ($result['success']) {
-            logMail("Email enviado exitosamente a " . $destinatario);
             $_SESSION['consultas_message'] = '¡Consulta enviada correctamente! Te responderemos a la brevedad a tu email: ' . htmlspecialchars($consulta->getEmail());
         } else {
-            logMail("Error envio_mail: " . $result['message']);
+            error_log('Error envio_mail en consultas: ' . ($result['message'] ?? 'sin detalle'));
             $_SESSION['consultas_message'] = 'No se pudo enviar el mensaje. Por favor intenta nuevamente más tarde.';
         }
 
         header('Location: ' . $_SERVER['HTTP_REFERER']);
         exit;
     } catch (Exception $e) {
-        logMail("Excepción envio_mail: " . $e->getMessage());
+        error_log('Excepción en consultasController: ' . $e->getMessage());
         $_SESSION['consultas_message'] = 'No se pudo enviar el mensaje. Por favor intenta nuevamente más tarde.';
         header('Location: ' . $_SERVER['HTTP_REFERER']);
         exit;

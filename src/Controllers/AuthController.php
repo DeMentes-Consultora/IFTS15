@@ -45,10 +45,11 @@ class AuthController
                 throw new Exception('No se pudo establecer conexión con la base de datos');
             }
         } catch (Exception $e) {
+            error_log('[AuthController] Error de conexión en constructor: ' . $e->getMessage());
             http_response_code(500);
             echo json_encode([
                 'success' => false,
-                'error' => 'Error de conexión: ' . $e->getMessage(),
+                'error' => 'Error de conexión con el sistema. Intenta nuevamente más tarde.',
                 'controller' => 'AuthController'
             ]);
             exit;
@@ -101,10 +102,8 @@ class AuthController
                 $_SESSION['usuario'] = $datosCompletos['email'];
                 $_SESSION['user_id'] = $datosCompletos['id_usuario'];
                 $_SESSION['logged_in'] = true;
-                error_log("Login exitoso: {$email}");
                 $this->redirect('/index.php');
             } else {
-                error_log("Intento de login fallido: {$email}");
                 $_SESSION['login_message'] = 'Usuario o contraseña incorrectos.';
                 $this->redirect('/index.php');
             }
@@ -113,7 +112,7 @@ class AuthController
             $this->redirect('/?error=bd_mysql');
         } catch (Exception $e) {
             error_log("Error general en login: " . $e->getMessage() . " - Archivo: " . $e->getFile() . " - Línea: " . $e->getLine());
-            $this->redirect('/?error=error_interno&debug=1');
+            $this->redirect('/?error=error_interno');
         }
     }
 
@@ -226,9 +225,6 @@ class AuthController
             $body .= '<p>Saludos,<br>Equipo IFTS15</p>';
 
             envio_mail($email, $subject, $body, $_ENV['MAIL_FROM'] ?? null, $_ENV['MAIL_FROM_NAME'] ?? null, true, $email);
-
-            // Log de actividad
-            error_log("REGISTRO EXITOSO: {$email}");
             
             // Notificar admins
             $admins = array_map('trim', explode(',', $_ENV['ADMIN_EMAILS'] ?? ''));
@@ -247,7 +243,7 @@ class AuthController
             $this->conn->rollback();
             $error_msg = $e->getMessage();
             error_log("ERROR en registro: {$error_msg} | Email: {$email}");
-            $_SESSION['register_message'] = $error_msg;
+            $_SESSION['register_message'] = 'No se pudo completar el registro. Verificá los datos e intentá nuevamente.';
             $this->redirect('/index.php');
         } catch (Throwable $e) {
             // Capturar errores fatales también
@@ -441,7 +437,6 @@ class AuthController
         }
 
         $full_url = BASE_URL . $url;
-        error_log("Redirigiendo a: " . $full_url); // Para debug
         header("Location: $full_url");
         exit;
     }
@@ -506,7 +501,7 @@ if (basename($_SERVER['PHP_SELF']) === 'AuthController.php') {
         
         echo json_encode([
             'success' => false,
-            'error' => $e->getMessage()
+            'error' => 'Error interno del servidor'
         ]);
         exit;
     }
