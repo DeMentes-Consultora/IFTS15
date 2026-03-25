@@ -79,11 +79,7 @@ if (isset($_SESSION['usuario'])) {
                 <?php else: ?>
                     <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalLogin">
                         <span class="d-inline d-sm-none"><i class="bi bi-box-arrow-in-right"></i></span>
-                        <span class="d-none d-sm-inline"><i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión</span>
-                    </button>
-                    <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalRegistrar">
-                        <span class="d-inline d-sm-none"><i class="bi bi-person-plus"></i></span>
-                        <span class="d-none d-sm-inline"><i class="bi bi-person-plus me-1"></i> Registrarse</span>
+                        <span class="d-none d-sm-inline"><i class="bi bi-box-arrow-in-right me-1"></i> Ingresar</span>
                     </button>
                 <?php endif; ?>
             </div>
