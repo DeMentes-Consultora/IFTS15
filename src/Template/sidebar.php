@@ -13,7 +13,6 @@ if (!isset($isLoggedIn) || !$isLoggedIn) return;
 $currentUser = [];
 if (isset($_SESSION['usuario'])) {
     $currentUser['email'] = $_SESSION['usuario'];
-
     // Intentar obtener el nombre completo de diferentes fuentes
     if (!empty($_SESSION['nombre_completo']) && $_SESSION['nombre_completo'] !== ' ') {
         $currentUser['nombre_completo'] = $_SESSION['nombre_completo'];
@@ -26,7 +25,6 @@ if (isset($_SESSION['usuario'])) {
         $emailParts = explode('@', $currentUser['email']);
         $currentUser['nombre_completo'] = !empty($emailParts[0]) ? ucfirst($emailParts[0]) : 'Usuario';
     }
-
     $userIdRol = isset($_SESSION['id_rol']) ? intval($_SESSION['id_rol']) : (isset($_SESSION['role_id']) ? intval($_SESSION['role_id']) : null);
     // Mapear nombre legible del rol según la tabla roles en la BD (agregado id 5 Administrador)
     $roleNames = [
@@ -37,6 +35,9 @@ if (isset($_SESSION['usuario'])) {
         5 => 'Administrador'
     ];
     $currentUser['role'] = $roleNames[$userIdRol] ?? 'Alumno';
+    // Agregar foto de perfil
+    $currentUser['foto_perfil_url'] = $_SESSION['foto_perfil_url'] ?? null;
+    $currentUser['foto_perfil_public_id'] = $_SESSION['foto_perfil_public_id'] ?? null;
 } else {
     $currentUser['email'] = 'Usuario';
     $currentUser['nombre_completo'] = 'Usuario';

@@ -247,11 +247,11 @@ class User
     public static function obtenerUsuarioCompleto($conn, $id_usuario)
     {
         // Adaptar consulta a la estructura real de BD, incluyendo el nombre del rol
-        $sql = "SELECT u.*, p.nombre, p.apellido, p.dni, p.telefono, r.rol AS role_name
-                FROM usuario u 
-                LEFT JOIN persona p ON u.id_persona = p.id_persona 
-                LEFT JOIN roles r ON u.id_rol = r.id_rol
-                WHERE u.id_usuario = ? AND u.habilitado = 1";
+        $sql = "SELECT u.*, p.nombre, p.apellido, p.dni, p.telefono, p.foto_perfil_url, p.foto_perfil_public_id, r.rol AS role_name
+            FROM usuario u 
+            LEFT JOIN persona p ON u.id_persona = p.id_persona 
+            LEFT JOIN roles r ON u.id_rol = r.id_rol
+            WHERE u.id_usuario = ? AND u.habilitado = 1";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) {
