@@ -408,7 +408,7 @@ try {
     </div>
 </div>
 
-<?php if (isset($_SESSION['register_message']) || isset($_SESSION['register_errors'])): ?>
+<?php if (isset($_SESSION['register_errors'])): ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var modalEl = document.getElementById('modalRegistrar');
