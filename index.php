@@ -33,7 +33,31 @@ $userIdRol = isset($_SESSION['id_rol']) ? intval($_SESSION['id_rol']) : (isset($
 $roleNames = [1 => 'Alumno', 2 => 'Profesor', 3 => 'Administrativo', 4 => 'Directivo', 5 => 'Administrador'];
 $userRole = $roleNames[$userIdRol] ?? 'Alumno';
 ?>
+
 <?php include __DIR__ . '/src/Template/head.php'; ?>
+
+<!-- ALERTA GLOBAL PARA REGISTRO (si existe) -->
+<?php if (isset($_SESSION['register_message'])): ?>
+    <div id="alertaRegistroFlotante" class="alert alert-info alert-dismissible fade show" role="alert" style="position:fixed;top:30px;left:50%;transform:translateX(-50%);z-index:2000;min-width:350px;max-width:90vw;">
+        <strong><?= htmlspecialchars($_SESSION['register_message'], ENT_QUOTES, 'UTF-8') ?></strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            var modalEl = document.getElementById('modalRegistrar');
+            if (modalEl) {
+                try {
+                    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.show();
+                } catch (e) {
+                    console.error('No se pudo abrir el modalRegistrar:', e);
+                }
+            }
+        }, 200); // Pequeño retardo para asegurar visibilidad
+    });
+    </script>
+<?php endif; ?>
 
 <?php include __DIR__ . '/src/Template/navBar.php'; ?>
 

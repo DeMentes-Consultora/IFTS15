@@ -71,6 +71,13 @@ try {
 <div class="modal fade" id="modalRegistrar" tabindex="-1" aria-labelledby="modalRegistrarLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
+                        <!-- Mensaje de error general de registro -->
+                        <?php if (isset($_SESSION['register_message'])): ?>
+                            <div class="invalid-feedback d-block text-center mb-3" style="font-size:1.1em;">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                <?= htmlspecialchars($_SESSION['register_message'], ENT_QUOTES, 'UTF-8') ?>
+                            </div>
+                        <?php endif; ?>
             <div class="modal-header bg-warning text-dark">
                 <h5 class="modal-title" id="modalRegistrarLabel">
                     <i class="bi bi-person-plus me-2"></i>
@@ -78,13 +85,9 @@ try {
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <!-- Área de alertas -->
-            <?php if (isset($_SESSION['register_message'])): ?>
-                <div class="alert alert-info alert-dismissible fade show mt-2" role="alert">
-                    <strong><?= htmlspecialchars($_SESSION['register_message'], ENT_QUOTES, 'UTF-8') ?></strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            <?php unset($_SESSION['register_message']); endif; ?>
+
+
+
             <form action="<?php echo BASE_URL; ?>/src/Controllers/AuthController.php" method="POST" id="formRegistrar" enctype="multipart/form-data">
                                         <div class="mb-3">
                                             <label for="registerFotoPerfil" class="form-label">Foto de Perfil (opcional)</label>
@@ -109,44 +112,68 @@ try {
                             
                             <div class="mb-3">
                                 <label for="registerNombre" class="form-label">Nombre *</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="registerNombre" 
-                                       name="nombre" 
-                                       required 
-                                       placeholder="Tu nombre">
+                                <input type="text"
+                                       class="form-control<?php if(isset($_SESSION['register_errors']['nombre'])) echo ' is-invalid'; ?>"
+                                       id="registerNombre"
+                                       name="nombre"
+                                       required
+                                       placeholder="Tu nombre"
+                                       value="<?= htmlspecialchars($_SESSION['register_old']['nombre'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                                <?php if(isset($_SESSION['register_errors']['nombre'])): ?>
+                                    <?php foreach($_SESSION['register_errors']['nombre'] as $err): ?>
+                                        <div class="invalid-feedback d-block"><?= htmlspecialchars($err) ?></div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                             
                             <div class="mb-3">
                                 <label for="registerApellido" class="form-label">Apellido *</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="registerApellido" 
-                                       name="apellido" 
-                                       required 
-                                       placeholder="Tu apellido">
+                                <input type="text"
+                                       class="form-control<?php if(isset($_SESSION['register_errors']['apellido'])) echo ' is-invalid'; ?>"
+                                       id="registerApellido"
+                                       name="apellido"
+                                       required
+                                       placeholder="Tu apellido"
+                                       value="<?= htmlspecialchars($_SESSION['register_old']['apellido'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                                <?php if(isset($_SESSION['register_errors']['apellido'])): ?>
+                                    <?php foreach($_SESSION['register_errors']['apellido'] as $err): ?>
+                                        <div class="invalid-feedback d-block"><?= htmlspecialchars($err) ?></div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                             
                             <div class="mb-3">
                                 <label for="registerDni" class="form-label">DNI *</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="registerDni" 
-                                       name="dni" 
-                                       required 
+                                <input type="text"
+                                       class="form-control<?php if(isset($_SESSION['register_errors']['dni'])) echo ' is-invalid'; ?>"
+                                       id="registerDni"
+                                       name="dni"
+                                       required
                                        pattern="\d{7,8}"
-                                       placeholder="12345678">
+                                       placeholder="12345678"
+                                       value="<?= htmlspecialchars($_SESSION['register_old']['dni'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                                <?php if(isset($_SESSION['register_errors']['dni'])): ?>
+                                    <?php foreach($_SESSION['register_errors']['dni'] as $err): ?>
+                                        <div class="invalid-feedback d-block"><?= htmlspecialchars($err) ?></div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                             
                             <div class="mb-3">
                                 <label for="registerFechaNacimiento" class="form-label">Fecha de Nacimiento *</label>
-                                <input type="date" 
-                                       class="form-control" 
-                                       id="registerFechaNacimiento" 
+                                <input type="date"
+                                       class="form-control<?php if(isset($_SESSION['register_errors']['fecha_nacimiento'])) echo ' is-invalid'; ?>"
+                                       id="registerFechaNacimiento"
                                        name="fecha_nacimiento"
                                        required
-                                       onchange="calcularEdad()">
+                                       onchange="calcularEdad()"
+                                       value="<?= htmlspecialchars($_SESSION['register_old']['fecha_nacimiento'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                                 <small class="form-text text-muted">La edad se calculará automáticamente</small>
+                                <?php if(isset($_SESSION['register_errors']['fecha_nacimiento'])): ?>
+                                    <?php foreach($_SESSION['register_errors']['fecha_nacimiento'] as $err): ?>
+                                        <div class="invalid-feedback d-block"><?= htmlspecialchars($err) ?></div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                             <?php
                             // Mostrar select de roles sólo si el usuario actual tiene id_rol 3 (Administrativo) o 5 (Administrador)
@@ -188,42 +215,64 @@ try {
                             
                             <div class="mb-3">
                                 <label for="registerEmail" class="form-label">Email *</label>
-                                <input type="email" 
-                                       class="form-control" 
-                                       id="registerEmail" 
-                                       name="email" 
-                                       required 
-                                       placeholder="tu.email@ejemplo.com">
+                                <input type="email"
+                                       class="form-control<?php if(isset($_SESSION['register_errors']['email'])) echo ' is-invalid'; ?>"
+                                       id="registerEmail"
+                                       name="email"
+                                       required
+                                       placeholder="tu.email@ejemplo.com"
+                                       value="<?= htmlspecialchars($_SESSION['register_old']['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                                <?php if(isset($_SESSION['register_errors']['email'])): ?>
+                                    <?php foreach($_SESSION['register_errors']['email'] as $err): ?>
+                                        <div class="invalid-feedback d-block"><?= htmlspecialchars($err) ?></div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                             
                             <div class="mb-3">
                                 <label for="registerPassword" class="form-label">Contraseña *</label>
-                                <input type="password" 
-                                       class="form-control" 
-                                       id="registerPassword" 
-                                       name="password" 
-                                       required 
+                                <input type="password"
+                                       class="form-control<?php if(isset($_SESSION['register_errors']['password'])) echo ' is-invalid'; ?>"
+                                       id="registerPassword"
+                                       name="password"
+                                       required
                                        minlength="6"
                                        placeholder="Mínimo 6 caracteres">
+                                <?php if(isset($_SESSION['register_errors']['password'])): ?>
+                                    <?php foreach($_SESSION['register_errors']['password'] as $err): ?>
+                                        <div class="invalid-feedback d-block"><?= htmlspecialchars($err) ?></div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                             
                             <div class="mb-3">
                                 <label for="registerConfirmPassword" class="form-label">Confirmar Contraseña *</label>
-                                <input type="password" 
-                                       class="form-control" 
-                                       id="registerConfirmPassword" 
-                                       name="confirm_password" 
-                                       required 
+                                <input type="password"
+                                       class="form-control<?php if(isset($_SESSION['register_errors']['password'])) echo ' is-invalid'; ?>"
+                                       id="registerConfirmPassword"
+                                       name="confirm_password"
+                                       required
                                        placeholder="Repetir contraseña">
+                                <?php if(isset($_SESSION['register_errors']['password'])): ?>
+                                    <?php foreach($_SESSION['register_errors']['password'] as $err): ?>
+                                        <div class="invalid-feedback d-block"><?= htmlspecialchars($err) ?></div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                             
                             <div class="mb-3">
                                 <label for="registerTelefono" class="form-label">Teléfono</label>
-                                <input type="tel" 
-                                       class="form-control" 
-                                       id="registerTelefono" 
-                                       name="telefono" 
-                                       placeholder="11-1234-5678">
+                                <input type="tel"
+                                       class="form-control<?php if(isset($_SESSION['register_errors']['telefono'])) echo ' is-invalid'; ?>"
+                                       id="registerTelefono"
+                                       name="telefono"
+                                       placeholder="11-1234-5678"
+                                       value="<?= htmlspecialchars($_SESSION['register_old']['telefono'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                                <?php if(isset($_SESSION['register_errors']['telefono'])): ?>
+                                    <?php foreach($_SESSION['register_errors']['telefono'] as $err): ?>
+                                        <div class="invalid-feedback d-block"><?= htmlspecialchars($err) ?></div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                             
                             <div class="mb-3">
@@ -256,48 +305,63 @@ try {
                         <div class="col-md-4">
                             <div class="mb-3">
                                 <label for="registerCarrera" class="form-label">Carrera *</label>
-                                <select class="form-select" id="registerCarrera" name="id_carrera" required>
+                                <select class="form-select<?php if(isset($_SESSION['register_errors']['id_carrera'])) echo ' is-invalid'; ?>" id="registerCarrera" name="id_carrera" required>
                                     <option value="">Seleccionar carrera...</option>
                                     <?php if (empty($carreras)): ?>
                                         <option value="" disabled style="color:red;">No hay carreras habilitadas</option>
                                     <?php else: ?>
                                         <?php foreach ($carreras as $carrera): ?>
-                                            <option value="<?= $carrera['id_carrera'] ?>"><?= htmlspecialchars($carrera['carrera']) ?></option>
+                                            <option value="<?= $carrera['id_carrera'] ?>"<?= (isset($_SESSION['register_old']['id_carrera']) && $_SESSION['register_old']['id_carrera'] == $carrera['id_carrera']) ? ' selected' : '' ?>><?= htmlspecialchars($carrera['carrera']) ?></option>
                                         <?php endforeach; ?>
                                     <?php endif; ?>
                                 </select>
+                                <?php if(isset($_SESSION['register_errors']['id_carrera'])): ?>
+                                    <?php foreach($_SESSION['register_errors']['id_carrera'] as $err): ?>
+                                        <div class="invalid-feedback d-block"><?= htmlspecialchars($err) ?></div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                         </div>
                         
                         <div class="col-md-4">
                             <div class="mb-3">
                                 <label for="registerComision" class="form-label">Comisión *</label>
-                                <select class="form-select" id="registerComision" name="id_comision" required>
+                                <select class="form-select<?php if(isset($_SESSION['register_errors']['id_comision'])) echo ' is-invalid'; ?>" id="registerComision" name="id_comision" required>
                                     <option value="">Seleccionar comisión...</option>
                                     <?php if (empty($comisiones)): ?>
                                         <option value="" disabled style="color:red;">No hay comisiones habilitadas</option>
                                     <?php else: ?>
                                         <?php foreach ($comisiones as $comision): ?>
-                                            <option value="<?= $comision['id_comision'] ?>">Comisión <?= htmlspecialchars($comision['comision']) ?></option>
+                                            <option value="<?= $comision['id_comision'] ?>"<?= (isset($_SESSION['register_old']['id_comision']) && $_SESSION['register_old']['id_comision'] == $comision['id_comision']) ? ' selected' : '' ?>>Comisión <?= htmlspecialchars($comision['comision']) ?></option>
                                         <?php endforeach; ?>
                                     <?php endif; ?>
                                 </select>
+                                <?php if(isset($_SESSION['register_errors']['id_comision'])): ?>
+                                    <?php foreach($_SESSION['register_errors']['id_comision'] as $err): ?>
+                                        <div class="invalid-feedback d-block"><?= htmlspecialchars($err) ?></div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                         </div>
                         
                         <div class="col-md-4">
                             <div class="mb-3">
                                 <label for="registerAñoCursada" class="form-label">Año a Cursar *</label>
-                                <select class="form-select" id="registerAñoCursada" name="id_añoCursada" required>
+                                <select class="form-select<?php if(isset($_SESSION['register_errors']['id_añoCursada'])) echo ' is-invalid'; ?>" id="registerAñoCursada" name="id_añoCursada" required>
                                     <option value="">Seleccionar año...</option>
                                     <?php if (empty($añosCursada)): ?>
                                         <option value="" disabled style="color:red;">No hay años habilitados</option>
                                     <?php else: ?>
                                         <?php foreach ($añosCursada as $año): ?>
-                                            <option value="<?= $año['id_añoCursada'] ?>"><?= $año['año'] ?>° Año</option>
+                                            <option value="<?= $año['id_añoCursada'] ?>"<?= (isset($_SESSION['register_old']['id_añoCursada']) && $_SESSION['register_old']['id_añoCursada'] == $año['id_añoCursada']) ? ' selected' : '' ?>><?= $año['año'] ?>° Año</option>
                                         <?php endforeach; ?>
                                     <?php endif; ?>
                                 </select>
+                                <?php if(isset($_SESSION['register_errors']['id_añoCursada'])): ?>
+                                    <?php foreach($_SESSION['register_errors']['id_añoCursada'] as $err): ?>
+                                        <div class="invalid-feedback d-block"><?= htmlspecialchars($err) ?></div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -344,7 +408,7 @@ try {
     </div>
 </div>
 
-<?php if (isset($_SESSION['register_message'])): ?>
+<?php if (isset($_SESSION['register_message']) || isset($_SESSION['register_errors'])): ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var modalEl = document.getElementById('modalRegistrar');
@@ -358,6 +422,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+<?php
+// Limpiar errores y valores viejos después de mostrar el modal
+unset($_SESSION['register_message'], $_SESSION['register_errors'], $_SESSION['register_old']);
+?>
 // Calcula la edad automáticamente al cambiar la fecha de nacimiento
 function calcularEdad() {
     var fechaInput = document.getElementById('registerFechaNacimiento');

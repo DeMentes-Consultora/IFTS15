@@ -173,8 +173,38 @@ class AuthController
         // Validaciones
         $errores = $this->validarDatosRegistro($email, $password, $confirm_password, $nombre, $apellido, $dni, $id_carrera, $id_comision, $id_añoCursada);
 
+        // Guardar valores previos para repoblar el formulario
+        $_SESSION['register_old'] = [
+            'email' => $email,
+            'nombre' => $nombre,
+            'apellido' => $apellido,
+            'dni' => $dni,
+            'fecha_nacimiento' => $fecha_nacimiento,
+            'telefono' => $telefono,
+            'edad' => $edad,
+            'id_carrera' => $id_carrera,
+            'id_comision' => $id_comision,
+            'id_añoCursada' => $id_añoCursada,
+            'id_rol' => $id_rol_seleccionado,
+        ];
+
+        // Si hay errores generales, asociar a campos si es posible
         if (!empty($errores)) {
-            $_SESSION['register_message'] = implode(', ', $errores);
+            $erroresPorCampo = [];
+            foreach ($errores as $err) {
+                if (stripos($err, 'nombre') !== false) $erroresPorCampo['nombre'][] = $err;
+                elseif (stripos($err, 'apellido') !== false) $erroresPorCampo['apellido'][] = $err;
+                elseif (stripos($err, 'dni') !== false) $erroresPorCampo['dni'][] = $err;
+                elseif (stripos($err, 'fecha') !== false) $erroresPorCampo['fecha_nacimiento'][] = $err;
+                elseif (stripos($err, 'teléfono') !== false || stripos($err, 'telefono') !== false) $erroresPorCampo['telefono'][] = $err;
+                elseif (stripos($err, 'email') !== false) $erroresPorCampo['email'][] = $err;
+                elseif (stripos($err, 'contraseña') !== false || stripos($err, 'password') !== false) $erroresPorCampo['password'][] = $err;
+                elseif (stripos($err, 'carrera') !== false) $erroresPorCampo['id_carrera'][] = $err;
+                elseif (stripos($err, 'comision') !== false) $erroresPorCampo['id_comision'][] = $err;
+                elseif (stripos($err, 'año') !== false) $erroresPorCampo['id_añoCursada'][] = $err;
+                else $erroresPorCampo['general'][] = $err;
+            }
+            $_SESSION['register_errors'] = $erroresPorCampo;
             $this->redirect('/index.php');
             return;
         }
@@ -202,16 +232,31 @@ class AuthController
             // Validar persona
             $erroresPersona = $persona->validar();
             if (!empty($erroresPersona)) {
-                throw new Exception("Errores persona: " . implode(', ', $erroresPersona));
+                $erroresPorCampo = [];
+                foreach ($erroresPersona as $err) {
+                    if (stripos($err, 'nombre') !== false) $erroresPorCampo['nombre'][] = $err;
+                    elseif (stripos($err, 'apellido') !== false) $erroresPorCampo['apellido'][] = $err;
+                    elseif (stripos($err, 'dni') !== false) $erroresPorCampo['dni'][] = $err;
+                    elseif (stripos($err, 'fecha') !== false) $erroresPorCampo['fecha_nacimiento'][] = $err;
+                    elseif (stripos($err, 'teléfono') !== false || stripos($err, 'telefono') !== false) $erroresPorCampo['telefono'][] = $err;
+                    else $erroresPorCampo['general'][] = $err;
+                }
+                $_SESSION['register_errors'] = $erroresPorCampo;
+                $this->redirect('/index.php');
+                return;
             }
 
             // Verificar si DNI ya existe
             if ($persona->dniExiste($this->conn)) {
-                throw new Exception("El DNI ya está registrado");
+                $_SESSION['register_errors'] = ['dni' => ['El DNI ya está registrado']];
+                $this->redirect('/index.php');
+                return;
             }
 
             if (!$persona->guardar($this->conn)) {
-                throw new Exception("Error al guardar datos personales: " . ($this->conn->error ?? '')); // Mostrar error SQL
+                $_SESSION['register_errors'] = ['general' => ['Error al guardar datos personales: ' . ($this->conn->error ?? '')]];
+                $this->redirect('/index.php');
+                return;
             }
 
             // 2. Crear usuario con datos académicos
@@ -278,8 +323,10 @@ class AuthController
             $this->conn->rollback();
             $error_msg = $e->getMessage();
             error_log("ERROR en registro: {$error_msg} | Email: {$email}");
-            // Mostrar el error exacto en pantalla para depuración
-            $_SESSION['register_message'] = 'Error en registro: ' . $error_msg;
+            // Si no se guardó error específico, guardar como general
+            if (!isset($_SESSION['register_errors'])) {
+                $_SESSION['register_errors'] = ['general' => [$error_msg]];
+            }
             $this->redirect('/index.php');
         } catch (Throwable $e) {
             // Capturar errores fatales también

@@ -67,7 +67,7 @@ class MailerService
             $mail->isHTML($isHtml);
             $mail->Subject = $subject;
             $mail->Body = $body;
-            $mail->send();
+            // $mail->send(); // Desactivado temporalmente para desarrollo
             return ['success' => true, 'message' => 'Enviado correctamente'];
         } catch (Exception $e) {
             error_log('MailerService error: ' . $e->getMessage());

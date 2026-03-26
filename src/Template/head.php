@@ -36,8 +36,9 @@
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/navbarCss.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/sidebarCss.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/footerCss.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/consultasCss.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/carruselCss.css">
+      <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/consultasCss.css">
+      <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/carruselCss.css">
+
     
     <title>IFTS15 - Instituto de Formación Técnica Superior</title>
 </head>
