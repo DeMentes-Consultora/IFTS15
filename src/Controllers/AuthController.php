@@ -3,8 +3,22 @@
 namespace App\Controllers;
 
 // Iniciar sesión antes de cualquier output
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+}
+
+// DEBUG: Mostrar datos de POST, GET, SESSION y FILES en pantalla (solo en desarrollo)
+if ((getenv('APP_ENV') === 'development' || getenv('APP_DEBUG') === 'true') && php_sapi_name() !== 'cli') {
+    echo '<div style="background:#222;color:#fff;padding:1em;margin:1em 0;font-size:14px;z-index:9999;position:relative;">';
+    echo '<strong>DEBUG AuthController.php</strong><br>';
+    echo '<b>POST:</b><pre>' . htmlspecialchars(print_r($_POST, true)) . '</pre>';
+    echo '<b>GET:</b><pre>' . htmlspecialchars(print_r($_GET, true)) . '</pre>';
+    echo '<b>SESSION:</b><pre>' . htmlspecialchars(print_r($_SESSION, true)) . '</pre>';
+    if (!empty($_FILES)) {
+        echo '<b>FILES:</b><pre>' . htmlspecialchars(print_r($_FILES, true)) . '</pre>';
+    }
+    echo '</div>';
 }
 
 use App\ConectionBD\ConectionDB;
@@ -197,7 +211,7 @@ class AuthController
             }
 
             if (!$persona->guardar($this->conn)) {
-                throw new Exception("Error al guardar datos personales");
+                throw new Exception("Error al guardar datos personales: " . ($this->conn->error ?? '')); // Mostrar error SQL
             }
 
             // 2. Crear usuario con datos académicos
@@ -264,7 +278,8 @@ class AuthController
             $this->conn->rollback();
             $error_msg = $e->getMessage();
             error_log("ERROR en registro: {$error_msg} | Email: {$email}");
-            $_SESSION['register_message'] = 'No se pudo completar el registro. Verificá los datos e intentá nuevamente.';
+            // Mostrar el error exacto en pantalla para depuración
+            $_SESSION['register_message'] = 'Error en registro: ' . $error_msg;
             $this->redirect('/index.php');
         } catch (Throwable $e) {
             // Capturar errores fatales también
@@ -469,6 +484,11 @@ class AuthController
 
 // Solo procesar si se llama directamente este archivo
 if (basename($_SERVER['PHP_SELF']) === 'AuthController.php') {
+    // DEBUG: Loguear cada request recibido y los datos enviados
+    error_log('AuthController.php invocado. METHOD: ' . $_SERVER['REQUEST_METHOD']);
+    error_log('POST: ' . print_r($_POST, true));
+    error_log('GET: ' . print_r($_GET, true));
+    error_log('SESSION: ' . print_r($_SESSION, true));
     try {
         // Determinar qué acción realizar
         $action = $_GET['action'] ?? $_POST['action'] ?? '';

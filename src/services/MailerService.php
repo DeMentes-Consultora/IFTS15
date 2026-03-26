@@ -11,8 +11,10 @@ class MailerService
 
     public function __construct()
     {
-        if (file_exists(__DIR__ . '/../../../.env')) {
-            $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../../../');
+        // Cargar .env desde la raíz del proyecto (dos niveles arriba de /src/services/)
+        $envPath = dirname(__DIR__, 2);
+        if (file_exists($envPath . '/.env')) {
+            $dotenv = \Dotenv\Dotenv::createImmutable($envPath);
             if (method_exists($dotenv, 'safeLoad')) {
                 $dotenv->safeLoad();
             } else {

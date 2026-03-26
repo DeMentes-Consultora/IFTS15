@@ -203,6 +203,24 @@ $userRole = $roleNames[$userIdRol] ?? 'Alumno';
     </div>
 
     <div class="container-fluid py-4">
+                        <?php if (isset($_SESSION['register_message'])): ?>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    var modal = new bootstrap.Modal(document.getElementById('modalRegistrar'));
+                                    modal.show();
+                                });
+                            </script>
+                        <?php endif; ?>
+                <?php
+                // Mostrar mensaje de registro (error o éxito) si existe
+                if (isset($_SESSION['register_message'])): ?>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <?php echo htmlspecialchars($_SESSION['register_message']); ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <?php unset($_SESSION['register_message']); ?>
+                <?php endif; ?>
         <!-- Contenido de la página principal -->
 
         <?php
