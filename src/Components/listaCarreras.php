@@ -22,13 +22,14 @@ use App\Model\Materia;
     <div class="card-body">
         <!-- Formulario para crear carrera -->
         <div class="mb-3">
-            <label class="form-label fw-bold">Nueva Carrera</label>
+            <label class="form-label fw-bold" for="input-nueva-carrera">Nueva Carrera</label>
             <div class="input-group">
-                <input type="text" 
-                       class="form-control" 
-                       id="input-nueva-carrera" 
-                       placeholder="Nombre de la carrera"
-                       autocomplete="off">
+                  <input type="text" 
+                      class="form-control" 
+                      id="input-nueva-carrera" 
+                      name="nombreCarrera"
+                      placeholder="Nombre de la carrera"
+                      autocomplete="organization">
                 <button class="btn btn-success" type="button" id="btn-crear-carrera">
                     <i class="bi bi-plus-circle me-1"></i> Crear
                 </button>
@@ -54,14 +55,14 @@ use App\Model\Materia;
                              onclick="toggleCarrera(<?= $carrera['id_carrera'] ?>)">
                             <div class="d-flex align-items-center">
                                 <i class="bi bi-chevron-down me-2 collapse-icon" id="icon-<?= $carrera['id_carrera'] ?>"></i>
-                                <strong><?= htmlspecialchars($carrera['carrera']) ?></strong>
+                                <strong><?= htmlspecialchars($carrera['carrera'] ?? '') ?></strong>
                                 <small class="text-muted ms-2">(<?= count($materiasAsociadas) ?> materias)</small>
                             </div>
                             <div>
                                 <button class="btn btn-sm btn-sm-icon btn-outline-primary me-1 btn-editar-carrera" 
-                                        data-id="<?= $carrera['id_carrera'] ?>" 
-                                        data-nombre="<?= htmlspecialchars($carrera['carrera']) }""
-                                        title="Editar">
+                                    data-id="<?= $carrera['id_carrera'] ?>" 
+                                    data-nombre="<?= htmlspecialchars($carrera['carrera'] ?? '') ?>"
+                                    title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn btn-sm btn-sm-icon btn-outline-danger btn-eliminar-carrera" 

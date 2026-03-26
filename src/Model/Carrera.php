@@ -24,12 +24,12 @@ class Carrera
      */
     public static function obtenerTodas($conn, $soloHabilitadas = true)
     {
-        $sql = "SELECT * FROM carrera";
+        $sql = "SELECT id_carrera, nombreCarrera AS carrera, habilitado, cancelado, idCreate, idUpdate FROM carrera";
         if ($soloHabilitadas) {
-            $sql .= " WHERE habilitado = 1";
+            $sql .= " WHERE habilitado = 1 AND cancelado = 0";
         }
-        $sql .= " ORDER BY carrera ASC";
-        
+        $sql .= " ORDER BY nombreCarrera ASC";
+
         $result = $conn->query($sql);
         $carreras = [];
         if ($result && $result->num_rows > 0) {
@@ -66,7 +66,7 @@ class Carrera
      */
     public static function crear($conn, $nombre)
     {
-        $sql = "INSERT INTO carrera (carrera, habilitado, cancelado) VALUES (?, 1, 0)";
+        $sql = "INSERT INTO carrera (nombreCarrera, habilitado, cancelado) VALUES (?, 1, 0)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('s', $nombre);
         
@@ -81,7 +81,7 @@ class Carrera
      */
     public static function actualizar($conn, $id, $nombre)
     {
-        $sql = "UPDATE carrera SET carrera = ? WHERE id_carrera = ?";
+        $sql = "UPDATE carrera SET nombreCarrera = ? WHERE id_carrera = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('si', $nombre, $id);
         return $stmt->execute();
