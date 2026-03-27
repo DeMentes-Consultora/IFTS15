@@ -29,15 +29,21 @@
           integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" 
           crossorigin="anonymous" referrerpolicy="no-referrer">
     
-    <!-- CSS personalizado -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/styles.css">
-    
-    <!-- CSS modulares -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/navbarCss.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/sidebarCss.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/footerCss.css">
-      <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/consultasCss.css">
-      <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/carruselCss.css">
+
+            <!-- CSS personalizado -->
+            <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/styles.css">
+
+            <!-- CSS modulares -->
+            <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/navbarCss.css">
+            <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/sidebarCss.css">
+            <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/footerCss.css">
+            <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/consultasCss.css">
+            <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/carruselCss.css">
+
+            <!-- CSS exclusivo para perfil de usuario -->
+            <?php if (isset($esPerfilUsuario) && $esPerfilUsuario): ?>
+                  <link rel="stylesheet" href="<?php echo BASE_URL; ?>/src/Css/perfilUsuario.css">
+            <?php endif; ?>
 
     
     <title>IFTS15 - Instituto de Formación Técnica Superior</title>

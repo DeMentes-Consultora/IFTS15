@@ -119,3 +119,7 @@ class Database {
 3. **UX simple** (modal único) puede ser mejor que múltiples páginas
 4. **Documentación continua** es crucial para proyectos complejos
 5. **Feedback directo** del usuario es invaluable para identificar problemas reales
+
+---
+
+Este historial se actualiza cada vez que se realiza una mejora relevante en el proyecto.

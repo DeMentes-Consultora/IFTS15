@@ -1,0 +1,59 @@
+/* =============================
+   Estilos exclusivos para perfil de usuario (Alumno)
+   ============================= */
+
+
+.perfil-avatar {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #FFD700;
+  margin-bottom: 1rem;
+}
+
+.card-welcome {
+  background: linear-gradient(135deg, #343a40 0%, #495057 100%);
+  color: #fff;
+  border: 2px solid #FFD700;
+  padding: 1.5rem !important;
+  text-align: center;
+}
+
+.card-header.bg-primary {
+  background: linear-gradient(135deg, #FFD700 0%, #DAA520 100%) !important;
+  color: #343A40 !important;
+  text-align: center;
+}
+
+.badge.bg-primary {
+  background-color: #FFD700 !important;
+  color: #343A40 !important;
+}
+
+.table-warning th {
+  background-color: #FFD700 !important;
+  color: #343A40 !important;
+  text-align: center;
+}
+
+.card, .card-body, .card-header {
+  text-align: center;
+}
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}

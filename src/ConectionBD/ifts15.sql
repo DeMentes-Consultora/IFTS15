@@ -3,12 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 20-03-2026 a las 23:12:42
+-- Tiempo de generación: 27-03-2026 a las 16:14:21
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
-
-CREATE DATABASE IF NOT EXISTS `ifts15` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
-USE `ifts15`;
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -118,10 +115,27 @@ CREATE TABLE `materia` (
 --
 
 INSERT INTO `materia` (`id_materia`, `id_carrera`, `nombre_materia`, `habilitado`, `cancelado`, `idCreate`, `idUpdate`) VALUES
-(1, NULL, 'LA IMAGEN, LOS CAMPOS EN LA TV DIGITAL', 1, 0, '2025-12-01 22:29:02', '2025-12-02 02:52:28'),
-(2, NULL, 'DIGITALIZACIÓN DE VIDEO COMPUESTO Y POR COMPONENTES', 1, 0, '2025-12-01 22:29:02', '2026-03-02 21:34:28'),
-(3, NULL, 'DIGITALIZACIÓN Y CODIFICACIÓN', 1, 0, '2025-12-01 23:49:01', '2026-03-02 21:34:11'),
-(4, NULL, 'ESTÁNDARES MPEG, SUS CARACTERÍSTICAS. FORMATOS MULTIMEDIA, DISTINTOS PARÁMETROS', 1, 0, '2025-12-02 02:00:48', '2026-03-02 21:34:30');
+(1, 1, 'LA IMAGEN, LOS CAMPOS EN LA TV DIGITAL', 1, 0, '2025-12-01 22:29:02', '2026-03-26 15:37:26'),
+(2, 4, 'DIGITALIZACIÓN DE VIDEO COMPUESTO Y POR COMPONENTES', 1, 0, '2025-12-01 22:29:02', '2026-03-26 15:36:53'),
+(3, 2, 'DIGITALIZACIÓN Y CODIFICACIÓN', 1, 0, '2025-12-01 23:49:01', '2026-03-26 15:37:30'),
+(4, 3, 'ESTÁNDARES MPEG, SUS CARACTERÍSTICAS. FORMATOS MULTIMEDIA, DISTINTOS PARÁMETROS', 1, 0, '2025-12-02 02:00:48', '2026-03-26 15:37:33');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `notas`
+--
+
+CREATE TABLE `notas` (
+  `id_nota` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `id_materia` int(11) NOT NULL,
+  `nota` int(11) NOT NULL,
+  `habilitado` int(1) NOT NULL DEFAULT 1,
+  `cancelado` int(1) NOT NULL,
+  `idCreate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `idUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------
 
@@ -280,6 +294,14 @@ ALTER TABLE `materia`
   ADD KEY `id_carrera` (`id_carrera`);
 
 --
+-- Indices de la tabla `notas`
+--
+ALTER TABLE `notas`
+  ADD PRIMARY KEY (`id_nota`),
+  ADD KEY `idx_usuario` (`id_usuario`),
+  ADD KEY `idx_materia` (`id_materia`);
+
+--
 -- Indices de la tabla `persona`
 --
 ALTER TABLE `persona`
@@ -331,6 +353,12 @@ ALTER TABLE `materia`
   MODIFY `id_materia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT de la tabla `notas`
+--
+ALTER TABLE `notas`
+  MODIFY `id_nota` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de la tabla `persona`
 --
 ALTER TABLE `persona`
@@ -357,6 +385,13 @@ ALTER TABLE `usuario`
 --
 ALTER TABLE `materia`
   ADD CONSTRAINT `materia_ibfk_1` FOREIGN KEY (`id_carrera`) REFERENCES `carrera` (`id_carrera`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `notas`
+--
+ALTER TABLE `notas`
+  ADD CONSTRAINT `notas_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `notas_ibfk_2` FOREIGN KEY (`id_materia`) REFERENCES `materia` (`id_materia`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `usuario`

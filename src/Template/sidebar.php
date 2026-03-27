@@ -90,13 +90,16 @@ $userRole = $currentUser['role'];
     <div class="offcanvas-body p-0">
         <ul class="nav nav-pills flex-column p-3">
 
-            <!-- Dashboard / Inicio -->
+
+            <!-- Dashboard / Inicio (oculto para Alumno) -->
+            <?php if ($userIdRol !== 1): ?>
             <li class="nav-item mb-2">
                 <a class="nav-link text-light d-flex align-items-center" href="<?php echo BASE_URL; ?>/index.php">
                     <i class="bi bi-speedometer2 me-3"></i>
                     Dashboard
                 </a>
             </li>
+            <?php endif; ?>
 
             <!-- Académico -->
             <li class="nav-item mb-2">
@@ -189,17 +192,17 @@ $userRole = $currentUser['role'];
                 <div class="collapse" id="comunicacion-menu">
                     <ul class="nav nav-pills flex-column ms-4">
                         <li class="nav-item">
-                             <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=pagina_en_construccion">
+                            <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=pagina_en_construccion">
                                 <i class="bi bi-envelope me-2"></i> Mensajes
                             </a>
                         </li>
                         <li class="nav-item">
-                             <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=pagina_en_construccion">
+                            <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=pagina_en_construccion">
                                 <i class="bi bi-chat-square-text me-2"></i> Foros
                             </a>
                         </li>
                         <li class="nav-item">
-                             <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=pagina_en_construccion">
+                            <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=pagina_en_construccion">
                                 <i class="bi bi-megaphone me-2"></i> Anuncios
                             </a>
                         </li>
@@ -214,7 +217,7 @@ $userRole = $currentUser['role'];
 
             <!-- Perfil -->
             <li class="nav-item mb-2">
-                 <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=pagina_en_construccion">
+                <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/perfilController.php">
                     <i class="bi bi-person me-3"></i>
                     Mi Perfil
                 </a>
@@ -235,33 +238,33 @@ $userRole = $currentUser['role'];
                         role="button"
                         aria-expanded="false">
                         <i class="bi bi-gear-fill me-3"></i>
-                        Gestion de Carreras
+                        Gestión Instituto
                         <i class="bi bi-chevron-down ms-auto"></i>
                     </a>
                     <div class="collapse" id="admin-menu">
                         <ul class="nav nav-pills flex-column ms-4">
                             <li class="nav-item">
                                 <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/usuarioController.php?action=listar">
-                                    <i class="bi bi-people me-2"></i> 
+                                    <i class="bi bi-people me-2"></i>
                                     Usuarios
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=realizador-productor-tv">
-                                    <i class="bi bi-mortarboard me-2"></i> 
+                                    <i class="bi bi-mortarboard me-2"></i>
                                     Informacion de Carrera
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=abm-carreras">
-                                    <i class="bi bi-diagram-3 me-2"></i> 
+                                    <i class="bi bi-diagram-3 me-2"></i>
                                     ABM Carreras y Materias
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=pagina_en_construccion">
                                     <i class="bi bi-bar-chart me-2"></i>
-                                     Reportes
+                                    Reportes
                                 </a>
                             </li>
                             <!-- Configuración -->
@@ -303,4 +306,5 @@ $userRole = $currentUser['role'];
 <!-- Modal de Consultas -->
 <?php include_once __DIR__ . '/../Components/modalConsultas.php'; ?>
 <!-- Modal de Registro (para que funcione desde el sidebar) -->
-<?php $modal_included_from = 'sidebar'; include_once __DIR__ . '/../Components/modalRegistrar.php'; ?>
+<?php $modal_included_from = 'sidebar';
+include_once __DIR__ . '/../Components/modalRegistrar.php'; ?>
