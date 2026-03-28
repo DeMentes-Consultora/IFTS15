@@ -1,0 +1,51 @@
+# Configuración .htaccess para IFTS15
+RewriteEngine On
+
+# Configuraciones de seguridad
+<Files "config*.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files ".env*">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Página de inicio por defecto
+DirectoryIndex index.php
+
+# URLs amigables (opcional)
+# RewriteRule ^carrera/?$ pages/realizador-productor-tv.php [L]
+# RewriteRule ^contacto/?$ pages/consultas.php [L]
+
+# Configuraciones de PHP
+php_value memory_limit 128M
+php_value max_execution_time 60
+php_value upload_max_filesize 10M
+php_value post_max_size 10M
+
+# Manejo de errores
+ErrorDocument 404 /error404.php
+ErrorDocument 500 /error500.php
+
+# Compresión (si está disponible)
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/xml
+</IfModule>
+
+# Cache para archivos estáticos
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/pdf "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+</IfModule>

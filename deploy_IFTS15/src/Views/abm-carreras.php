@@ -6,6 +6,9 @@
 
 require_once __DIR__ . '/../config.php';
 
+use App\Controllers\CarreraController;
+use App\Controllers\MateriaController;
+
 // Verificar permisos
 $isLoggedIn = isLoggedIn();
 $userEmail = $_SESSION['email'] ?? '';
@@ -16,15 +19,77 @@ if (!$isLoggedIn || !isAdminRole()) {
     exit;
 }
 
-// ...existing code...
+// Obtener conexión a BD para los componentes
+use App\ConectionBD\ConectionDB;
+use App\Model\Carrera;
+use App\Model\Materia;
+
+$db = new ConectionDB();
+$conn = $db->getConnection();
+
+// Obtener datos para los componentes
+$carreras = Carrera::obtenerTodas($conn);
+$materiasLibres = Materia::obtenerTodas($conn, true, true);
+
 $pageTitle = 'ABM Carreras y Materias - IFTS15';
 ?>
 
 <?php include __DIR__ . '/../Template/head.php'; ?>
 <?php include __DIR__ . '/../Template/navBar.php'; ?>
-
 <?php include __DIR__ . '/../Template/sidebar.php'; ?>
-<link rel="stylesheet" href="../Css/abm-carreras.css">
+
+<style>
+/* Estilos específicos para drag & drop */
+.drag-item {
+    cursor: move;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.drag-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.drag-item.dragging {
+    opacity: 0.5;
+    transform: rotate(3deg);
+}
+
+.drop-zone {
+    min-height: 100px;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+.drop-zone.drag-over {
+    background-color: #e7f1ff;
+    border-color: #0d6efd;
+    border-style: solid;
+}
+
+.materia-item {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.carrera-card {
+    min-height: 200px;
+}
+
+.btn-sm-icon {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+</style>
 
 <script>
 // IMPORTANTE: Definir funciones globales ANTES de incluir componentes

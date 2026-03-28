@@ -1,0 +1,100 @@
+/*
+===============================================
+IFTS15 - Sistema Web - Estilos del Carrusel
+Archivo: src/Css/carruselCss.css
+===============================================
+*/
+
+/* ========================================
+   CARRUSEL PRINCIPAL
+   ======================================== */
+
+/* Carrusel personalizado */
+.carousel-hero {
+    height: 420px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    margin-top: 70px; /* Espacio para navbar fixed */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.carousel-item {
+    height: 420px;
+    position: relative;
+}
+
+.carousel-item img {
+    height: 420px;
+    object-fit: cover;
+    width: 100%;
+    display: block;
+}
+
+.carousel-caption-custom {
+    background: linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(51,51,51,0.6) 50%, rgba(255,215,0,0.3) 100%);
+    border-radius: 10px;
+    padding: 20px;
+    backdrop-filter: blur(5px);
+    border: 2px solid rgba(255,215,0,0.5);
+}
+
+/* ========================================
+   CONTROLES DEL CARRUSEL
+   ======================================== */
+
+.carousel-control-prev,
+.carousel-control-next {
+    width: 60px;
+    height: 60px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 2px solid #ffd700;
+}
+
+.carousel-control-prev {
+    left: 20px;
+}
+
+.carousel-control-next {
+    right: 20px;
+}
+
+/* ========================================
+   INDICADORES DEL CARRUSEL
+   ======================================== */
+
+.carousel-indicators button {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid #ffd700;
+    background-color: rgba(255,215,0,0.5);
+}
+
+.carousel-indicators button.active {
+    background-color: #ffd700;
+    transform: scale(1.2);
+}
+
+/* ========================================
+   RESPONSIVE DEL CARRUSEL
+   ======================================== */
+
+@media (max-width: 768px) {
+    .carousel-hero {
+        height: 200px;
+    }
+    .carousel-item {
+        height: 200px;
+    }
+    .carousel-item img {
+        height: 200px;
+    }
+    
+    .carousel-caption-custom {
+        padding: 10px 15px;
+    }
+}

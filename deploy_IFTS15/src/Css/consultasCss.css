@@ -1,0 +1,545 @@
+/*
+===============================================
+IFTS15 - Sistema Web - Estilos del Modal de Consultas
+Archivo: src/Css/consultasCss.css
+===============================================
+*/
+
+/* ========================================
+   MODAL DE CONSULTAS PRINCIPAL
+   ======================================== */
+
+/* Asegurar que los inputs sean interactivos */
+.modal .form-control,
+.modal .form-select,
+.modal input,
+.modal textarea,
+.modal select {
+    pointer-events: auto !important;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    cursor: text !important;
+    z-index: 1050 !important;
+}
+
+.modal input:focus,
+.modal textarea:focus,
+.modal select:focus {
+    outline: 2px solid #007bff !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+}
+
+/* ========================================
+   TOASTS DE NOTIFICACIÓN
+   ======================================== */
+
+/* Contenedor de toasts */
+.toast-container {
+    z-index: 9999 !important;
+}
+
+/* Toast personalizado */
+.toast.text-bg-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+    border: 2px solid #ffffff !important;
+    box-shadow: 0 4px 20px rgba(40, 167, 69, 0.3) !important;
+}
+
+.toast-body {
+    font-weight: 500;
+    padding: 12px 16px !important;
+}
+
+.toast .fa-check-circle {
+    color: #ffffff;
+    font-size: 1.1em;
+}
+
+/* Animación de entrada del toast */
+.toast.showing {
+    transform: translateX(100%);
+    animation: slideInRight 0.5s ease-out forwards;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Estados del botón de envío */
+#btnEnviarConsulta {
+    transition: all 0.3s ease;
+}
+
+#btnEnviarConsulta:disabled {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+#btnEnviarConsulta .fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Mensaje de éxito dentro del modal */
+#consultas-mensaje .alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+    border: 2px solid #28a745 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2) !important;
+    animation: successPulse 0.6s ease-in-out;
+}
+
+#consultas-mensaje .alert-success {
+    font-weight: 500;
+    font-size: 1.05em;
+}
+
+@keyframes successPulse {
+    0% {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.02);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+#consultasModal .modal-dialog {
+    max-width: 900px;
+}
+
+#consultasModal .modal-content {
+    border-radius: 15px;
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+
+#consultasModal .modal-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: var(--text-on-primary);
+    border-bottom: none;
+    padding: 20px 25px;
+}
+
+#consultasModal .modal-title {
+    font-weight: 600;
+    font-size: 1.3rem;
+}
+
+#consultasModal .modal-title i {
+    margin-right: 10px;
+    font-size: 1.4rem;
+}
+
+#consultasModal .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+#consultasModal .btn-close:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* ========================================
+   CUERPO DEL MODAL
+   ======================================== */
+
+#consultasModal .modal-body {
+    padding: 25px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+/* ========================================
+   FORMULARIO DE CONSULTAS
+   ======================================== */
+
+.consultas-form-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.consultas-form-container h6 {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.consultas-form-container h6 i {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+/* Estilos de formulario */
+#consultasModalForm .form-label {
+    color: var(--secondary-color);
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+#consultasModalForm .form-label i {
+    color: var(--primary-color);
+    margin-right: 6px;
+    width: 16px;
+    text-align: center;
+}
+
+#consultasModalForm .form-control,
+#consultasModalForm .form-select {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background-color: #fafafa;
+}
+
+#consultasModalForm .form-control:focus,
+#consultasModalForm .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
+    background-color: white;
+    transform: translateY(-1px);
+}
+
+#consultasModalForm textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+#consultasModalForm .btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 15px 30px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+#consultasModalForm .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+    background: linear-gradient(135deg, var(--primary-dark) 0%, #b8860b 100%);
+}
+
+#consultasModalForm .btn-primary:disabled {
+    opacity: 0.7;
+    transform: none;
+    cursor: not-allowed;
+}
+
+#consultasModalForm .btn-primary i {
+    margin-right: 8px;
+}
+
+/* ========================================
+   ALERTAS DEL MODAL
+   ======================================== */
+
+#consultasAlert {
+    border-radius: 10px;
+    border: none;
+    font-weight: 500;
+    margin-bottom: 20px;
+    padding: 15px 20px;
+    animation: slideInDown 0.3s ease-out;
+}
+
+#consultasAlert.alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+    border-left: 4px solid #28a745;
+}
+
+#consultasAlert.alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f1b2b7 100%);
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+}
+
+#consultasAlert i {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   INFORMACIÓN DE CONTACTO
+   ======================================== */
+
+.consultas-info-container {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    height: fit-content;
+}
+
+.info-section {
+    padding: 15px 0;
+}
+
+.info-section h6 {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.info-section h6 i {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+/* Items de contacto */
+.contact-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(255, 215, 0, 0.05);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.contact-item:hover {
+    background: rgba(255, 215, 0, 0.1);
+    transform: translateX(5px);
+}
+
+.contact-icon {
+    margin-right: 12px;
+    width: 24px;
+    text-align: center;
+    padding-top: 2px;
+}
+
+.contact-icon i {
+    font-size: 1.2rem;
+}
+
+.contact-content {
+    flex: 1;
+}
+
+.contact-content strong {
+    color: var(--secondary-color);
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.contact-content p {
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ========================================
+   BOTONES SOCIALES
+   ======================================== */
+
+.social-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.social-buttons .btn {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.social-buttons .btn i {
+    margin-right: 6px;
+}
+
+.social-buttons .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* ========================================
+   FOOTER DEL MODAL
+   ======================================== */
+
+#consultasModal .modal-footer {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-top: 1px solid rgba(255, 215, 0, 0.3);
+    padding: 20px 25px;
+}
+
+#consultasModal .modal-footer .btn {
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+#consultasModal .modal-footer .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+#consultasModal .modal-footer .btn i {
+    margin-right: 6px;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 768px) {
+    #consultasModal .modal-dialog {
+        margin: 10px;
+        max-width: none;
+    }
+    
+    #consultasModal .modal-body {
+        padding: 20px 15px;
+    }
+    
+    .consultas-form-container,
+    .consultas-info-container {
+        padding: 15px;
+    }
+    
+    .contact-item {
+        padding: 8px;
+    }
+    
+    .social-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    #consultasModalForm .btn-primary {
+        padding: 12px 20px;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 576px) {
+    #consultasModal .modal-header {
+        padding: 15px 20px;
+    }
+    
+    #consultasModal .modal-title {
+        font-size: 1.1rem;
+    }
+    
+    #consultasModal .modal-footer {
+        padding: 15px 20px;
+    }
+    
+    #consultasModal .modal-footer .btn {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .contact-content strong {
+        font-size: 0.85rem;
+    }
+    
+    .contact-content p {
+        font-size: 0.8rem;
+    }
+}
+
+/* ========================================
+   EFECTOS Y ANIMACIONES
+   ======================================== */
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+#consultasModal.show .modal-dialog {
+    animation: modalSlideIn 0.4s ease-out;
+}
+
+/* Efecto de escritura en textarea */
+#modalConsulta:focus {
+    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25), inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Loading spinner personalizado */
+.fa-spinner {
+    animation-duration: 0.8s;
+}
+
+/* Hover effects para elementos interactivos */
+.form-control:hover:not(:focus) {
+    border-color: rgba(255, 215, 0, 0.5);
+    background-color: #f9f9f9;
+}
+
+.form-select:hover:not(:focus) {
+    border-color: rgba(255, 215, 0, 0.5);
+    background-color: #f9f9f9;
+}
+
+/* ========================================
+   ACCESIBILIDAD
+   ======================================== */
+
+#consultasModalForm .form-control:focus-visible,
+#consultasModalForm .form-select:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+#consultasModal .btn:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}

@@ -1,16 +1,6 @@
 <?php
 $esPerfilUsuario = true;
-require_once __DIR__ . '/../config.php';
-$isLoggedIn = isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
-$userEmail = $_SESSION['email'] ?? '';
-$userRole = isset($_SESSION['id_rol']) && $_SESSION['id_rol'] == 5 ? 'Administrador' : 'Usuario';
-if (!$isLoggedIn) {
-    header('Location: ' . BASE_URL . '/index.php?error=acceso_denegado');
-    exit;
-}
 include __DIR__ . '/../Template/head.php';
-include __DIR__ . '/../Template/navBar.php';
-include __DIR__ . '/../Template/sidebar.php';
 // src/Views/perfil.php
 // Vista del perfil de usuario (alumno)
 
@@ -82,9 +72,7 @@ if (isset($error)) {
                             </thead>
                             <tbody>
                                 <?php if (empty($notas)): ?>
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted">No hay notas registradas.</td>
-                                    </tr>
+                                    <tr><td colspan="3" class="text-center text-muted">No hay notas registradas.</td></tr>
                                 <?php else: ?>
                                     <?php foreach ($notas as $nota): ?>
                                         <tr>
@@ -102,4 +90,3 @@ if (isset($error)) {
         </div>
     </div>
 </div>
-<?php include __DIR__ . '/../Template/footer.php'; ?>

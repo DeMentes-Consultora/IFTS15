@@ -1,0 +1,490 @@
+/*
+===============================================
+IFTS15 - Sistema Web - Estilos CSS
+Basado en Bootstrap 5.3.2 con personalización mínima
+===============================================
+*/
+
+/* ========================================
+   VARIABLES CSS Y COLORES INSTITUCIONALES
+   ======================================== */
+:root {
+    /* Paleta amarillo primario y gris secundario */
+    --primary-color: #FFD700;        /* Amarillo dorado - color principal */
+    --primary-dark: #DAA520;         /* Amarillo más oscuro para hover */
+    --secondary-color: #6C757D;      /* Gris como color secundario */
+    --secondary-dark: #5A6268;       /* Gris más oscuro */
+    --accent-color: #ADB5BD;         /* Gris claro como acento */
+    --success-color: #28a745;        /* Verde para éxito */
+    --info-color: #17a2b8;           /* Azul para información */
+    --warning-color: #FF8C00;        /* Naranja que combina con el amarillo */
+    --danger-color: #dc3545;         /* Rojo para errores */
+    --light-color: #F8F9FA;          /* Gris muy claro */
+    --dark-color: #343A40;           /* Gris oscuro */
+    
+    /* Colores de texto */
+    --text-on-primary: #343A40;      /* Texto gris oscuro sobre amarillo */
+    --text-on-secondary: #FFFFFF;    /* Texto blanco sobre gris */
+    
+    /* Dimensiones de layout */
+    --sidebar-width: 280px;
+    --navbar-height: 80px;           /* Altura del navbar aumentada */
+    --content-padding: 20px;
+}
+
+/* ========================================
+   RESET Y BASE
+   ======================================== */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    color: #212529;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+}
+
+/* ========================================
+   LAYOUT PRINCIPAL
+   ======================================== */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-top: var(--navbar-height);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--light-color);
+}
+
+.main-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.content-area {
+    flex: 1;
+    padding: var(--content-padding);
+    min-height: calc(100vh - var(--navbar-height) - 200px);
+}
+
+/* Contenedor principal sin márgenes laterales */
+#page.container-fluid {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Ajuste para el contenido principal */
+#region-main {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* ========================================
+   NOTA: Los estilos del navbar, sidebar y footer 
+   han sido movidos a archivos separados:
+   - navbarCss.css
+   - sidebarCss.css  
+   - footerCss.css
+   ======================================== */
+
+/* ========================================
+   CARDS Y COMPONENTES
+   ======================================== */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: var(--text-on-primary);
+    font-weight: 600;
+    border-bottom: none;
+    padding: 15px 20px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Cards especiales */
+.card-welcome {
+    background: linear-gradient(135deg, #343a40 0%, #495057 100%);
+    color: white;
+    border: 2px solid var(--primary-color);
+    padding: 1.5rem !important;
+}
+
+.card-info {
+    border-left: 4px solid var(--info-color);
+}
+
+.card-warning {
+    border-left: 4px solid var(--warning-color);
+}
+
+.card-success {
+    border-left: 4px solid var(--success-color);
+}
+
+/* ========================================
+   BOTONES PERSONALIZADOS
+   ======================================== */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn-primary,
+.btn.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--text-on-primary) !important;
+}
+
+.btn-primary:hover,
+.btn.btn-primary:hover,
+.btn-primary:focus,
+.btn.btn-primary:focus,
+.btn-primary:active,
+.btn.btn-primary:active {
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+    color: var(--text-on-primary) !important;
+}
+
+.btn-secondary,
+.btn.btn-secondary {
+    background-color: var(--secondary-color) !important;
+    border-color: var(--secondary-color) !important;
+    color: var(--text-on-secondary) !important;
+}
+
+.btn-secondary:hover,
+.btn.btn-secondary:hover,
+.btn-secondary:focus,
+.btn.btn-secondary:focus,
+.btn-secondary:active,
+.btn.btn-secondary:active {
+    background-color: var(--secondary-dark) !important;
+    border-color: var(--secondary-dark) !important;
+    color: var(--text-on-secondary) !important;
+}
+
+.btn-outline-warning {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-outline-warning:hover {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+}
+
+/* ========================================
+   UTILIDADES Y HELPERS
+   ======================================== */
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.border-primary {
+    border-color: var(--primary-color) !important;
+}
+
+/* Espaciado personalizado */
+.py-navbar {
+    padding-top: calc(var(--navbar-height) + 20px);
+    padding-bottom: 20px;
+}
+
+.mt-navbar {
+    margin-top: calc(var(--navbar-height) + 20px);
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+@media (max-width: 768px) {
+    :root {
+        --content-padding: 15px;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+    
+    .offcanvas-start {
+        width: 260px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    :root {
+        --content-padding: 10px;
+    }
+    
+    .card {
+        margin-bottom: 15px;
+    }
+    
+    .card-header {
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+    
+    .card-body {
+        padding: 12px;
+    }
+}
+
+/* ========================================
+   ANIMACIONES
+   ======================================== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.5s ease-out;
+}
+
+/* ========================================
+   ESTADOS Y FEEDBACK
+   ======================================== */
+.loading {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.loading::after {
+    content: "";
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ========================================
+   ESTILOS PARA MODALES - INFINITYFREE FIX
+   ======================================== */
+
+/* Modal backdrop personalizado */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+    z-index: 1040 !important;
+}
+
+/* Modal dialog personalizado */
+.modal-dialog {
+    z-index: 1050 !important;
+    margin: 1.75rem auto !important;
+}
+
+/* Modal content personalizado */
+.modal-content {
+    border-radius: 10px !important;
+    border: 2px solid var(--primary-color) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+/* Modal header personalizado */
+.modal-header {
+    background: linear-gradient(135deg, var(--dark-color) 0%, var(--secondary-color) 100%) !important;
+    color: white !important;
+    border-bottom: 3px solid var(--primary-color) !important;
+    border-top-left-radius: 10px !important;
+    border-top-right-radius: 10px !important;
+}
+
+.modal-title {
+    font-weight: bold !important;
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Modal body personalizado */
+.modal-body {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+    padding: 2rem !important;
+}
+
+/* Modal footer personalizado */
+.modal-footer {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    border-top: 1px solid var(--primary-color) !important;
+    border-bottom-left-radius: 10px !important;
+    border-bottom-right-radius: 10px !important;
+}
+
+/* Botón cerrar modal personalizado */
+
+/* Botón cerrar modal/offcanvas: usar ícono oscuro por defecto y tamaño mayor */
+.btn-close {
+   /* background: none !important;*/
+    border-radius: 50% !important;
+    opacity: 1 !important;
+    font-size: 1.2rem !important;
+    padding: 0.5rem !important;
+    margin: 0 !important;
+    color: #111 !important;
+    filter: none !important;
+}
+
+.btn-close:hover {
+    background: rgba(255, 215, 0, 0.9) !important;
+    transform: scale(1.1) !important;
+    color: #000 !important;
+}
+
+/* ========================================
+   ESTADÍSTICAS CARDS - FONDO GRIS FIX
+   ======================================== */
+
+/* Card de estadísticas con fondo gris */
+.card.bg-info,
+.card.bg-success,
+.card.bg-warning,
+.card.bg-secondary {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--dark-color) 100%) !important;
+    border: 2px solid rgba(255, 215, 0, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Colores específicos para cada tipo de estadística */
+.card.bg-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+}
+
+.card.bg-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+}
+
+.card.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+    color: var(--dark-color) !important;
+}
+
+.card.bg-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+}
+
+/* Efecto hover para cards de estadísticas */
+.card.bg-info:hover,
+.card.bg-success:hover,
+.card.bg-warning:hover,
+.card.bg-secondary:hover {
+    transform: translateY(-5px) scale(1.05) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+    border-color: var(--primary-color) !important;
+}
+
+/* Texto en cards de estadísticas */
+.card.bg-info .card-body,
+.card.bg-success .card-body,
+.card.bg-secondary .card-body {
+    color: white !important;
+}
+
+.card.bg-warning .card-body {
+    color: var(--dark-color) !important;
+}
+
+/* Iconos en cards de estadísticas */
+.card .fs-2,
+.card .bi {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ========================================
+   FORMULARIOS EN MODALES
+   ======================================== */
+
+.modal .form-control {
+    border: 2px solid #e9ecef !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    transition: all 0.3s ease !important;
+}
+
+.modal .form-control:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25) !important;
+}
+
+.modal .form-label {
+    font-weight: 600 !important;
+    color: var(--dark-color) !important;
+    margin-bottom: 8px !important;
+}
+
+/* ========================================
+   RESPONSIVE FIXES PARA INFINITYFREE
+   ======================================== */
+
+/* Asegurar que los modales funcionen en móviles */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 1rem !important;
+        max-width: calc(100% - 2rem) !important;
+    }
+    
+    .modal-body {
+        padding: 1rem !important;
+    }
+    
+    .card.bg-info,
+    .card.bg-success, 
+    .card.bg-warning,
+    .card.bg-secondary {
+        margin-bottom: 1rem !important;
+    }
+}

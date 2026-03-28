@@ -1,0 +1,27 @@
+/* Estilos para la vista de usuarios */
+
+.card .card-title {
+	font-weight: 600;
+}
+
+#tabla-usuarios thead th {
+	font-size: 0.9rem;
+	letter-spacing: 0.2px;
+}
+
+#tabla-usuarios tbody td {
+	vertical-align: middle;
+}
+
+.toggle-habilitado {
+	cursor: pointer;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 576px) {
+	#tabla-usuarios thead th:nth-child(2),
+	#tabla-usuarios tbody td:nth-child(2) {
+		display: none; /* ocultar columna rol en móviles para ahorrar espacio */
+	}
+}
+

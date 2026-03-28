@@ -1,6 +1,5 @@
 <?php
-// Inicializar $isLoggedIn y $currentUser igual que en sidebar
-$isLoggedIn = isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
+// Inicializar $currentUser igual que en sidebar
 $currentUser = [];
 if (isset($_SESSION['usuario'])) {
     $currentUser['email'] = $_SESSION['usuario'];

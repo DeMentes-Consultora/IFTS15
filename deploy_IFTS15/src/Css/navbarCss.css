@@ -1,0 +1,427 @@
+/*
+===============================================
+IFTS15 - Sistema Web - Estilos del Navbar
+Archivo: src/Css/navbarCss.css
+===============================================
+*/
+
+/* ========================================
+   NAVBAR PRINCIPAL
+   ======================================== */
+
+/* Navbar con gradiente institucional */
+.navbar-gradient {
+  /* background: linear-gradient( 135deg, #343a40 0%, #6c757d 65%, #ffd700 100% ) !important; */
+  background: #6c757d !important;
+  border-bottom: 3px solid var(--primary-color);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-height: var(--navbar-height, 70px);
+  padding: 0.8rem 0;
+}
+
+/* Logo en navbar */
+.navbar-brand {
+  padding: 0 !important;
+  margin: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand img,
+.navbar-brand .logo-navbar,
+.navbar-logo {
+  /* Tamaño fijo más compatible */
+  height: 50px !important;
+  max-height: 50px !important;
+  width: auto !important;
+  max-width: 200px; /* Prevenir que se haga demasiado ancho */
+
+  /* Mejor posicionamiento para Firefox */
+  display: inline-block;
+  vertical-align: middle;
+
+  /* Mejor compatibilidad cross-browser */
+  object-fit: contain;
+  -webkit-object-fit: contain;
+  -moz-object-fit: contain;
+  -o-object-fit: contain;
+
+  /* Transiciones más suaves y compatibles */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  -webkit-transition: transform 0.3s ease, box-shadow 0.3s ease;
+  -moz-transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  /* Sombras más compatibles */
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+  -webkit-box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+  -moz-box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+
+  border-radius: 8px; /* Cambio de % a px para mejor compatibilidad */
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  cursor: pointer;
+  filter: brightness(1.1);
+
+  /* Fallback para navegadores que no soportan object-fit */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.navbar-brand img:hover,
+.navbar-brand .logo-navbar:hover,
+.navbar-logo:hover {
+  /* Transform más conservador para Firefox */
+  transform: scale(1.05) translateY(-1px);
+  -webkit-transform: scale(1.05) translateY(-1px);
+  -moz-transform: scale(1.04) translateY(-1px); /* Firefox más conservador */
+
+  /* Sombras más compatibles */
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.8), 0 2px 8px rgba(255, 215, 0, 0.4);
+  -webkit-box-shadow: 0 0 12px rgba(255, 215, 0, 0.8),
+    0 2px 8px rgba(255, 215, 0, 0.4);
+  -moz-box-shadow: 0 0 10px rgba(255, 215, 0, 0.7),
+    0 2px 6px rgba(255, 215, 0, 0.3); /* Firefox más sutil */
+
+  filter: brightness(1.15); /* Un poco menos agresivo */
+}
+
+/* Regla específica adicional para Firefox - Control de tamaño más agresivo */
+@supports (-moz-appearance: none) {
+  .navbar-brand img,
+  .navbar-brand .logo-navbar,
+  .navbar-logo {
+    height: 50px !important;
+    min-height: 50px !important;
+    max-height: 50px !important;
+    width: auto !important;
+    min-width: 120px !important;
+    max-width: 180px !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* Botón toggler personalizado */
+.navbar-toggler {
+  border-color: #5A6268 !important;
+  background-color: #ebc428 !important;
+  color: #ffffff !important;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.navbar-toggler:hover {
+  background-color: #e8d465 !important;
+  border-color: #e8c715 !important;
+}
+
+.navbar-toggler:focus {
+  box-shadow: 0 0 0 0.2rem rgba(226, 223, 11, 0.25) !important;
+  background-color: #e8c715 !important;
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+/* ========================================
+   NAVEGACIÓN PRINCIPAL
+   ======================================== */
+
+/* Links de navegación */
+.navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.navbar-nav .nav-link:hover {
+  color: var(--primary-color) !important;
+  background-color: rgba(255, 215, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.navbar-nav .nav-link:focus {
+  color: var(--primary-color) !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
+}
+
+.navbar-nav .nav-link i {
+  margin-right: 6px;
+  width: 16px;
+  text-align: center;
+}
+
+/* ========================================
+   DROPDOWN MENÚS
+   ======================================== */
+
+/* Dropdown del navbar */
+.navbar-nav .dropdown-menu {
+  background-color: #343a40;
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  margin-top: 8px;
+  padding: 8px 0;
+}
+
+.navbar-nav .dropdown-item {
+  color: rgba(255, 255, 255, 0.9);
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.navbar-nav .dropdown-item:hover,
+.navbar-nav .dropdown-item:focus {
+  background-color: var(--primary-color);
+  color: var(--text-on-primary);
+}
+
+.navbar-nav .dropdown-item i {
+  margin-right: 8px;
+  width: 16px;
+  text-align: center;
+}
+
+.navbar-nav .dropdown-header {
+  color: var(--primary-color) !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+.navbar-nav .dropdown-divider {
+  border-color: rgba(255, 215, 0, 0.3);
+  margin: 6px 0;
+}
+
+/* ========================================
+   INFORMACIÓN DE CONTACTO
+   ======================================== */
+
+.navbar-text {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 0.85rem;
+}
+
+.navbar-text a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.navbar-text a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* ========================================
+   BOTONES DEL NAVBAR
+   ======================================== */
+
+ /* estilos personalizados para Iniciar Sesión */    
+.navbar .btn.btn-primary { 
+border-color: black;
+font-weight: 1000;
+
+}
+
+/* estilos personalizados para Registrarse */ 
+.navbar .btn.btn-outline-light {
+/*border-color: rgb(116, 114, 112);
+color: rgb(116, 114, 112);*/
+border-color: transparent;
+color: #ebc428 !important;
+font-weight: 1000;    
+}
+
+.navbar .btn.btn-outline-light:hover {
+  background-color: #fff;
+  color: #e8c715;
+  border-color: #e8c715;
+}
+/* ========================================
+   MODALES DEL NAVBAR
+   ======================================== */
+
+/* Modal de Login */
+#loginModal .modal-content {
+  border-radius: 12px;
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+#loginModal .modal-header {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-dark) 100%
+  );
+  color: var(--text-on-primary);
+  border-radius: 10px 10px 0 0;
+  border-bottom: none;
+}
+
+#loginModal .modal-body {
+  padding: 30px;
+}
+
+#loginModal .form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
+}
+
+/* Modal de Registro */
+#registerModal .modal-content {
+  border-radius: 12px;
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+#registerModal .modal-header {
+  background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+  border-radius: 10px 10px 0 0;
+  border-bottom: none;
+}
+
+#registerModal .modal-body {
+  padding: 30px;
+}
+
+#registerModal .form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
+}
+
+#registerModal .alert-info {
+  border-left: 4px solid var(--info-color);
+  background-color: rgba(13, 202, 240, 0.1);
+  border-color: rgba(13, 202, 240, 0.2);
+}
+
+/* ========================================
+   ALERTAS DEL SISTEMA
+   ======================================== */
+
+.toast-wrapper {
+  position: fixed;
+  top: calc(var(--navbar-height) + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1060;
+  max-width: 400px;
+}
+
+.toast-wrapper .alert {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.toast-wrapper .alert-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+}
+
+.toast-wrapper .alert-success {
+  background: linear-gradient(135deg, #198754 0%, #157347 100%);
+  color: white;
+}
+
+/* ========================================
+   RESPONSIVE PARA NAVBAR
+   ======================================== */
+
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    background-color: rgba(52, 58, 64, 0.95);
+    margin-top: 10px;
+    border-radius: 8px;
+    padding: 15px;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+
+  .navbar-nav {
+    text-align: center;
+  }
+
+  .navbar-nav .nav-link {
+    margin: 4px 0;
+  }
+
+  .navbar-text {
+    text-align: center;
+    padding: 10px 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .navbar-brand img,
+  .navbar-brand .logo-navbar,
+  .navbar-logo {
+    height: 40px !important;
+    max-height: 40px !important;
+    max-width: 150px !important;
+  }
+
+  .navbar-nav .nav-link {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+  }
+
+  #registerModal .modal-dialog {
+    margin: 10px;
+  }
+
+  #registerModal .modal-body {
+    padding: 20px;
+  }
+
+  #loginModal .modal-body {
+    padding: 20px;
+  }
+}
+
+/* ========================================
+   ANIMACIONES ESPECÍFICAS DEL NAVBAR
+   ======================================== */
+
+@keyframes navbarSlideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.navbar {
+  animation: navbarSlideDown 0.5s ease-out;
+}
+
+/* Animación de dropdown */
+.dropdown-menu {
+  animation: fadeInDown 0.3s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

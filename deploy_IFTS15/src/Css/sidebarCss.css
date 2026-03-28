@@ -1,0 +1,503 @@
+/*
+===============================================
+IFTS15 - Sistema Web - Estilos del Sidebar
+Archivo: src/Css/sidebarCss.css
+===============================================
+*/
+
+/* ========================================
+   OFFCANVAS SIDEBAR PRINCIPAL
+   ======================================== */
+
+.offcanvas-start {
+    width: 280px !important;
+    background: linear-gradient(180deg, #6c757d 0%, #ffd700 100%) !important;
+    border-right: 3px solid var(--primary-color);
+}
+
+.offcanvas-backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* ========================================
+   SIDEBAR PERSONALIZADO (de head.php)
+   ======================================== */
+
+/* Sidebar Offcanvas personalizado */
+.offcanvas-custom-header {
+    background: linear-gradient(135deg, #000000 0%, #333333 30%, #6c757d 60%, #ffd700 100%) !important;
+    color: white !important;
+    border-bottom: 3px solid #ffd700 !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
+}
+
+.offcanvas-custom-body {
+    background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 50%, #fff3cd 100%) !important;
+    min-height: 100% !important;
+}
+
+/* Items del menu sidebar */
+.list-group-item-custom {
+    background: rgba(255,255,255,0.9) !important;
+    border: 1px solid rgba(255,215,0,0.3) !important;
+    margin-bottom: 2px !important;
+    transition: all 0.3s ease !important;
+}
+
+.list-group-item-custom:hover {
+    background: linear-gradient(90deg, #ffd700 0%, #fff3cd 100%) !important;
+    border-color: #ffd700 !important;
+    transform: translateX(5px) !important;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.1) !important;
+}
+
+.btn-close-custom {
+    background: rgba(255,255,255,0.8) !important;
+    opacity: 1 !important;
+}
+
+/* Estilos para sidebar avanzado */
+.text-bg-dark {
+    background: linear-gradient(180deg, #212529 0%, #343a40 100%) !important;
+}
+
+.nav-link.text-light:hover {
+    background: rgba(255, 215, 0, 0.1) !important;
+    border-radius: 0.375rem !important;
+}
+
+.nav-link.text-danger:hover {
+    background: rgba(220, 53, 69, 0.1) !important;
+    border-radius: 0.375rem !important;
+}
+
+.sidebar-heading {
+    font-size: 0.75rem !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+}
+
+/* ========================================
+   HEADER DEL SIDEBAR
+   ======================================== */
+
+.offcanvas-header {
+    background: var(--primary-color) !important;
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+    padding: 20px;
+}
+
+.offcanvas-header.bg-secondary {
+    background: var(--primary-color) !important;
+}
+
+.offcanvas-title {
+    color: var(--text-on-primary) !important;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.offcanvas-title i {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+
+.btn-close-white {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.btn-close-white:hover {
+    opacity: 1;
+}
+
+/* ========================================
+   INFORMACIÓN DEL USUARIO
+   ======================================== */
+
+.offcanvas .user-info {
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+    text-align: center;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.offcanvas .user-info .fa-user-circle {
+    color: var(--primary-color);
+    font-size: 3rem;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.offcanvas .user-info p {
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.offcanvas .user-info .text-light {
+    color: #ffffff !important; /* Texto blanco para mejor contraste */
+    font-weight: 600;
+}
+
+.offcanvas .user-info .text-muted {
+    color: #f8f9fa !important; /* Blanco suave para texto secundario */
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.offcanvas .user-info .fa-shield-alt {
+    color: var(--primary-color);
+    margin-right: 4px;
+}
+
+/* ========================================
+   NAVEGACIÓN DEL SIDEBAR
+   ======================================== */
+
+.offcanvas-body {
+    padding: 0;
+    background: transparent;
+}
+
+.offcanvas-body .nav {
+    padding: 15px;
+}
+
+.offcanvas-body .nav-pills .nav-link {
+    color: #ffffff !important; /* Texto blanco para mejor contraste */
+    padding: 12px 16px;
+    margin: 3px 0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.offcanvas-body .nav-pills .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.offcanvas-body .nav-pills .nav-link:hover::before {
+    left: 100%;
+}
+
+.offcanvas-body .nav-pills .nav-link:hover {
+    background-color: var(--primary-color) !important;
+    color: var(--text-on-primary) !important;
+    transform: translateX(8px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.offcanvas-body .nav-pills .nav-link:focus {
+    background-color: var(--primary-color) !important;
+    color: var(--text-on-primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.5);
+}
+
+.offcanvas-body .nav-pills .nav-link.active {
+    background-color: var(--primary-color) !important;
+    color: var(--text-on-primary) !important;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+}
+
+/* Iconos en los enlaces */
+.offcanvas-body .nav-pills .nav-link i {
+    margin-right: 12px;
+    width: 20px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.offcanvas-body .nav-pills .nav-link .fa-chevron-down {
+    margin-left: auto;
+    margin-right: 0;
+    transition: transform 0.3s ease;
+    font-size: 0.8rem;
+}
+
+.offcanvas-body .nav-pills .nav-link[aria-expanded="true"] .fa-chevron-down {
+    transform: rotate(180deg);
+}
+
+/* ========================================
+   SUBMENÚS COLAPSABLES
+   ======================================== */
+
+.offcanvas-body .collapse {
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.offcanvas-body .collapse .nav {
+    padding: 0;
+    margin-left: 20px;
+    border-left: 2px solid rgba(255, 215, 0, 0.3);
+    padding-left: 15px;
+}
+
+.offcanvas-body .collapse .nav-link {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    color: #ffffff !important; /* Texto blanco para contraste */
+    margin: 2px 0;
+    position: relative;
+}
+
+.offcanvas-body .collapse .nav-link::before {
+    content: '';
+    position: absolute;
+    left: -17px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 2px;
+    background-color: rgba(255, 215, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.offcanvas-body .collapse .nav-link:hover::before {
+    background-color: var(--primary-color);
+    width: 12px;
+}
+
+.offcanvas-body .collapse .nav-link:hover {
+    background-color: rgba(255, 215, 0, 0.1) !important;
+    color: var(--primary-color) !important;
+    transform: translateX(5px);
+}
+
+.offcanvas-body .collapse .nav-link i {
+    margin-right: 8px;
+    width: 16px;
+    font-size: 0.9rem;
+}
+
+/* ========================================
+   SECCIÓN DE ADMINISTRACIÓN
+   ======================================== */
+
+.sidebar-heading {
+    color: var(--primary-color) !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0 16px;
+    margin: 20px 0 10px 0;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+    padding-bottom: 8px;
+}
+
+.sidebar-heading i {
+    margin-right: 8px;
+    font-size: 0.8rem;
+}
+
+/* ========================================
+   FOOTER DEL SIDEBAR
+   ======================================== */
+
+.offcanvas-body .mt-auto {
+    margin-top: auto !important;
+    border-top: 1px solid rgba(255, 215, 0, 0.2);
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.offcanvas-body .mt-auto small {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.offcanvas-body .mt-auto small i {
+    color: var(--primary-color);
+    margin-right: 8px;
+    font-size: 1rem;
+}
+
+/* Footer con logo - Texto amarillo con sombra */
+.offcanvas-body .mt-auto small[style*="color: #ffd700"] {
+    color: #ffd700 !important;
+    font-weight: 600 !important;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8), 
+                 -1px -1px 3px rgba(0,0,0,0.8), 
+                 1px -1px 3px rgba(0,0,0,0.8), 
+                 -1px 1px 3px rgba(0,0,0,0.8) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.offcanvas-body .mt-auto small img {
+    border-radius: 3px;
+    object-fit: contain;
+    filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));
+}
+
+/* ========================================
+   EFECTOS Y ANIMACIONES
+   ======================================== */
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.offcanvas-body .nav-item {
+    animation: slideInLeft 0.3s ease-out;
+}
+
+.offcanvas-body .nav-item:nth-child(1) { animation-delay: 0.1s; }
+.offcanvas-body .nav-item:nth-child(2) { animation-delay: 0.2s; }
+.offcanvas-body .nav-item:nth-child(3) { animation-delay: 0.3s; }
+.offcanvas-body .nav-item:nth-child(4) { animation-delay: 0.4s; }
+.offcanvas-body .nav-item:nth-child(5) { animation-delay: 0.5s; }
+.offcanvas-body .nav-item:nth-child(6) { animation-delay: 0.6s; }
+
+/* Efecto de pulso para elementos activos */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 215, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+    }
+}
+
+.offcanvas-body .nav-pills .nav-link.active {
+    animation: pulse 2s infinite;
+}
+
+/* ========================================
+   RESPONSIVE PARA SIDEBAR
+   ======================================== */
+
+@media (max-width: 768px) {
+    .offcanvas-start {
+        width: 260px !important;
+    }
+    
+    .offcanvas-body .nav {
+        padding: 10px;
+    }
+    
+    .offcanvas-body .nav-pills .nav-link {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .offcanvas-body .nav-pills .nav-link i {
+        width: 18px;
+        margin-right: 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .offcanvas-start {
+        width: 240px !important;
+    }
+    
+    .offcanvas-header {
+        padding: 15px;
+    }
+    
+    .offcanvas-title {
+        font-size: 1rem;
+    }
+    
+    .offcanvas .user-info {
+        padding: 15px;
+    }
+    
+    .offcanvas .user-info .fa-user-circle {
+        font-size: 2.5rem;
+    }
+    
+    .offcanvas-body .nav-pills .nav-link {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+    
+    .offcanvas-body .collapse .nav {
+        margin-left: 15px;
+        padding-left: 10px;
+    }
+}
+
+/* ========================================
+   ESTADOS ESPECIALES
+   ======================================== */
+
+/* Sidebar cerrado */
+.offcanvas:not(.show) {
+    transform: translateX(-100%);
+}
+
+/* Efecto de entrada */
+.offcanvas.show {
+    animation: slideInFromLeft 0.3s ease-out;
+}
+
+@keyframes slideInFromLeft {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* Overlay personalizado */
+.offcanvas-backdrop.show {
+    opacity: 0.6;
+}
+
+/* ========================================
+   ACCESIBILIDAD
+   ======================================== */
+
+.offcanvas-body .nav-link:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.offcanvas-header .btn-close:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+/* Indicador de estado activo para lectores de pantalla */
+.offcanvas-body .nav-link.active::after {
+    content: " (página actual)";
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
