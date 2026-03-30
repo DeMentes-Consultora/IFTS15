@@ -7,19 +7,16 @@
 
 // Configuración del sistema
 require_once __DIR__ . '/../config.php';
-
+$conectarDB = new App\ConectionBD\ConectionDB();
+$conn = $conectarDB->getConnection();
 // Datos específicos de la página
 $pageTitle = 'Realizador y Productor Televisivo - IFTS15';
-
 // Variables para el sistema de templates (necesarias para navbar y sidebar)
-// Estado de sesión y rol numérico
 $isLoggedIn = isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
 $userEmail = $_SESSION['email'] ?? '';
 $userIdRol = isset($_SESSION['id_rol']) ? intval($_SESSION['id_rol']) : (isset($_SESSION['role_id']) ? intval($_SESSION['role_id']) : null);
 $roleNames = [1 => 'Alumno', 2 => 'Profesor', 3 => 'Administrativo', 4 => 'Directivo', 5 => 'Administrador'];
 $userRole = $roleNames[$userIdRol] ?? 'Alumno';
-
-// Compatibilidad con sidebar (que espera $_SESSION['usuario'])
 if ($isLoggedIn && !empty($userEmail)) {
     $_SESSION['usuario'] = $userEmail;
 }

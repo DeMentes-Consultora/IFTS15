@@ -20,10 +20,9 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Obtener información del usuario actual
-if (!function_exists('getCurrentUser')) {
-	require_once __DIR__ . '/../config.php';
-}
-
+require_once __DIR__ . '/../config.php';
+$conectarDB = new App\ConectionBD\ConectionDB();
+$conn = $conectarDB->getConnection();
 $currentUser = getCurrentUser();
 $isLoggedIn = $currentUser !== null;
 $userEmail = $currentUser['email'] ?? $_SESSION['email'] ?? $_SESSION['usuario'] ?? '';

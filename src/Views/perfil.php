@@ -1,6 +1,9 @@
 <?php
+// ...existing code...
 $esPerfilUsuario = true;
 require_once __DIR__ . '/../config.php';
+$conectarDB = new App\ConectionBD\ConectionDB();
+$conn = $conectarDB->getConnection();
 $isLoggedIn = isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
 $userEmail = $_SESSION['email'] ?? '';
 $userRole = isset($_SESSION['id_rol']) && $_SESSION['id_rol'] == 5 ? 'Administrador' : 'Usuario';

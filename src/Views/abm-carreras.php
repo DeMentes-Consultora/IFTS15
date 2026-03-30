@@ -5,17 +5,16 @@
  */
 
 require_once __DIR__ . '/../config.php';
-
+$conectarDB = new App\ConectionBD\ConectionDB();
+$conn = $conectarDB->getConnection();
 // Verificar permisos
 $isLoggedIn = isLoggedIn();
 $userEmail = $_SESSION['email'] ?? '';
 $userRole = isAdminRole() ? 'Administrador' : 'Usuario';
-
 if (!$isLoggedIn || !isAdminRole()) {
     header('Location: ' . BASE_URL . '/index.php?error=acceso_denegado');
     exit;
 }
-
 // ...existing code...
 $pageTitle = 'ABM Carreras y Materias - IFTS15';
 ?>

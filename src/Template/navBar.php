@@ -1,37 +1,12 @@
 <?php
-// Inicializar $isLoggedIn y $currentUser igual que en sidebar
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../helpers/UserAvatarHelper.php';
 $isLoggedIn = isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
-$currentUser = [];
-if (isset($_SESSION['usuario'])) {
-    $currentUser['email'] = $_SESSION['usuario'];
-    if (!empty($_SESSION['nombre_completo']) && $_SESSION['nombre_completo'] !== ' ') {
-        $currentUser['nombre_completo'] = $_SESSION['nombre_completo'];
-    } elseif (!empty($_SESSION['nombre']) || !empty($_SESSION['apellido'])) {
-        $nombre = $_SESSION['nombre'] ?? '';
-        $apellido = $_SESSION['apellido'] ?? '';
-        $currentUser['nombre_completo'] = trim($nombre . ' ' . $apellido);
-    } else {
-        $emailParts = explode('@', $currentUser['email']);
-        $currentUser['nombre_completo'] = !empty($emailParts[0]) ? ucfirst($emailParts[0]) : 'Usuario';
-    }
-    $userIdRol = isset($_SESSION['id_rol']) ? intval($_SESSION['id_rol']) : (isset($_SESSION['role_id']) ? intval($_SESSION['role_id']) : null);
-    $roleNames = [
-        1 => 'Alumno',
-        2 => 'Profesor',
-        3 => 'Administrativo',
-        4 => 'Directivo',
-        5 => 'Administrador'
-    ];
-    $currentUser['role'] = $roleNames[$userIdRol] ?? 'Alumno';
-    // Agregar foto de perfil
-    $currentUser['foto_perfil_url'] = $_SESSION['foto_perfil_url'] ?? null;
-    $currentUser['foto_perfil_public_id'] = $_SESSION['foto_perfil_public_id'] ?? null;
-} else {
-    $currentUser['email'] = 'Usuario';
-    $currentUser['nombre_completo'] = 'Usuario';
-    $currentUser['role'] = 'Alumno';
-    $userIdRol = null;
-}
+$userEmail = $_SESSION['email'] ?? '';
+$userIdRol = isset($_SESSION['id_rol']) ? intval($_SESSION['id_rol']) : (isset($_SESSION['role_id']) ? intval($_SESSION['role_id']) : null);
+$roleNames = [1 => 'Alumno', 2 => 'Profesor', 3 => 'Administrativo', 4 => 'Directivo', 5 => 'Administrador'];
+$userRole = $roleNames[$userIdRol] ?? 'Alumno';
+$avatarUrl = $isLoggedIn ? getUserAvatarUrl($conn) : null;
 // ...existing code...
 ?>
 <!-- Navbar Bootstrap 5 minimalista y robusta -->
@@ -64,8 +39,8 @@ if (isset($_SESSION['usuario'])) {
                 <?php if ($isLoggedIn): ?>
                     <div class="dropdown">
                         <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center gap-2" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <?php if (!empty($currentUser['foto_perfil_url'])): ?>
-                                <img src="<?php echo htmlspecialchars($currentUser['foto_perfil_url']); ?>" alt="Avatar" class="rounded-circle" style="width:32px;height:32px;object-fit:cover;">
+                            <?php if (!empty($avatarUrl)): ?>
+                                <img src="<?php echo htmlspecialchars($avatarUrl); ?>" alt="Avatar" class="rounded-circle" style="width:32px;height:32px;object-fit:cover;">
                             <?php else: ?>
                                 <i class="bi bi-person-circle fs-4"></i>
                             <?php endif; ?>

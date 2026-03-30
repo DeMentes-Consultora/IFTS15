@@ -1,51 +1,14 @@
 <?php
-
-/**
- * Barra Lateral Vertical - IFTS15
- * Archivo: Template/sidebar.php
- * Solo se muestra para usuarios logueados
- */
-
-// Verificar si el usuario está logueado
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../helpers/UserAvatarHelper.php';
 if (!isset($isLoggedIn) || !$isLoggedIn) return;
-
-// Obtener información del usuario actual desde la sesión
-$currentUser = [];
-if (isset($_SESSION['usuario'])) {
-    $currentUser['email'] = $_SESSION['usuario'];
-    // Intentar obtener el nombre completo de diferentes fuentes
-    if (!empty($_SESSION['nombre_completo']) && $_SESSION['nombre_completo'] !== ' ') {
-        $currentUser['nombre_completo'] = $_SESSION['nombre_completo'];
-    } elseif (!empty($_SESSION['nombre']) || !empty($_SESSION['apellido'])) {
-        $nombre = $_SESSION['nombre'] ?? '';
-        $apellido = $_SESSION['apellido'] ?? '';
-        $currentUser['nombre_completo'] = trim($nombre . ' ' . $apellido);
-    } else {
-        // Si no hay nombre, usar el email (parte antes del @)
-        $emailParts = explode('@', $currentUser['email']);
-        $currentUser['nombre_completo'] = !empty($emailParts[0]) ? ucfirst($emailParts[0]) : 'Usuario';
-    }
-    $userIdRol = isset($_SESSION['id_rol']) ? intval($_SESSION['id_rol']) : (isset($_SESSION['role_id']) ? intval($_SESSION['role_id']) : null);
-    // Mapear nombre legible del rol según la tabla roles en la BD (agregado id 5 Administrador)
-    $roleNames = [
-        1 => 'Alumno',
-        2 => 'Profesor',
-        3 => 'Administrativo',
-        4 => 'Directivo',
-        5 => 'Administrador'
-    ];
-    $currentUser['role'] = $roleNames[$userIdRol] ?? 'Alumno';
-    // Agregar foto de perfil
-    $currentUser['foto_perfil_url'] = $_SESSION['foto_perfil_url'] ?? null;
-    $currentUser['foto_perfil_public_id'] = $_SESSION['foto_perfil_public_id'] ?? null;
-} else {
-    $currentUser['email'] = 'Usuario';
-    $currentUser['nombre_completo'] = 'Usuario';
-    $currentUser['role'] = 'Alumno';
-    $userIdRol = null;
-}
-
-$userRole = $currentUser['role'];
+$userEmail = $_SESSION['email'] ?? '';
+$userIdRol = isset($_SESSION['id_rol']) ? intval($_SESSION['id_rol']) : (isset($_SESSION['role_id']) ? intval($_SESSION['role_id']) : null);
+$roleNames = [1 => 'Alumno', 2 => 'Profesor', 3 => 'Administrativo', 4 => 'Directivo', 5 => 'Administrador'];
+$userRole = $roleNames[$userIdRol] ?? 'Alumno';
+$datosUsuarioSidebar = isset($_SESSION['user_id']) ? App\Model\User::obtenerUsuarioCompleto($conn, $_SESSION['user_id']) : null;
+$avatarUrl = $datosUsuarioSidebar['foto_perfil_url'] ?? null;
+$nombreCompletoSidebar = trim(($datosUsuarioSidebar['nombre'] ?? '') . ' ' . ($datosUsuarioSidebar['apellido'] ?? ''));
 ?>
 
 <!-- Bootstrap Offcanvas Sidebar -->
@@ -69,14 +32,14 @@ $userRole = $currentUser['role'];
     <!-- Información del usuario -->
     <div class="p-3 border-bottom border-secondary">
         <div class="text-center">
-            <?php if (!empty($currentUser['foto_perfil_url'])): ?>
-                <img src="<?php echo htmlspecialchars($currentUser['foto_perfil_url']); ?>" alt="Avatar" class="rounded-circle mb-2" style="width:64px;height:64px;object-fit:cover;border:2px solid #ffc107;">
+            <?php if (!empty($avatarUrl)): ?>
+                <img src="<?php echo htmlspecialchars($avatarUrl); ?>" alt="Avatar" class="rounded-circle mb-2" style="width:64px;height:64px;object-fit:cover;border:2px solid #ffc107;">
             <?php else: ?>
                 <i class="bi bi-person-circle fs-2 text-warning mb-2"></i>
             <?php endif; ?>
             <p class="mb-1 text-light">
                 <strong>
-                    <?php echo htmlspecialchars($currentUser['nombre_completo'], ENT_QUOTES, 'UTF-8'); ?>
+                    <?php echo htmlspecialchars($nombreCompletoSidebar, ENT_QUOTES, 'UTF-8'); ?>
                 </strong>
             </p>
             <p class="mb-0 text-muted small">
