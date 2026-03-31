@@ -17,6 +17,21 @@ use App\Services\CloudinaryService;
 
 class Person
 {
+
+    /**
+     * Actualiza solo la foto de perfil y devuelve el public_id anterior
+     */
+    public function actualizarFotoPerfil($conn, $nueva_url, $nuevo_public_id) {
+        $public_id_anterior = $this->foto_perfil_public_id;
+        $stmt = $conn->prepare("UPDATE persona SET foto_perfil_url = ?, foto_perfil_public_id = ? WHERE id_persona = ?");
+        $stmt->bind_param("ssi", $nueva_url, $nuevo_public_id, $this->id_persona);
+        if ($stmt->execute()) {
+            $this->foto_perfil_url = $nueva_url;
+            $this->foto_perfil_public_id = $nuevo_public_id;
+        }
+        $stmt->close();
+        return $public_id_anterior;
+    }
     private $id_persona;
     private $nombre;
     private $apellido;

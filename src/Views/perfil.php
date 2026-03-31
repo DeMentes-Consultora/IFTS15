@@ -35,11 +35,78 @@ if (isset($error)) {
         <div class="col-lg-4 mb-4">
             <div class="card card-welcome text-center h-100">
                 <div class="card-body">
-                    <?php if ($persona && !empty($persona->getFotoPerfilUrl())): ?>
-                        <img src="<?= htmlspecialchars($persona->getFotoPerfilUrl()) ?>" alt="Foto de perfil" class="rounded-circle mb-3 border border-3 border-warning" style="width:120px;height:120px;object-fit:cover;">
-                    <?php else: ?>
-                        <i class="bi bi-person-circle mb-3" style="font-size: 6rem; color: var(--primary-color);"></i>
-                    <?php endif; ?>
+                    <div style="position: relative; display: inline-block;">
+                        <?php if ($persona && !empty($persona->getFotoPerfilUrl())): ?>
+                            <img id="foto-perfil-img" src="<?= htmlspecialchars($persona->getFotoPerfilUrl()) ?>" alt="Foto de perfil" class="rounded-circle mb-3 border border-3 border-warning" style="width:120px;height:120px;object-fit:cover;">
+                        <?php else: ?>
+                            <i id="foto-perfil-img" class="bi bi-person-circle mb-3" style="font-size: 6rem; color: var(--primary-color);"></i>
+                        <?php endif; ?>
+                        <!-- Icono lápiz -->
+                        <button id="editar-foto-btn" type="button" class="btn btn-sm btn-light border border-2 border-warning position-absolute" style="right: 0; bottom: 10px; z-index: 2; border-radius: 50%;" title="Cambiar foto de perfil">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </div>
+                    <!-- Card para subir nueva foto (oculta por defecto) -->
+                    <div id="card-cambiar-foto" class="card mt-2" style="display:none;">
+                        <div class="card-body">
+                            <form id="form-cambiar-foto" enctype="multipart/form-data">
+                                <div class="mb-2">
+                                    <label for="nueva_foto" class="form-label">Nueva foto de perfil</label>
+                                    <input class="form-control" type="file" id="nueva_foto" name="nueva_foto" accept="image/*" required>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" id="cancelar-cambiar-foto" class="btn btn-secondary btn-sm me-2">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary btn-sm">Subir</button>
+                                </div>
+                                <div id="foto-error-msg" class="text-danger mt-2" style="display:none;"></div>
+                            </form>
+                        </div>
+                    </div>
+                    <script>
+                    // Mostrar card al hacer click en el lápiz
+                    document.getElementById('editar-foto-btn').addEventListener('click', function() {
+                        document.getElementById('card-cambiar-foto').style.display = 'block';
+                    });
+
+                    // Ocultar card al cancelar
+                    document.getElementById('cancelar-cambiar-foto').addEventListener('click', function() {
+                        document.getElementById('card-cambiar-foto').style.display = 'none';
+                        document.getElementById('form-cambiar-foto').reset();
+                        document.getElementById('foto-error-msg').style.display = 'none';
+                    });
+
+                    // Subida AJAX de la foto
+                    document.getElementById('form-cambiar-foto').addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        var formData = new FormData(this);
+                        fetch('../Controllers/perfilController.php?action=cambiar_foto', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Actualizar imagen de perfil en ambos lugares (perfil y navbar) con cache busting
+                                document.getElementById('foto-perfil-img').src = data.nueva_foto_url + '?t=' + new Date().getTime();
+                                // Actualizar avatar del navbar si existe
+                                var navAvatar = document.querySelector('.navbar img[alt="Avatar"]');
+                                if (navAvatar) {
+                                    navAvatar.src = data.nueva_foto_url + '?t=' + new Date().getTime();
+                                }
+                                document.getElementById('card-cambiar-foto').style.display = 'none';
+                                document.getElementById('form-cambiar-foto').reset();
+                                document.getElementById('foto-error-msg').style.display = 'none';
+                            } else {
+                                document.getElementById('foto-error-msg').textContent = data.error || 'Error al subir la foto.';
+                                document.getElementById('foto-error-msg').style.display = 'block';
+                            }
+                        })
+                        .catch(() => {
+                            document.getElementById('foto-error-msg').textContent = 'Error al subir la foto.';
+                            document.getElementById('foto-error-msg').style.display = 'block';
+                        });
+                    });
+                    </script>
                     <h4 class="fw-bold mb-1 text-primary"><?= htmlspecialchars($persona ? $persona->getNombre() : '') . ' ' . htmlspecialchars($persona ? $persona->getApellido() : '') ?></h4>
                     <p class="mb-1"><i class="bi bi-envelope me-1"></i> <?= htmlspecialchars($usuario['email'] ?? '') ?></p>
                     <span class="badge bg-primary text-dark mb-2">Alumno</span>
