@@ -85,7 +85,8 @@ use App\Model\Materia;
                                 <?php else: ?>
                                     <?php foreach ($materiasAsociadas as $materia): ?>
                                         <div class="materia-item" 
-                                             data-id-materia="<?= $materia['id_materia'] ?>">
+                                            data-id="<?= $materia['id_materia'] ?>"
+                                            data-id-materia="<?= $materia['id_materia'] ?>">
                                             <span><?= htmlspecialchars($materia['nombre_materia']) ?></span>
                                             <button class="btn btn-sm btn-sm-icon btn-outline-danger btn-desasociar-materia" 
                                                     data-id-carrera="<?= $carrera['id_carrera'] ?>"
@@ -130,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 showToast(data.message || 'Carrera creada exitosamente', 'success');
                 input.value = '';
-                recargarCarreras();
+                        recargarCarreras();
             } else {
                 showToast(data.error || 'Error al crear carrera', 'danger');
             }
@@ -197,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     if (data.success) {
                         showToast(data.message || 'Carrera eliminada', 'success');
-                        recargarCarreras();
+                        Promise.all([recargarCarreras(), recargarMaterias()]);
                     } else {
                         showToast(data.error || 'Error al eliminar', 'danger');
                     }
@@ -230,8 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     showToast(data.message || 'Materia liberada', 'success');
-                    recargarCarreras();
-                    recargarMaterias();
+                    Promise.all([recargarCarreras(), recargarMaterias()]);
                 } else {
                     showToast(data.error || 'Error al desasociar', 'danger');
                 }
@@ -271,7 +271,7 @@ function initDropZones() {
             onAdd: function(evt) {
                 // Evento disparado cuando se suelta una materia en esta carrera
                 const materiaElement = evt.item;
-                const idMateria = materiaElement.dataset.id;
+                const idMateria = materiaElement.dataset.id || materiaElement.dataset.idMateria;
                 
                 if (!idMateria) {
                     console.error('Error: No se encontró id de materia');
@@ -292,20 +292,17 @@ function initDropZones() {
                 .then(data => {
                     if (data.success) {
                         showToast('Materia asociada exitosamente', 'success');
-                        recargarCarreras();
-                        recargarMaterias();
+                        Promise.all([recargarCarreras(), recargarMaterias()]);
                     } else {
                         showToast(data.error || 'Error al asociar', 'danger');
                         // Revertir cambio visual si falló
-                        recargarCarreras();
-                        recargarMaterias();
+                        Promise.all([recargarCarreras(), recargarMaterias()]);
                     }
                 })
                 .catch(err => {
                     console.error('Error:', err);
                     showToast('Error de comunicación', 'danger');
-                    recargarCarreras();
-                    recargarMaterias();
+                    Promise.all([recargarCarreras(), recargarMaterias()]);
                 });
             }
         });

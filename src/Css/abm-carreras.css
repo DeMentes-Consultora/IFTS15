@@ -38,6 +38,18 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: grab;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.materia-item:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.materia-item.sortable-chosen,
+.materia-item.sortable-drag,
+.materia-item:active {
+    cursor: grabbing;
 }
 
 .carrera-card {

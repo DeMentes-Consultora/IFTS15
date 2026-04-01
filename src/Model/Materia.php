@@ -71,6 +71,32 @@ class Materia
     }
 
     /**
+     * Obtener materias asociadas a una carrera
+     *
+     * @param mysqli $conn Conexión a la base de datos
+     * @param int $idCarrera ID de la carrera
+     * @param bool $soloHabilitadas Si true, solo devuelve materias habilitadas y no canceladas
+     * @return array Array de materias ordenadas alfabéticamente
+     */
+    public static function obtenerPorCarrera($conn, $idCarrera, $soloHabilitadas = true)
+    {
+        $sql = "SELECT * FROM materia WHERE id_carrera = ?";
+
+        if ($soloHabilitadas) {
+            $sql .= " AND habilitado = 1 AND cancelado = 0";
+        }
+
+        $sql .= " ORDER BY nombre_materia ASC";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('i', $idCarrera);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    }
+
+    /**
      * Crear nueva materia
      */
     public static function crear($conn, $nombre)

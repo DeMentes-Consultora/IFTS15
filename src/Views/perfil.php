@@ -22,6 +22,7 @@ $usuario = $datosPerfil['usuario'] ?? [];
 $persona = $datosPerfil['persona'] ?? null;
 $carrera = $datosPerfil['carrera'] ?? [];
 $notas = $datosPerfil['notas'] ?? [];
+$materiasPerfil = $datosPerfil['materias_perfil'] ?? [];
 
 // Mostrar errores si existen
 if (isset($error)) {
@@ -151,16 +152,16 @@ if (isset($error)) {
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (empty($notas)): ?>
+                                <?php if (empty($materiasPerfil)): ?>
                                     <tr>
-                                        <td colspan="3" class="text-center text-muted">No hay notas registradas.</td>
+                                        <td colspan="3" class="text-center text-muted">No hay materias asociadas a tu carrera.</td>
                                     </tr>
                                 <?php else: ?>
-                                    <?php foreach ($notas as $nota): ?>
+                                    <?php foreach ($materiasPerfil as $materia): ?>
                                         <tr>
-                                            <td><?= htmlspecialchars($nota['nombre_materia'] ?? '') ?></td>
-                                            <td><?= htmlspecialchars($nota['nota'] ?? '') ?></td>
-                                            <td><?= htmlspecialchars($nota['fecha'] ?? ($nota['idCreate'] ?? '')) ?></td>
+                                            <td><?= htmlspecialchars($materia['nombre_materia'] ?? '') ?></td>
+                                            <td><?= htmlspecialchars($materia['nota'] ?? 'Sin nota') ?></td>
+                                            <td><?= htmlspecialchars($materia['fecha_nota'] ?? '-') ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>

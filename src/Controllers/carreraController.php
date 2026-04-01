@@ -50,6 +50,11 @@ class CarreraController
             // Si es petición AJAX, devolver JSON
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
                 strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+                foreach ($carreras as &$carrera) {
+                    $carrera['materias'] = Carrera::obtenerMaterias($this->conn, (int) $carrera['id_carrera']);
+                }
+                unset($carrera);
+
                 $this->jsonResponse(['success' => true, 'carreras' => $carreras]);
             }
             

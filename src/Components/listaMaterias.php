@@ -50,7 +50,8 @@
             <?php else: ?>
                 <?php foreach ($materiasLibres as $materia): ?>
                     <div class="materia-item" 
-                         data-id="<?= $materia['id_materia'] ?>">
+                        data-id="<?= $materia['id_materia'] ?>"
+                        data-id-materia="<?= $materia['id_materia'] ?>">
                         <span><?= htmlspecialchars($materia['nombre_materia']) ?></span>
                         <div>
                             <button class="btn btn-sm btn-sm-icon btn-outline-primary me-1 btn-editar-materia" 
@@ -97,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 showToast(data.message || 'Materia creada exitosamente', 'success');
                 input.value = '';
-                recargarMaterias();
+                        recargarMaterias();
             } else {
                 showToast(data.error || 'Error al crear materia', 'danger');
             }
@@ -131,6 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.success) {
                         showToast(data.message || 'Materia actualizada', 'success');
                         recargarMaterias();
+                        recargarCarreras();
                     } else {
                         showToast(data.error || 'Error al actualizar', 'danger');
                     }
@@ -162,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     if (data.success) {
                         showToast(data.message || 'Materia eliminada', 'success');
-                        recargarMaterias();
+                        Promise.all([recargarMaterias(), recargarCarreras()]);
                     } else {
                         showToast(data.error || 'Error al eliminar', 'danger');
                     }
@@ -198,7 +200,51 @@ function initDragMaterias() {
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
         dragClass: 'sortable-drag',
-        sort: false // No permitir reordenar dentro de materias libres
+        sort: false, // No permitir reordenar dentro de materias libres
+        onAdd: function(evt) {
+            // Solo desasociar si la materia viene desde una carrera
+            const fromZone = evt.from;
+            const idCarreraOrigen = fromZone ? fromZone.dataset.idCarrera : null;
+
+            if (!idCarreraOrigen) {
+                return;
+            }
+
+            const materiaElement = evt.item;
+            const idMateria = materiaElement.dataset.id || materiaElement.dataset.idMateria;
+
+            if (!idMateria) {
+                console.error('Error: No se encontró id de materia al desasociar');
+                recargarCarreras();
+                recargarMaterias();
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('id_carrera', idCarreraOrigen);
+            formData.append('id_materia', idMateria);
+
+            fetch('<?= BASE_URL ?>/src/Controllers/carreraController.php?action=desasociar', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message || 'Materia desasociada exitosamente', 'success');
+                    Promise.all([recargarCarreras(), recargarMaterias()]);
+                } else {
+                    showToast(data.error || 'Error al desasociar', 'danger');
+                    Promise.all([recargarCarreras(), recargarMaterias()]);
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                showToast('Error de comunicación', 'danger');
+                Promise.all([recargarCarreras(), recargarMaterias()]);
+            });
+        }
     });
 }
 </script>
