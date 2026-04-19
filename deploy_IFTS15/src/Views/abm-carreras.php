@@ -7,6 +7,10 @@
 require_once __DIR__ . '/../config.php';
 $conectarDB = new App\ConectionBD\ConectionDB();
 $conn = $conectarDB->getConnection();
+
+$materiasLibres = App\Model\Materia::obtenerTodas($conn, true, true);
+$carreras = App\Model\Carrera::obtenerTodas($conn, true);
+
 // Verificar permisos
 $isLoggedIn = isLoggedIn();
 $userEmail = $_SESSION['email'] ?? '';
@@ -58,11 +62,100 @@ function showToast(message, type = 'info', duration = 4000) {
     });
 }
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function renderMateriaLibre(materia) {
+    return `
+        <div class="materia-item"
+            data-id="${materia.id_materia}"
+            data-id-materia="${materia.id_materia}">
+            <span>${escapeHtml(materia.nombre_materia)}</span>
+            <div>
+                <button class="btn btn-sm btn-sm-icon btn-outline-primary me-1 btn-editar-materia" data-id="${materia.id_materia}" data-nombre="${escapeHtml(materia.nombre_materia)}" title="Editar">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-sm-icon btn-outline-danger btn-eliminar-materia" data-id="${materia.id_materia}" title="Eliminar">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function renderMateriaAsociada(carreraId, materia) {
+    return `
+        <div class="materia-item"
+            data-id="${materia.id_materia}"
+            data-id-materia="${materia.id_materia}">
+            <span>${escapeHtml(materia.nombre_materia)}</span>
+            <button class="btn btn-sm btn-sm-icon btn-outline-danger btn-desasociar-materia"
+                    data-id-carrera="${carreraId}"
+                    data-id-materia="${materia.id_materia}"
+                    title="Quitar de la carrera">
+                <i class="bi bi-x-circle"></i>
+            </button>
+        </div>
+    `;
+}
+
+function renderCarreraCard(carrera) {
+    const materias = Array.isArray(carrera.materias) ? carrera.materias : [];
+    const materiasHtml = materias.length === 0
+        ? `
+            <p class="text-muted text-center mb-0 placeholder-drop-zone">
+                <small>
+                    <i class="bi bi-arrow-down-circle"></i><br>
+                    Arrastra materias aquí
+                </small>
+            </p>
+        `
+        : materias.map(materia => renderMateriaAsociada(carrera.id_carrera, materia)).join('');
+
+    return `
+        <div class="card carrera-card mb-3" data-id-carrera="${carrera.id_carrera}">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center"
+                 style="cursor: pointer;"
+                 onclick="toggleCarrera(${carrera.id_carrera})">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-chevron-down me-2 collapse-icon" id="icon-${carrera.id_carrera}"></i>
+                    <strong>${escapeHtml(carrera.carrera)}</strong>
+                    <small class="text-muted ms-2">(${materias.length} materias)</small>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-sm-icon btn-outline-primary me-1 btn-editar-carrera"
+                            data-id="${carrera.id_carrera}"
+                            data-nombre="${escapeHtml(carrera.carrera)}"
+                            title="Editar">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-sm-icon btn-outline-danger btn-eliminar-carrera"
+                            data-id="${carrera.id_carrera}"
+                            title="Eliminar">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body collapse-content" id="body-${carrera.id_carrera}">
+                <div class="drop-zone carrera-drop-zone" data-id-carrera="${carrera.id_carrera}">
+                    ${materiasHtml}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 /**
  * Recargar lista de materias libres desde el servidor
  */
 function recargarMaterias() {
-    fetch('<?= BASE_URL ?>/src/Controllers/materiaController.php?action=listar&libres=1', {
+    return fetch('<?= BASE_URL ?>/src/Controllers/materiaController.php?action=listar&libres=1', {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(res => res.json())
@@ -70,23 +163,22 @@ function recargarMaterias() {
         if (data.success) {
             const container = document.getElementById('materias-libres-container');
             container.innerHTML = '';
+
+            if (!Array.isArray(data.materias) || data.materias.length === 0) {
+                container.innerHTML = `
+                    <p class="text-muted text-center py-3">
+                        <i class="bi bi-inbox"></i><br>
+                        No hay materias disponibles
+                    </p>
+                `;
+                if (typeof initDragMaterias === 'function') {
+                    initDragMaterias();
+                }
+                return;
+            }
             
             data.materias.forEach(m => {
-                const div = document.createElement('div');
-                div.className = 'materia-item';
-                div.dataset.id = m.id_materia;
-                div.innerHTML = `
-                    <span>${m.nombre_materia}</span>
-                    <div>
-                        <button class="btn btn-sm btn-sm-icon btn-outline-primary me-1 btn-editar-materia" data-id="${m.id_materia}" data-nombre="${m.nombre_materia}">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-sm btn-sm-icon btn-outline-danger btn-eliminar-materia" data-id="${m.id_materia}">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                `;
-                container.appendChild(div);
+                container.insertAdjacentHTML('beforeend', renderMateriaLibre(m));
             });
             
             // Reinicializar Sortable para los nuevos elementos
@@ -101,7 +193,40 @@ function recargarMaterias() {
 }
 
 function recargarCarreras() {
-    location.reload(); // Recarga completa para simplicidad
+    return fetch('<?= BASE_URL ?>/src/Controllers/carreraController.php?action=listar', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            throw new Error(data.error || 'No se pudieron recargar las carreras');
+        }
+
+        const container = document.getElementById('carreras-container');
+        if (!container) {
+            return;
+        }
+
+        if (!Array.isArray(data.carreras) || data.carreras.length === 0) {
+            container.innerHTML = `
+                <p class="text-muted text-center py-3">
+                    <i class="bi bi-inbox"></i><br>
+                    No hay carreras registradas
+                </p>
+            `;
+            return;
+        }
+
+        container.innerHTML = data.carreras.map(renderCarreraCard).join('');
+
+        if (typeof initDropZones === 'function') {
+            initDropZones();
+        }
+    })
+    .catch(err => {
+        console.error('Error recargando carreras:', err);
+        showToast('No se pudieron actualizar las carreras', 'danger');
+    });
 }
 </script>
 
