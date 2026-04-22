@@ -1,0 +1,27 @@
+.table td,
+.table th {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.table td.text-start {
+  text-align: left !important;
+}
+
+.check-asignacion-profesor {
+  transform: scale(1.15);
+}
+
+#feedback-asignacion {
+  font-weight: 600;
+}
+
+.card-header {
+  color: #343a40;
+}
+
+@media (max-width: 992px) {
+  .table {
+    font-size: 0.9rem;
+  }
+}

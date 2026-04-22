@@ -39,6 +39,7 @@ $allowlist = [
     'pagina_en_construccion' => 'public',
     // ABM Carreras y Materias
     'abm-carreras' => 'admin',
+    'abm-profesores-materias' => 'admin',
     // Añadir más vistas aquí según la app. Si una vista no está en la lista, denegamos el acceso por seguridad.
 ];
 

@@ -93,6 +93,10 @@ class PerfilService {
             return self::obtenerDatosPerfilProfesor($conn, (int)$id_usuario, $usuario, $persona, $carrera, $filtros);
         }
 
+        if ($idRol === 3) {
+            return self::obtenerDatosPerfilAdministrativo($conn, (int)$id_usuario, $usuario, $persona, $carrera);
+        }
+
         return self::obtenerDatosPerfilAlumno($conn, (int)$id_usuario, $usuario, $persona, $carrera);
     }
 
@@ -140,6 +144,69 @@ class PerfilService {
             'carrera' => $carrera,
             'notas' => $notas,
             'materias_perfil' => $materiasPerfil
+        ];
+    }
+
+    private static function obtenerDatosPerfilAdministrativo($conn, $idUsuario, $usuario, $persona, $carrera)
+    {
+        $resumen = [
+            'usuarios_pendientes' => 0,
+            'usuarios_habilitados' => 0,
+            'alumnos_habilitados' => 0,
+            'profesores_habilitados' => 0,
+        ];
+
+        $qPendientes = $conn->query("SELECT COUNT(*) AS total FROM usuario WHERE habilitado = 0 AND cancelado = 1");
+        if ($qPendientes) {
+            $row = $qPendientes->fetch_assoc();
+            $resumen['usuarios_pendientes'] = (int)($row['total'] ?? 0);
+        }
+
+        $qHabilitados = $conn->query("SELECT COUNT(*) AS total FROM usuario WHERE habilitado = 1 AND cancelado = 0");
+        if ($qHabilitados) {
+            $row = $qHabilitados->fetch_assoc();
+            $resumen['usuarios_habilitados'] = (int)($row['total'] ?? 0);
+        }
+
+        $qAlumnos = $conn->query("SELECT COUNT(*) AS total FROM usuario WHERE id_rol = 1 AND habilitado = 1 AND cancelado = 0");
+        if ($qAlumnos) {
+            $row = $qAlumnos->fetch_assoc();
+            $resumen['alumnos_habilitados'] = (int)($row['total'] ?? 0);
+        }
+
+        $qProfes = $conn->query("SELECT COUNT(*) AS total FROM usuario WHERE id_rol = 2 AND habilitado = 1 AND cancelado = 0");
+        if ($qProfes) {
+            $row = $qProfes->fetch_assoc();
+            $resumen['profesores_habilitados'] = (int)($row['total'] ?? 0);
+        }
+
+        $usuariosPendientes = [];
+        $sqlPendientes = "SELECT
+                            u.id_usuario,
+                            p.nombre,
+                            p.apellido,
+                            u.email,
+                            r.rol AS nombre_rol,
+                            u.idCreate
+                          FROM usuario u
+                          LEFT JOIN persona p ON p.id_persona = u.id_persona
+                          LEFT JOIN roles r ON r.id_rol = u.id_rol
+                          WHERE u.habilitado = 0
+                            AND u.cancelado = 1
+                          ORDER BY u.idCreate DESC
+                          LIMIT 20";
+        $resPend = $conn->query($sqlPendientes);
+        if ($resPend) {
+            $usuariosPendientes = $resPend->fetch_all(MYSQLI_ASSOC);
+        }
+
+        return [
+            'tipo_perfil' => 'administrativo',
+            'usuario' => $usuario,
+            'persona' => $persona,
+            'carrera' => $carrera,
+            'resumen_admin' => $resumen,
+            'usuarios_pendientes' => $usuariosPendientes,
         ];
     }
 

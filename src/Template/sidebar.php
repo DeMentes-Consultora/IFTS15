@@ -224,6 +224,14 @@ $nombreCompletoSidebar = trim(($datosUsuarioSidebar['nombre'] ?? '') . ' ' . ($d
                                     ABM Carreras y Materias
                                 </a>
                             </li>
+                            <?php if (in_array($userIdRol, [3, 5], true)): ?>
+                            <li class="nav-item">
+                                <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=abm-profesores-materias">
+                                    <i class="bi bi-person-workspace me-2"></i>
+                                    ABM Profesor-Materia
+                                </a>
+                            </li>
+                            <?php endif; ?>
                             <li class="nav-item">
                                 <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=pagina_en_construccion">
                                     <i class="bi bi-bar-chart me-2"></i>

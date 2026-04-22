@@ -143,6 +143,91 @@ class usuarioController
 			$this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
 		}
 	}
+
+	/**
+	 * Habilitar múltiples usuarios en lote via AJAX
+	 */
+	public function habilitarLote()
+	{
+		// Permitir solo POST
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+			$this->jsonResponse(['success' => false, 'error' => 'Método no permitido'], 405);
+		}
+
+		// Verificar permisos (roles administrativos)
+		if (!function_exists('isAdminRole')) {
+			require_once __DIR__ . '/../config.php';
+		}
+		if (!isLoggedIn() || !isAdminRole()) {
+			$this->jsonResponse(['success' => false, 'error' => 'Acceso denegado'], 403);
+		}
+
+		// Leer JSON del body
+		$input = json_decode(file_get_contents('php://input'), true);
+		$ids = $input['ids'] ?? [];
+
+		if (!is_array($ids) || empty($ids)) {
+			$this->jsonResponse(['success' => false, 'error' => 'IDs inválidos o vacíos'], 400);
+		}
+
+		// Sanitizar IDs
+		$ids = array_map('intval', $ids);
+		$ids = array_filter($ids, function($id) { return $id > 0; });
+
+		if (empty($ids)) {
+			$this->jsonResponse(['success' => false, 'error' => 'No hay IDs válidos'], 400);
+		}
+
+		$habilitados = 0;
+		$errores = [];
+
+		try {
+			foreach ($ids as $id) {
+				try {
+					$ok = User::actualizarHabilitado($this->conn, $id, 1);
+					if ($ok) {
+						$habilitados++;
+						// Enviar mail de habilitación
+						try {
+							$datosUsuario = User::obtenerUsuarioCompleto($this->conn, $id);
+							if ($datosUsuario && !empty($datosUsuario['email'])) {
+								$to = $datosUsuario['email'];
+								$nombre = trim(($datosUsuario['nombre'] ?? '') . ' ' . ($datosUsuario['apellido'] ?? ''));
+								$subject = 'Tu cuenta en IFTS15 ha sido habilitada';
+								$body = '<p>Hola ' . htmlspecialchars($nombre) . ',</p>';
+								$body .= '<p>Tu cuenta en el campus IFTS15 ha sido habilitada. Ya podés iniciar sesión con tu correo y contraseña.</p>';
+								$body .= '<p>Si no reconocés esta acción, contactá con el área de soporte.</p>';
+								$body .= '<p>Saludos,<br>Equipo IFTS15</p>';
+								$mailer = new MailerService();
+								$resMail = $mailer->send($to, $subject, $body, true, $to);
+								if (!$resMail['success']) {
+									error_log('[usuarioController::habilitarLote] Error enviando mail a ' . $to . ': ' . ($resMail['message'] ?? 'sin detalle'));
+								}
+							}
+						} catch (Exception $e) {
+							error_log('[usuarioController::habilitarLote] Excepción al notificar habilitación por mail para usuario ' . $id . ': ' . $e->getMessage());
+						}
+					} else {
+						$errores[] = 'Usuario ' . $id . ' no se pudo actualizar';
+					}
+				} catch (Exception $e) {
+					error_log('[usuarioController::habilitarLote] Error habilitando usuario ' . $id . ': ' . $e->getMessage());
+					$errores[] = 'Usuario ' . $id . ': ' . $e->getMessage();
+				}
+			}
+
+			$this->jsonResponse([
+				'success' => true,
+				'habilitados' => $habilitados,
+				'total' => count($ids),
+				'errores' => $errores,
+				'mensaje' => $habilitados . ' usuario(s) habilitado(s) correctamente.'
+			]);
+		} catch (Exception $e) {
+			error_log('[usuarioController::habilitarLote] ' . $e->getMessage());
+			$this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
+		}
+	}
 }
 
 // Procesamiento de requests cuando se accede directamente al archivo
@@ -156,6 +241,9 @@ if (basename($_SERVER['PHP_SELF']) === 'usuarioController.php') {
 			break;
 		case 'toggle':
 			$controller->toggleHabilitado();
+			break;
+		case 'habilitar_lote':
+			$controller->habilitarLote();
 			break;
 		default:
 			// Acción por defecto: listar
