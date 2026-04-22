@@ -3,12 +3,10 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 27-03-2026 a las 16:14:21
+-- Tiempo de generación: 22-04-2026 a las 20:40:33
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
-CREATE DATABASE IF NOT EXISTS `ifts15` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
-USE `ifts15`;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
@@ -117,10 +115,38 @@ CREATE TABLE `materia` (
 --
 
 INSERT INTO `materia` (`id_materia`, `id_carrera`, `nombre_materia`, `habilitado`, `cancelado`, `idCreate`, `idUpdate`) VALUES
-(1, 1, 'LA IMAGEN, LOS CAMPOS EN LA TV DIGITAL', 1, 0, '2025-12-01 22:29:02', '2026-03-26 15:37:26'),
-(2, 4, 'DIGITALIZACIÓN DE VIDEO COMPUESTO Y POR COMPONENTES', 1, 0, '2025-12-01 22:29:02', '2026-03-26 15:36:53'),
-(3, 2, 'DIGITALIZACIÓN Y CODIFICACIÓN', 1, 0, '2025-12-01 23:49:01', '2026-03-26 15:37:30'),
-(4, 3, 'ESTÁNDARES MPEG, SUS CARACTERÍSTICAS. FORMATOS MULTIMEDIA, DISTINTOS PARÁMETROS', 1, 0, '2025-12-02 02:00:48', '2026-03-26 15:37:33');
+(1, 3, 'LA IMAGEN, LOS CAMPOS EN LA TV DIGITAL', 1, 0, '2025-12-01 22:29:02', '2026-04-22 14:58:31'),
+(2, 2, 'DIGITALIZACIÓN DE VIDEO COMPUESTO Y POR COMPONENTES', 1, 0, '2025-12-01 22:29:02', '2026-04-22 14:58:28'),
+(3, 4, 'DIGITALIZACIÓN Y CODIFICACIÓN', 1, 0, '2025-12-01 23:49:01', '2026-04-01 18:27:00'),
+(4, 1, 'ESTÁNDARES MPEG, SUS CARACTERÍSTICAS. FORMATOS MULTIMEDIA, DISTINTOS PARÁMETROS', 1, 0, '2025-12-02 02:00:48', '2026-04-01 18:37:40'),
+(5, 1, 'nueva materia', 1, 0, '2026-04-01 17:25:30', '2026-04-01 17:26:00');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `matricula_materia`
+--
+
+CREATE TABLE `matricula_materia` (
+  `id_matricula_materia` int(11) NOT NULL,
+  `id_usuario_alumno` int(11) NOT NULL,
+  `id_materia` int(11) NOT NULL,
+  `id_profesor` int(11) DEFAULT NULL,
+  `estado` enum('espera','regular') NOT NULL DEFAULT 'espera',
+  `fecha_matriculacion` timestamp NULL DEFAULT NULL,
+  `habilitado` int(1) NOT NULL DEFAULT 1,
+  `cancelado` int(1) NOT NULL DEFAULT 0,
+  `idCreate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `idUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Volcado de datos para la tabla `matricula_materia`
+--
+
+INSERT INTO `matricula_materia` (`id_matricula_materia`, `id_usuario_alumno`, `id_materia`, `id_profesor`, `estado`, `fecha_matriculacion`, `habilitado`, `cancelado`, `idCreate`, `idUpdate`) VALUES
+(1, 5, 5, 12, 'regular', '2026-04-22 21:34:46', 1, 0, '2026-04-22 18:34:46', '2026-04-22 18:34:46'),
+(2, 8, 4, 12, 'regular', '2026-04-22 21:35:10', 1, 0, '2026-04-22 18:35:10', '2026-04-22 18:35:10');
 
 -- --------------------------------------------------------
 
@@ -200,7 +226,33 @@ INSERT INTO `persona` (`id_persona`, `apellido`, `fecha_nacimiento`, `nombre`, `
 (10, 'cliente', '2014-04-06', 'Sebastian', '1136528946', NULL, NULL, '26325698', 11, 1, 0, '2025-09-26 20:47:27', '2025-09-26 20:47:27'),
 (11, 'mino', '1985-03-20', 'seba', '1123652365', NULL, NULL, '52365478', 40, 1, 0, '2025-10-24 02:43:37', '2025-10-24 02:43:37'),
 (12, 'mino', '1978-10-16', 'seba', '1152365478', NULL, NULL, '12585236', 47, 1, 0, '2025-10-24 03:34:10', '2025-10-24 03:34:10'),
-(13, 'delinap', '1958-10-16', 'lesmuchaches', '1125369853', NULL, NULL, '12365478', 67, 1, 0, '2025-11-04 02:11:13', '2025-11-04 02:11:13');
+(13, 'delinap', '1958-10-16', 'lesmuchaches', '1125369853', NULL, NULL, '12365478', 67, 1, 0, '2025-11-04 02:11:13', '2025-11-04 02:11:13'),
+(14, 'mino', '1978-10-16', 'seba', '1158963719', 'https://res.cloudinary.com/dm8ds67tb/image/upload/v1775056585/ifts15/perfiles/ifts15/perfiles/69cd36c86c0cd.jpg', 'ifts15/perfiles/ifts15/perfiles/69cd36c86c0cd', '85946985', 47, 1, 0, '2026-03-27 17:35:28', '2026-04-01 15:16:26');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `profesor_materia`
+--
+
+CREATE TABLE `profesor_materia` (
+  `id_profesor_materia` int(11) NOT NULL,
+  `id_profesor` int(11) NOT NULL,
+  `id_materia` int(11) NOT NULL,
+  `habilitado` int(1) NOT NULL DEFAULT 1,
+  `cancelado` int(1) NOT NULL DEFAULT 0,
+  `idCreate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `idUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Volcado de datos para la tabla `profesor_materia`
+--
+
+INSERT INTO `profesor_materia` (`id_profesor_materia`, `id_profesor`, `id_materia`, `habilitado`, `cancelado`, `idCreate`, `idUpdate`) VALUES
+(1, 12, 2, 1, 0, '2026-04-22 17:48:20', '2026-04-22 18:35:10'),
+(3, 12, 4, 1, 0, '2026-04-22 18:32:27', '2026-04-22 18:32:27'),
+(4, 12, 5, 1, 0, '2026-04-22 18:32:29', '2026-04-22 18:32:29');
 
 -- --------------------------------------------------------
 
@@ -254,17 +306,18 @@ CREATE TABLE `usuario` (
 --
 
 INSERT INTO `usuario` (`id_usuario`, `email`, `clave`, `id_comision`, `id_carrera`, `id_añoCursada`, `id_rol`, `id_persona`, `habilitado`, `cancelado`, `idCreate`, `idUpdate`) VALUES
-(1, 'prueba@gmail.com', '$2y$12$sVaFyYEqkJ9GQk9XFoQMxuOcbIwXltz5yai4P6fxu4VKRlWBGo8Ou', 2, 1, 2, 3, 1, 1, 0, '2025-09-17 22:24:25', '2025-10-24 01:36:49'),
+(1, 'administrativo@gmail.com', '$2y$12$sVaFyYEqkJ9GQk9XFoQMxuOcbIwXltz5yai4P6fxu4VKRlWBGo8Ou', 2, 1, 2, 3, 1, 1, 0, '2025-09-17 22:24:25', '2026-04-22 18:30:00'),
 (2, 'nueva@hotmail.com', '$2y$12$BC9jClOBpderkWsFtafl1eQdoGb8G3AuVfweDbv8ImfHJ0xUt0Mly', NULL, NULL, NULL, 1, 4, 1, 0, '2025-09-20 02:47:28', '2025-10-24 01:36:49'),
 (3, 'infinityfree@gmail.com', '$2y$12$TQqKsojLT/TD8isbcOn6ausWmHcIAaxV0dZ7ULQQbOuJW58ZuPGgm', 2, 1, 3, 1, 5, 1, 0, '2025-09-21 17:36:53', '2025-09-21 17:36:53'),
 (4, 'noragomez@gimail.com', '$2y$12$00ZREWs/MCnUmd3dyJwvTeXO6U9A1SR4SwV76C.nnjSel5jjfg3wC', 2, 1, 3, 1, 6, 1, 0, '2025-09-24 19:40:46', '2025-09-24 19:40:46'),
 (5, 'lolilopez@gmail.com', '$2y$12$kQOvakhbfttqmy.FFKbnMuL6WmLL1JLBaZ7O02MqwWhvZoghGLnuC', 3, 1, 2, 1, 7, 1, 0, '2025-09-24 19:46:20', '2025-09-24 19:46:20'),
 (6, 'tunombre@gmail.com', '$2y$12$fNTR8ARN7n08cva4jHxlv.XX2uTyHFLgq4eZA6fE7WAM2Z6/nSOg.', 2, 1, 3, 1, 8, 1, 0, '2025-09-25 02:03:05', '2025-10-24 01:36:48'),
 (7, 'barbaro@gmail.com', '$2y$12$L./9ibHSdSjUSbxzzOdjMueCDHAGySw9ZFbxWZMO1hsq0.9GKrinK', 1, 1, 2, 1, 9, 1, 0, '2025-09-25 02:06:40', '2025-10-24 01:36:47'),
-(8, 'cabezon@gmail.com', '$2y$12$xuyjL8mE.ngtX.nndviWaeex1RUbeQd2WcKehO4jNaNnIzIJkbXxq', 2, 1, 2, 1, 10, 1, 0, '2025-09-26 20:47:27', '2025-10-24 03:39:57'),
+(8, 'cabezon@gmail.com', '$2y$12$8IYGQ9hvWwKB0JZY3SNK2e05124T3fspcqKh/IhXSglPY5qOCChAy', 2, 1, 2, 1, 10, 1, 0, '2025-09-26 20:47:27', '2026-04-22 18:37:39'),
 (9, 'window@gmail.com', '$2y$12$fR0fIM.2bvmmdxBemte3sOgH0Rqp7WEfs80FPZ/y.SX4m0qtHiBDC', 2, 1, 2, 1, 11, 1, 0, '2025-10-24 02:43:37', '2025-10-24 02:44:21'),
 (10, 'seba@gmail.com', '$2y$12$.WXM/pHlVXTPczxF2mxpWupkveD8ZxCiR61MoM.hHrNcwDdLknSDu', 1, 1, 1, 5, 12, 1, 0, '2025-10-24 03:34:10', '2026-03-20 21:45:32'),
-(11, 'losmuchachosdelinapifts@gmail.com', '$2y$12$8IYGQ9hvWwKB0JZY3SNK2e05124T3fspcqKh/IhXSglPY5qOCChAy', 3, 1, 2, 4, 13, 1, 0, '2025-11-04 02:11:13', '2025-11-04 02:14:04');
+(11, 'losmuchachosdelinapifts@gmail.com', '$2y$12$8IYGQ9hvWwKB0JZY3SNK2e05124T3fspcqKh/IhXSglPY5qOCChAy', 3, 1, 2, 4, 13, 1, 0, '2025-11-04 02:11:13', '2025-11-04 02:14:04'),
+(12, 'sebastianminotti@gmail.com', '$2y$10$8LpfnPvSMgsm9uucq4Cu8uHZumM5qxGwXT2dqvfequqqjR2N2DhAC', 1, 2, 1, 2, 14, 1, 0, '2026-03-27 17:35:28', '2026-04-22 17:45:52');
 
 --
 -- Índices para tablas volcadas
@@ -296,6 +349,15 @@ ALTER TABLE `materia`
   ADD KEY `id_carrera` (`id_carrera`);
 
 --
+-- Indices de la tabla `matricula_materia`
+--
+ALTER TABLE `matricula_materia`
+  ADD PRIMARY KEY (`id_matricula_materia`),
+  ADD UNIQUE KEY `uq_alumno_materia` (`id_usuario_alumno`,`id_materia`),
+  ADD KEY `idx_mm_materia` (`id_materia`),
+  ADD KEY `idx_mm_profesor` (`id_profesor`);
+
+--
 -- Indices de la tabla `notas`
 --
 ALTER TABLE `notas`
@@ -308,6 +370,14 @@ ALTER TABLE `notas`
 --
 ALTER TABLE `persona`
   ADD PRIMARY KEY (`id_persona`);
+
+--
+-- Indices de la tabla `profesor_materia`
+--
+ALTER TABLE `profesor_materia`
+  ADD PRIMARY KEY (`id_profesor_materia`),
+  ADD UNIQUE KEY `uq_profesor_materia` (`id_profesor`,`id_materia`),
+  ADD KEY `idx_pm_materia` (`id_materia`);
 
 --
 -- Indices de la tabla `roles`
@@ -352,7 +422,13 @@ ALTER TABLE `comision`
 -- AUTO_INCREMENT de la tabla `materia`
 --
 ALTER TABLE `materia`
-  MODIFY `id_materia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_materia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT de la tabla `matricula_materia`
+--
+ALTER TABLE `matricula_materia`
+  MODIFY `id_matricula_materia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `notas`
@@ -364,7 +440,13 @@ ALTER TABLE `notas`
 -- AUTO_INCREMENT de la tabla `persona`
 --
 ALTER TABLE `persona`
-  MODIFY `id_persona` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id_persona` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- AUTO_INCREMENT de la tabla `profesor_materia`
+--
+ALTER TABLE `profesor_materia`
+  MODIFY `id_profesor_materia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `roles`
@@ -376,7 +458,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT de la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- Restricciones para tablas volcadas
@@ -389,11 +471,26 @@ ALTER TABLE `materia`
   ADD CONSTRAINT `materia_ibfk_1` FOREIGN KEY (`id_carrera`) REFERENCES `carrera` (`id_carrera`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Filtros para la tabla `matricula_materia`
+--
+ALTER TABLE `matricula_materia`
+  ADD CONSTRAINT `fk_mm_alumno` FOREIGN KEY (`id_usuario_alumno`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_mm_materia` FOREIGN KEY (`id_materia`) REFERENCES `materia` (`id_materia`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_mm_profesor` FOREIGN KEY (`id_profesor`) REFERENCES `usuario` (`id_usuario`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
 -- Filtros para la tabla `notas`
 --
 ALTER TABLE `notas`
   ADD CONSTRAINT `notas_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `notas_ibfk_2` FOREIGN KEY (`id_materia`) REFERENCES `materia` (`id_materia`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `profesor_materia`
+--
+ALTER TABLE `profesor_materia`
+  ADD CONSTRAINT `fk_pm_materia` FOREIGN KEY (`id_materia`) REFERENCES `materia` (`id_materia`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_pm_profesor` FOREIGN KEY (`id_profesor`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `usuario`
