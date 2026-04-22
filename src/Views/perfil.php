@@ -1,12 +1,9 @@
 <?php
-// ...existing code...
 $esPerfilUsuario = true;
 require_once __DIR__ . '/../config.php';
 $conectarDB = new App\ConectionBD\ConectionDB();
 $conn = $conectarDB->getConnection();
 $isLoggedIn = isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
-$userEmail = $_SESSION['email'] ?? '';
-$userRole = isset($_SESSION['id_rol']) && $_SESSION['id_rol'] == 5 ? 'Administrador' : 'Usuario';
 if (!$isLoggedIn) {
     header('Location: ' . BASE_URL . '/index.php?error=acceso_denegado');
     exit;
@@ -14,17 +11,21 @@ if (!$isLoggedIn) {
 include __DIR__ . '/../Template/head.php';
 include __DIR__ . '/../Template/navBar.php';
 include __DIR__ . '/../Template/sidebar.php';
-// src/Views/perfil.php
-// Vista del perfil de usuario (alumno)
 
-// Espera recibir $datosPerfil (usuario, persona, carrera, notas)
 $usuario = $datosPerfil['usuario'] ?? [];
 $persona = $datosPerfil['persona'] ?? null;
 $carrera = $datosPerfil['carrera'] ?? [];
 $notas = $datosPerfil['notas'] ?? [];
 $materiasPerfil = $datosPerfil['materias_perfil'] ?? [];
+$tipoPerfil = $datosPerfil['tipo_perfil'] ?? 'alumno';
 
-// Mostrar errores si existen
+$inscripcionesTabla = $datosPerfil['inscripciones_tabla'] ?? [];
+$filtros = $datosPerfil['filtros'] ?? ['id_carrera' => 0, 'id_materia' => 0, 'id_anio_cursada' => 0];
+$opcionesFiltros = $datosPerfil['opciones_filtros'] ?? ['carreras' => [], 'materias' => [], 'anios' => []];
+
+$esProfesor = ($tipoPerfil === 'profesor');
+$tituloRol = $esProfesor ? 'Profesor' : 'Alumno';
+
 if (isset($error)) {
     echo '<div class="alert alert-danger">' . htmlspecialchars($error) . '</div>';
 }
@@ -110,7 +111,7 @@ if (isset($error)) {
                     </script>
                     <h4 class="fw-bold mb-1 text-primary"><?= htmlspecialchars($persona ? $persona->getNombre() : '') . ' ' . htmlspecialchars($persona ? $persona->getApellido() : '') ?></h4>
                     <p class="mb-1"><i class="bi bi-envelope me-1"></i> <?= htmlspecialchars($usuario['email'] ?? '') ?></p>
-                    <span class="badge bg-primary text-dark mb-2">Alumno</span>
+                    <span class="badge bg-primary text-dark mb-2"><?= htmlspecialchars($tituloRol) ?></span>
                     <hr>
                     <h6 class="text-warning mb-3">Datos personales</h6>
                     <ul class="list-group list-group-flush text-start mb-0">
@@ -118,59 +119,231 @@ if (isset($error)) {
                         <li class="list-group-item bg-transparent px-0 py-1"><strong>Fecha de nacimiento:</strong> <?= htmlspecialchars($persona ? $persona->getFechaNacimiento() : '') ?></li>
                         <li class="list-group-item bg-transparent px-0 py-1"><strong>Edad:</strong> <?= htmlspecialchars($persona ? $persona->getEdadBD() : '') ?></li>
                         <li class="list-group-item bg-transparent px-0 py-1"><strong>Teléfono:</strong> <?= htmlspecialchars($persona ? $persona->getTelefono() : '') ?></li>
+                        <?php if ($esProfesor): ?>
+                            <li class="list-group-item bg-transparent px-0 py-1"><strong>Carrera asignada:</strong> <?= htmlspecialchars($carrera['nombreCarrera'] ?? 'No asignada') ?></li>
+                        <?php endif; ?>
                     </ul>
                 </div>
             </div>
         </div>
 
-        <!-- Columna principal: Datos académicos y notas -->
+        <!-- Columna principal -->
         <div class="col-lg-8 mb-4">
-            <div class="card mb-4 slide-in-left">
-                <div class="card-header bg-primary text-dark">
-                    <i class="bi bi-mortarboard me-2"></i> Datos académicos
-                </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush mb-0">
-                        <li class="list-group-item bg-transparent px-0 py-1"><strong>Carrera:</strong> <?= htmlspecialchars($carrera['nombreCarrera'] ?? 'No asignada') ?></li>
-                        <li class="list-group-item bg-transparent px-0 py-1"><strong>Comisión:</strong> <?= htmlspecialchars($usuario['id_comision'] ?? 'No asignada') ?></li>
-                        <li class="list-group-item bg-transparent px-0 py-1"><strong>Año de cursada:</strong> <?= htmlspecialchars($usuario['id_añoCursada'] ?? 'No asignado') ?></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-header bg-primary text-dark">
-                    <i class="bi bi-book me-2"></i> Materias y notas
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle mb-0">
-                            <thead class="table-warning">
-                                <tr>
-                                    <th>Materia</th>
-                                    <th>Nota</th>
-                                    <th>Fecha</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($materiasPerfil)): ?>
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted">No hay materias asociadas a tu carrera.</td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php foreach ($materiasPerfil as $materia): ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars($materia['nombre_materia'] ?? '') ?></td>
-                                            <td><?= htmlspecialchars($materia['nota'] ?? 'Sin nota') ?></td>
-                                            <td><?= htmlspecialchars($materia['fecha_nota'] ?? '-') ?></td>
-                                        </tr>
+            <?php if ($esProfesor): ?>
+                <div class="card mb-4 slide-in-left">
+                    <div class="card-header bg-primary text-dark">
+                        <i class="bi bi-funnel me-2"></i> Filtros de inscripción
+                    </div>
+                    <div class="card-body">
+                        <form method="GET" action="<?= htmlspecialchars(BASE_URL) ?>/src/Controllers/perfilController.php" class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label for="filtro-carrera" class="form-label">Carrera</label>
+                                <select class="form-select" id="filtro-carrera" name="id_carrera">
+                                    <option value="0">Todas</option>
+                                    <?php foreach (($opcionesFiltros['carreras'] ?? []) as $itemCarrera): ?>
+                                        <option value="<?= (int)($itemCarrera['id_carrera'] ?? 0) ?>" <?= (int)($filtros['id_carrera'] ?? 0) === (int)($itemCarrera['id_carrera'] ?? 0) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($itemCarrera['carrera'] ?? '') ?>
+                                        </option>
                                     <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="filtro-materia" class="form-label">Materia</label>
+                                <select class="form-select" id="filtro-materia" name="id_materia">
+                                    <option value="0">Todas</option>
+                                    <?php foreach (($opcionesFiltros['materias'] ?? []) as $itemMateria): ?>
+                                        <option value="<?= (int)($itemMateria['id_materia'] ?? 0) ?>" <?= (int)($filtros['id_materia'] ?? 0) === (int)($itemMateria['id_materia'] ?? 0) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($itemMateria['nombre_materia'] ?? '') ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="filtro-anio" class="form-label">Año</label>
+                                <select class="form-select" id="filtro-anio" name="id_anio_cursada">
+                                    <option value="0">Todos</option>
+                                    <?php foreach (($opcionesFiltros['anios'] ?? []) as $itemAnio): ?>
+                                        <option value="<?= (int)($itemAnio['id_añoCursada'] ?? 0) ?>" <?= (int)($filtros['id_anio_cursada'] ?? 0) === (int)($itemAnio['id_añoCursada'] ?? 0) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars((string)($itemAnio['año'] ?? '')) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-search me-1"></i> Filtrar
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </div>
+
+                <div class="card">
+                    <div class="card-header bg-primary text-dark">
+                        <i class="bi bi-card-checklist me-2"></i> Alumnos por materia
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle mb-0" id="tabla-inscripciones-profesor">
+                                <thead class="table-warning">
+                                    <tr>
+                                        <th>N°</th>
+                                        <th>Carrera</th>
+                                        <th>Materia</th>
+                                        <th>Comisión</th>
+                                        <th>Año</th>
+                                        <th>Apellido</th>
+                                        <th>Mail</th>
+                                        <th>Checklist</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (empty($inscripcionesTabla)): ?>
+                                        <tr>
+                                            <td colspan="8" class="text-center text-muted">No hay alumnos para los filtros seleccionados.</td>
+                                        </tr>
+                                    <?php else: ?>
+                                        <?php foreach ($inscripcionesTabla as $idx => $fila): ?>
+                                            <?php $esRegularFila = (($fila['estado_matricula'] ?? 'espera') === 'regular'); ?>
+                                            <tr>
+                                                <td><?= $idx + 1 ?></td>
+                                                <td><?= htmlspecialchars($fila['carrera'] ?? '') ?></td>
+                                                <td><?= htmlspecialchars($fila['materia'] ?? '') ?></td>
+                                                <td><?= htmlspecialchars($fila['comision'] ?? '') ?></td>
+                                                <td><?= htmlspecialchars((string)($fila['anio'] ?? '')) ?></td>
+                                                <td><?= htmlspecialchars($fila['apellido'] ?? '') ?></td>
+                                                <td><?= htmlspecialchars($fila['email'] ?? '') ?></td>
+                                                <td>
+                                                    <div class="form-check d-flex justify-content-center">
+                                                        <input
+                                                            class="form-check-input checklist-matricula"
+                                                            type="checkbox"
+                                                            <?= $esRegularFila ? 'checked' : '' ?>
+                                                            data-id-alumno="<?= (int)($fila['id_alumno'] ?? 0) ?>"
+                                                            data-id-materia="<?= (int)($fila['id_materia'] ?? 0) ?>"
+                                                            title="Marcar como regular">
+                                                    </div>
+                                                    <small class="d-block text-center mt-1 estado-matricula-label <?= $esRegularFila ? 'text-success' : 'text-muted' ?>">
+                                                        <?= $esRegularFila ? 'Regular' : 'En espera' ?>
+                                                    </small>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="matricula-feedback" class="small mt-3" style="display:none;"></div>
+                    </div>
+                </div>
+            <?php else: ?>
+                <div class="card mb-4 slide-in-left">
+                    <div class="card-header bg-primary text-dark">
+                        <i class="bi bi-mortarboard me-2"></i> Datos académicos
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush mb-0">
+                            <li class="list-group-item bg-transparent px-0 py-1"><strong>Carrera:</strong> <?= htmlspecialchars($carrera['nombreCarrera'] ?? 'No asignada') ?></li>
+                            <li class="list-group-item bg-transparent px-0 py-1"><strong>Comisión:</strong> <?= htmlspecialchars($usuario['id_comision'] ?? 'No asignada') ?></li>
+                            <li class="list-group-item bg-transparent px-0 py-1"><strong>Año de cursada:</strong> <?= htmlspecialchars($usuario['id_añoCursada'] ?? 'No asignado') ?></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header bg-primary text-dark">
+                        <i class="bi bi-book me-2"></i> Materias y notas
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle mb-0">
+                                <thead class="table-warning">
+                                    <tr>
+                                        <th>Materia</th>
+                                        <th>Nota</th>
+                                        <th>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (empty($materiasPerfil)): ?>
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted">No hay materias asociadas a tu carrera.</td>
+                                        </tr>
+                                    <?php else: ?>
+                                        <?php foreach ($materiasPerfil as $materia): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($materia['nombre_materia'] ?? '') ?></td>
+                                                <td><?= htmlspecialchars($materia['nota'] ?? 'Sin nota') ?></td>
+                                                <td><?= htmlspecialchars($materia['fecha_nota'] ?? '-') ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
+
+<?php if ($esProfesor): ?>
+<script>
+document.querySelectorAll('.checklist-matricula').forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+        var idAlumno = parseInt(this.dataset.idAlumno || '0', 10);
+        var idMateria = parseInt(this.dataset.idMateria || '0', 10);
+        var matriculado = this.checked ? 1 : 0;
+        var input = this;
+        var estadoLabel = this.closest('td').querySelector('.estado-matricula-label');
+        var feedback = document.getElementById('matricula-feedback');
+
+        input.disabled = true;
+        fetch('../Controllers/perfilController.php?action=actualizar_matricula', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            },
+            body: 'id_alumno=' + encodeURIComponent(idAlumno)
+                + '&id_materia=' + encodeURIComponent(idMateria)
+                + '&matriculado=' + encodeURIComponent(matriculado)
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (!data || !data.success) {
+                input.checked = !input.checked;
+                feedback.className = 'small mt-3 text-danger';
+                feedback.textContent = (data && data.message) ? data.message : 'No se pudo actualizar la matrícula.';
+                feedback.style.display = 'block';
+                return;
+            }
+
+            if (input.checked) {
+                estadoLabel.textContent = 'Regular';
+                estadoLabel.classList.remove('text-muted');
+                estadoLabel.classList.add('text-success');
+            } else {
+                estadoLabel.textContent = 'En espera';
+                estadoLabel.classList.remove('text-success');
+                estadoLabel.classList.add('text-muted');
+            }
+
+            feedback.className = 'small mt-3 text-success';
+            feedback.textContent = data.message || 'Matrícula actualizada correctamente.';
+            feedback.style.display = 'block';
+        })
+        .catch(function() {
+            input.checked = !input.checked;
+            feedback.className = 'small mt-3 text-danger';
+            feedback.textContent = 'Error de red al actualizar matrícula.';
+            feedback.style.display = 'block';
+        })
+        .finally(function() {
+            input.disabled = false;
+        });
+    });
+});
+</script>
+<?php endif; ?>
+
 <?php include __DIR__ . '/../Template/footer.php'; ?>

@@ -29,7 +29,12 @@ class perfilController {
             exit;
         }
         $id_usuario = $_SESSION['id_usuario'];
-        $datosPerfil = PerfilService::obtenerDatosPerfil($this->conn, $id_usuario);
+        $filtros = [
+            'id_carrera' => isset($_GET['id_carrera']) ? (int)$_GET['id_carrera'] : 0,
+            'id_materia' => isset($_GET['id_materia']) ? (int)$_GET['id_materia'] : 0,
+            'id_anio_cursada' => isset($_GET['id_anio_cursada']) ? (int)$_GET['id_anio_cursada'] : 0,
+        ];
+        $datosPerfil = PerfilService::obtenerDatosPerfil($this->conn, $id_usuario, $filtros);
         if (!$datosPerfil) {
             $error = 'No se encontraron datos de perfil.';
             include __DIR__ . '/../Views/perfil.php';
@@ -38,6 +43,45 @@ class perfilController {
         include __DIR__ . '/../Views/perfil.php';
     }
 
+}
+
+if (isset($_GET['action']) && $_GET['action'] === 'actualizar_matricula') {
+    $controller = new perfilController();
+    header('Content-Type: application/json; charset=utf-8');
+
+    if (!isset($_SESSION['id_usuario']) || !isset($_SESSION['id_rol'])) {
+        echo json_encode(['success' => false, 'message' => 'No autenticado.']);
+        exit;
+    }
+
+    if ((int)$_SESSION['id_rol'] !== 2) {
+        echo json_encode(['success' => false, 'message' => 'Solo profesores pueden realizar esta acción.']);
+        exit;
+    }
+
+    $payload = $_POST;
+    if (empty($payload)) {
+        $raw = file_get_contents('php://input');
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded)) {
+            $payload = $decoded;
+        }
+    }
+
+    $idAlumno = (int)($payload['id_alumno'] ?? 0);
+    $idMateria = (int)($payload['id_materia'] ?? 0);
+    $matriculado = (int)($payload['matriculado'] ?? 0) === 1;
+
+    $resultado = PerfilService::actualizarEstadoMatricula(
+        $controller->conn,
+        (int)$_SESSION['id_usuario'],
+        $idAlumno,
+        $idMateria,
+        $matriculado
+    );
+
+    echo json_encode($resultado);
+    exit;
 }
 
 // Acción AJAX para cambiar la foto de perfil
