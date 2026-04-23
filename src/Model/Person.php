@@ -160,7 +160,7 @@ class Person
     {
         $cloudinaryService = new CloudinaryService();
         $publicId = 'ifts15/perfiles/' . $this->dni . '_' . uniqid();
-        $result = $cloudinaryService->uploadImage($fileTmpPath, $fileName, 'ifts15/perfiles', $publicId);
+        $result = $cloudinaryService->uploadProfileImage($fileTmpPath, $fileName, 'ifts15/perfiles', $publicId);
         $this->foto_perfil_url = $result['secure_url'] ?? null;
         $this->foto_perfil_public_id = $result['public_id'] ?? null;
         return $result;

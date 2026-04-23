@@ -63,7 +63,8 @@ if (isset($error)) {
                             <form id="form-cambiar-foto" enctype="multipart/form-data">
                                 <div class="mb-2">
                                     <label for="nueva_foto" class="form-label">Nueva foto de perfil</label>
-                                    <input class="form-control" type="file" id="nueva_foto" name="nueva_foto" accept="image/*" required>
+                                    <input class="form-control" type="file" id="nueva_foto" name="nueva_foto" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" required>
+                                    <div class="form-text">Formatos permitidos: JPG, PNG o WEBP. Tamaño máximo: 2 MB.</div>
                                 </div>
                                 <div class="d-flex justify-content-end">
                                     <button type="button" id="cancelar-cambiar-foto" class="btn btn-secondary btn-sm me-2">Cancelar</button>
@@ -83,12 +84,53 @@ if (isset($error)) {
                     document.getElementById('cancelar-cambiar-foto').addEventListener('click', function() {
                         document.getElementById('card-cambiar-foto').style.display = 'none';
                         document.getElementById('form-cambiar-foto').reset();
+                        document.getElementById('foto-error-msg').textContent = '';
                         document.getElementById('foto-error-msg').style.display = 'none';
+                    });
+
+                    document.getElementById('nueva_foto').addEventListener('change', function() {
+                        var fotoError = document.getElementById('foto-error-msg');
+                        var archivo = this.files && this.files[0] ? this.files[0] : null;
+                        var tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
+                        var maximoBytes = 2 * 1024 * 1024;
+
+                        fotoError.textContent = '';
+                        fotoError.style.display = 'none';
+
+                        if (!archivo) {
+                            return;
+                        }
+
+                        if (tiposPermitidos.indexOf(archivo.type) === -1) {
+                            this.value = '';
+                            fotoError.textContent = 'Formato inválido. Solo se permiten JPG, PNG o WEBP.';
+                            fotoError.style.display = 'block';
+                            return;
+                        }
+
+                        if (archivo.size > maximoBytes) {
+                            this.value = '';
+                            fotoError.textContent = 'La imagen no puede superar los 2 MB.';
+                            fotoError.style.display = 'block';
+                        }
                     });
 
                     // Subida AJAX de la foto
                     document.getElementById('form-cambiar-foto').addEventListener('submit', function(e) {
                         e.preventDefault();
+                        var fotoError = document.getElementById('foto-error-msg');
+                        var inputFoto = document.getElementById('nueva_foto');
+                        var archivo = inputFoto.files && inputFoto.files[0] ? inputFoto.files[0] : null;
+
+                        fotoError.textContent = '';
+                        fotoError.style.display = 'none';
+
+                        if (!archivo) {
+                            fotoError.textContent = 'Seleccioná una imagen antes de continuar.';
+                            fotoError.style.display = 'block';
+                            return;
+                        }
+
                         var formData = new FormData(this);
                         fetch('../Controllers/perfilController.php?action=cambiar_foto', {
                             method: 'POST',
@@ -97,12 +139,41 @@ if (isset($error)) {
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                // Actualizar imagen de perfil en ambos lugares (perfil y navbar) con cache busting
-                                document.getElementById('foto-perfil-img').src = data.nueva_foto_url + '?t=' + new Date().getTime();
-                                // Actualizar avatar del navbar si existe
+                                // Actualizar imagen del perfil; si era icono <i>, reemplazarlo por <img>.
+                                var cacheBustedUrl = data.nueva_foto_url + '?t=' + new Date().getTime();
+                                var fotoPerfilActual = document.getElementById('foto-perfil-img');
+                                if (fotoPerfilActual) {
+                                    if (fotoPerfilActual.tagName && fotoPerfilActual.tagName.toLowerCase() === 'img') {
+                                        fotoPerfilActual.src = cacheBustedUrl;
+                                    } else {
+                                        var nuevaImg = document.createElement('img');
+                                        nuevaImg.id = 'foto-perfil-img';
+                                        nuevaImg.src = cacheBustedUrl;
+                                        nuevaImg.alt = 'Foto de perfil';
+                                        nuevaImg.className = 'rounded-circle mb-3 border border-3 border-warning';
+                                        nuevaImg.style.width = '120px';
+                                        nuevaImg.style.height = '120px';
+                                        nuevaImg.style.objectFit = 'cover';
+                                        fotoPerfilActual.replaceWith(nuevaImg);
+                                    }
+                                }
+
+                                // Actualizar avatar del navbar si existe; si no existe, crear <img> en lugar del icono.
                                 var navAvatar = document.querySelector('.navbar img[alt="Avatar"]');
                                 if (navAvatar) {
-                                    navAvatar.src = data.nueva_foto_url + '?t=' + new Date().getTime();
+                                    navAvatar.src = cacheBustedUrl;
+                                } else {
+                                    var navIcon = document.querySelector('.navbar #userDropdown i.bi-person-circle');
+                                    if (navIcon) {
+                                        var navImg = document.createElement('img');
+                                        navImg.src = cacheBustedUrl;
+                                        navImg.alt = 'Avatar';
+                                        navImg.className = 'rounded-circle';
+                                        navImg.style.width = '32px';
+                                        navImg.style.height = '32px';
+                                        navImg.style.objectFit = 'cover';
+                                        navIcon.replaceWith(navImg);
+                                    }
                                 }
                                 document.getElementById('card-cambiar-foto').style.display = 'none';
                                 document.getElementById('form-cambiar-foto').reset();

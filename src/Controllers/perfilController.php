@@ -88,35 +88,85 @@ if (isset($_GET['action']) && $_GET['action'] === 'actualizar_matricula') {
 if (isset($_GET['action']) && $_GET['action'] === 'cambiar_foto') {
     $controller = new perfilController();
     header('Content-Type: application/json; charset=utf-8');
+    $maxFileSize = 2 * 1024 * 1024;
+    $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
     if (!isset($_SESSION['id_usuario'])) {
         echo json_encode(['success' => false, 'error' => 'No autenticado']);
         exit;
     }
-    if (!isset($_FILES['nueva_foto']) || $_FILES['nueva_foto']['error'] !== UPLOAD_ERR_OK) {
-        echo json_encode(['success' => false, 'error' => 'Archivo no recibido o error de subida.']);
+    if (!isset($_FILES['nueva_foto'])) {
+        echo json_encode(['success' => false, 'error' => 'Archivo no recibido.']);
         exit;
     }
+
+    if ($_FILES['nueva_foto']['error'] !== UPLOAD_ERR_OK) {
+        $uploadErrors = [
+            UPLOAD_ERR_INI_SIZE => 'La imagen supera el tamaño máximo permitido por el servidor.',
+            UPLOAD_ERR_FORM_SIZE => 'La imagen supera el tamaño máximo permitido por el formulario.',
+            UPLOAD_ERR_PARTIAL => 'La imagen se subió de forma incompleta.',
+            UPLOAD_ERR_NO_FILE => 'No se seleccionó ninguna imagen.',
+            UPLOAD_ERR_NO_TMP_DIR => 'Falta la carpeta temporal del servidor.',
+            UPLOAD_ERR_CANT_WRITE => 'No se pudo escribir la imagen en disco.',
+            UPLOAD_ERR_EXTENSION => 'Una extensión del servidor bloqueó la subida.'
+        ];
+        $errorCode = (int)$_FILES['nueva_foto']['error'];
+        echo json_encode(['success' => false, 'error' => $uploadErrors[$errorCode] ?? 'Error de subida no identificado.']);
+        exit;
+    }
+
+    if ((int)$_FILES['nueva_foto']['size'] <= 0) {
+        echo json_encode(['success' => false, 'error' => 'La imagen recibida está vacía.']);
+        exit;
+    }
+
+    if ((int)$_FILES['nueva_foto']['size'] > $maxFileSize) {
+        echo json_encode(['success' => false, 'error' => 'La imagen no puede superar los 2 MB.']);
+        exit;
+    }
+
+    $fileTmpPath = $_FILES['nueva_foto']['tmp_name'];
+    if (!is_uploaded_file($fileTmpPath)) {
+        echo json_encode(['success' => false, 'error' => 'No se pudo validar la imagen subida.']);
+        exit;
+    }
+
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = $finfo ? finfo_file($finfo, $fileTmpPath) : false;
+    if ($finfo) {
+        finfo_close($finfo);
+    }
+
+    if (!$mimeType || !in_array($mimeType, $allowedMimeTypes, true)) {
+        echo json_encode(['success' => false, 'error' => 'Formato inválido. Solo se permiten JPG, PNG o WEBP.']);
+        exit;
+    }
+
+    if (@getimagesize($fileTmpPath) === false) {
+        echo json_encode(['success' => false, 'error' => 'El archivo seleccionado no es una imagen válida.']);
+        exit;
+    }
+
     require_once __DIR__ . '/../Model/Person.php';
     require_once __DIR__ . '/../Services/CloudinaryService.php';
     $id_usuario = $_SESSION['id_usuario'];
     // Buscar id_persona del usuario
     require_once __DIR__ . '/../Model/User.php';
-    $user = \App\Model\User::buscarPorId($controller->conn, $id_usuario);
-    if (!$user) {
+    $user = \App\Model\User::obtenerUsuarioCompleto($controller->conn, (int)$id_usuario);
+    if (!$user || empty($user['id_persona'])) {
         echo json_encode(['success' => false, 'error' => 'Usuario no encontrado']);
         exit;
     }
-    $id_persona = $user->getIdPersona();
+    $id_persona = (int)$user['id_persona'];
     $person = \App\Model\Person::buscarPorId($controller->conn, $id_persona);
     if (!$person) {
         echo json_encode(['success' => false, 'error' => 'Persona no encontrada']);
         exit;
     }
-    $fileTmpPath = $_FILES['nueva_foto']['tmp_name'];
     $fileName = $_FILES['nueva_foto']['name'];
     try {
         $cloudinary = new \App\Services\CloudinaryService();
-        $uploadResult = $cloudinary->uploadImage($fileTmpPath, $fileName, 'ifts15/perfiles');
+        $uploadResult = $cloudinary->uploadProfileImage($fileTmpPath, $fileName, 'ifts15/perfiles');
         $nueva_url = $uploadResult['secure_url'] ?? null;
         $nuevo_public_id = $uploadResult['public_id'] ?? null;
         if (!$nueva_url || !$nuevo_public_id) {
