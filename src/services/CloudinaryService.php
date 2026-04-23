@@ -11,11 +11,19 @@ class CloudinaryService
 
     public function __construct()
     {
+        $cloudName = trim((string)($_ENV['CLOUDINARY_CLOUD_NAME'] ?? ''));
+        $apiKey = trim((string)($_ENV['CLOUDINARY_API_KEY'] ?? ''));
+        $apiSecret = trim((string)($_ENV['CLOUDINARY_API_SECRET'] ?? ''));
+
+        if ($cloudName === '' || $apiKey === '' || $apiSecret === '') {
+            throw new Exception('Configuracion de Cloudinary incompleta. Defini CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY y CLOUDINARY_API_SECRET en el archivo .env');
+        }
+
         $this->cloudinary = new Cloudinary([
             'cloud' => [
-                'cloud_name' => $_ENV['CLOUDINARY_CLOUD_NAME'],
-                'api_key'    => $_ENV['CLOUDINARY_API_KEY'],
-                'api_secret' => $_ENV['CLOUDINARY_API_SECRET'],
+                'cloud_name' => $cloudName,
+                'api_key'    => $apiKey,
+                'api_secret' => $apiSecret,
             ],
         ]);
     }

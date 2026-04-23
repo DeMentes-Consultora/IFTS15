@@ -59,14 +59,79 @@ class usuarioController
 		try {
 			$total = User::contarTodos($this->conn);
 			$usuarios = User::obtenerTodos($this->conn, $limit, $offset);
+			$canChangeRoles = function_exists('getUserRoleId') && getUserRoleId() === 5;
+			$roles = $canChangeRoles ? User::obtenerRolesHabilitados($this->conn) : [];
 		} catch (Exception $e) {
 			error_log('Error al obtener usuarios: ' . $e->getMessage());
 			$usuarios = [];
 			$total = 0;
+			$canChangeRoles = false;
+			$roles = [];
 		}
 
 		// Incluir la vista (solo vista)
 		include __DIR__ . '/../Views/usuarios.php';
+	}
+
+	/**
+	 * Cambiar rol de usuario via AJAX (solo Administrador: id_rol = 5)
+	 */
+	public function cambiarRol()
+	{
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+			$this->jsonResponse(['success' => false, 'error' => 'Método no permitido'], 405);
+		}
+
+		if (!function_exists('isLoggedIn') || !function_exists('getUserRoleId')) {
+			require_once __DIR__ . '/../config.php';
+		}
+
+		if (!isLoggedIn() || getUserRoleId() !== 5) {
+			$this->jsonResponse(['success' => false, 'error' => 'Acceso denegado'], 403);
+		}
+
+		$postedToken = $_POST['csrf_token'] ?? '';
+		if (empty($postedToken) || empty($_SESSION['csrf_usuario_role']) || !hash_equals($_SESSION['csrf_usuario_role'], $postedToken)) {
+			$this->jsonResponse(['success' => false, 'error' => 'Token CSRF inválido'], 403);
+		}
+
+		$id = intval($_POST['id'] ?? 0);
+		$idRol = intval($_POST['id_rol'] ?? 0);
+		$currentUserId = intval($_SESSION['user_id'] ?? 0);
+
+		if ($id <= 0 || $idRol <= 0) {
+			$this->jsonResponse(['success' => false, 'error' => 'Datos inválidos'], 400);
+		}
+
+		if ($currentUserId > 0 && $id === $currentUserId) {
+			$this->jsonResponse(['success' => false, 'error' => 'No podés cambiar tu propio rol'], 403);
+		}
+
+		if (!User::esRolHabilitado($this->conn, $idRol)) {
+			$this->jsonResponse(['success' => false, 'error' => 'Rol inválido o deshabilitado'], 400);
+		}
+
+		try {
+			$ok = User::actualizarRol($this->conn, $id, $idRol);
+			if (!$ok) {
+				$this->jsonResponse(['success' => false, 'error' => 'No se pudo actualizar el rol'], 500);
+			}
+
+			try {
+				$newToken = bin2hex(random_bytes(32));
+			} catch (Exception $e) {
+				$newToken = bin2hex(openssl_random_pseudo_bytes(32));
+			}
+			$_SESSION['csrf_usuario_role'] = $newToken;
+
+			$this->jsonResponse([
+				'success' => true,
+				'new_csrf_role' => $newToken,
+			]);
+		} catch (Exception $e) {
+			error_log('[usuarioController::cambiarRol] ' . $e->getMessage());
+			$this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
+		}
 	}
 
 	/**
@@ -238,6 +303,9 @@ if (basename($_SERVER['PHP_SELF']) === 'usuarioController.php') {
 	switch ($action) {
 		case 'listar':
 			$controller->listar();
+			break;
+		case 'cambiar_rol':
+			$controller->cambiarRol();
 			break;
 		case 'toggle':
 			$controller->toggleHabilitado();

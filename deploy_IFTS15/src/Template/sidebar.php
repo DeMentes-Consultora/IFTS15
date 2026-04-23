@@ -1,6 +1,10 @@
 <?php
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/UserAvatarHelper.php';
+require_once __DIR__ . '/../Model/SiteCustomizationModel.php';
+
+use App\Model\SiteCustomizationModel;
+
 if (!isset($isLoggedIn) || !$isLoggedIn) return;
 $userEmail = $_SESSION['email'] ?? '';
 $userIdRol = isset($_SESSION['id_rol']) ? intval($_SESSION['id_rol']) : (isset($_SESSION['role_id']) ? intval($_SESSION['role_id']) : null);
@@ -9,6 +13,12 @@ $userRole = $roleNames[$userIdRol] ?? 'Alumno';
 $datosUsuarioSidebar = isset($_SESSION['user_id']) ? App\Model\User::obtenerUsuarioCompleto($conn, $_SESSION['user_id']) : null;
 $avatarUrl = $datosUsuarioSidebar['foto_perfil_url'] ?? null;
 $nombreCompletoSidebar = trim(($datosUsuarioSidebar['nombre'] ?? '') . ' ' . ($datosUsuarioSidebar['apellido'] ?? ''));
+
+$siteSidebar = SiteCustomizationModel::getSidebar($conn);
+$sidebarBrandText = trim((string)($siteSidebar['brand_text'] ?? 'Panel de Usuario'));
+$sidebarBrandLogo = (!empty($siteSidebar['habilitado']) && !empty($siteSidebar['logo_url']))
+    ? (string)$siteSidebar['logo_url']
+    : (BASE_URL . '/src/Public/images/logo.png');
 ?>
 
 <!-- Bootstrap Offcanvas Sidebar -->
@@ -20,8 +30,8 @@ $nombreCompletoSidebar = trim(($datosUsuarioSidebar['nombre'] ?? '') . ' ' . ($d
     <!-- Header del offcanvas -->
     <div class="offcanvas-header bg-secondary text-white">
         <h5 class="offcanvas-title" id="sidebarOffcanvasLabel">
-            <i class="bi bi-person-circle me-2"></i>
-            Panel de Usuario
+            <img src="<?php echo htmlspecialchars($sidebarBrandLogo, ENT_QUOTES, 'UTF-8'); ?>" alt="Logo Sidebar" style="height:24px;width:24px;object-fit:contain;" class="me-2 rounded-circle">
+            <?php echo htmlspecialchars($sidebarBrandText, ENT_QUOTES, 'UTF-8'); ?>
         </h5>
         <button type="button"
             class="btn-close btn-close-white"
@@ -224,6 +234,22 @@ $nombreCompletoSidebar = trim(($datosUsuarioSidebar['nombre'] ?? '') . ' ' . ($d
                                     ABM Carreras y Materias
                                 </a>
                             </li>
+                            <?php if (canManageSiteCustomization()): ?>
+                            <li class="nav-item">
+                                <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=dashboard-admin">
+                                    <i class="bi bi-images me-2"></i>
+                                    Dashboard Sitio
+                                </a>
+                            </li>
+                            <?php endif; ?>
+                            <?php if (in_array($userIdRol, [3, 5], true)): ?>
+                            <li class="nav-item">
+                                <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=abm-profesores-materias">
+                                    <i class="bi bi-person-workspace me-2"></i>
+                                    ABM Profesor-Materia
+                                </a>
+                            </li>
+                            <?php endif; ?>
                             <li class="nav-item">
                                 <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=pagina_en_construccion">
                                     <i class="bi bi-bar-chart me-2"></i>
@@ -256,11 +282,11 @@ $nombreCompletoSidebar = trim(($datosUsuarioSidebar['nombre'] ?? '') . ' ' . ($d
         <!-- Footer del sidebar -->
         <div class="mt-auto p-3 border-top border-secondary">
             <small style="color: #ffd700 !important; font-weight: 600; text-shadow: 1px 1px 3px rgba(0,0,0,0.8), -1px -1px 3px rgba(0,0,0,0.8), 1px -1px 3px rgba(0,0,0,0.8), -1px 1px 3px rgba(0,0,0,0.8);">
-                <img src="<?php echo BASE_URL; ?>/src/Public/images/logo.png"
+                <img src="<?php echo htmlspecialchars($sidebarBrandLogo, ENT_QUOTES, 'UTF-8'); ?>"
                     alt="IFTS15"
                     height="20"
                     class="me-2">
-                IFTS15 Sistema Web
+                <?php echo htmlspecialchars($sidebarBrandText, ENT_QUOTES, 'UTF-8'); ?>
             </small>
         </div>
     </div>

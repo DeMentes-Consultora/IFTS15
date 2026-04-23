@@ -16,6 +16,19 @@ if (empty($_SESSION['csrf_usuario_toggle'])) {
     }
 }
 $csrfToken = $_SESSION['csrf_usuario_toggle'];
+
+$canChangeRoles = isset($canChangeRoles) ? (bool)$canChangeRoles : (function_exists('getUserRoleId') && getUserRoleId() === 5);
+$roles = isset($roles) && is_array($roles) ? $roles : [];
+
+if ($canChangeRoles && empty($_SESSION['csrf_usuario_role'])) {
+    try {
+        $_SESSION['csrf_usuario_role'] = bin2hex(random_bytes(32));
+    } catch (Exception $e) {
+        $_SESSION['csrf_usuario_role'] = bin2hex(openssl_random_pseudo_bytes(32));
+    }
+}
+$csrfRoleToken = $_SESSION['csrf_usuario_role'] ?? '';
+$currentUserIdSession = (int)($_SESSION['user_id'] ?? 0);
 ?>
 
 <div class="card">
@@ -54,7 +67,35 @@ $csrfToken = $_SESSION['csrf_usuario_toggle'];
                         foreach ($usuarios as $u): ?>
                             <tr data-id="<?= (int)$u['id_usuario'] ?>">
                                 <td><?= $i++ ?></td>
-                                <td><?= htmlspecialchars($u['role_name'] ?? 'Usuario') ?></td>
+                                <td>
+                                    <?php
+                                        $currentRoleId = (int)($u['id_rol'] ?? 0);
+                                        $currentRoleName = (string)($u['role_name'] ?? 'Usuario');
+                                    ?>
+                                    <?php if ($canChangeRoles): ?>
+                                        <?php $isOwnUserRow = $currentUserIdSession > 0 && $currentUserIdSession === (int)$u['id_usuario']; ?>
+                                        <select
+                                            class="form-select form-select-sm role-select"
+                                            data-id="<?= (int)$u['id_usuario'] ?>"
+                                            data-current-role-id="<?= $currentRoleId ?>"
+                                            aria-label="Cambiar rol de usuario"
+                                            <?= $isOwnUserRow ? 'disabled title="No podés cambiar tu propio rol"' : '' ?>
+                                        >
+                                            <option value="<?= $currentRoleId ?>" selected><?= htmlspecialchars($currentRoleName) ?> (actual)</option>
+                                            <?php foreach ($roles as $rol): ?>
+                                                <?php
+                                                    $rolId = (int)($rol['id_rol'] ?? 0);
+                                                    if ($rolId <= 0 || $rolId === $currentRoleId) {
+                                                        continue;
+                                                    }
+                                                ?>
+                                                <option value="<?= $rolId ?>"><?= htmlspecialchars((string)($rol['rol'] ?? '')) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    <?php else: ?>
+                                        <?= htmlspecialchars($currentRoleName) ?>
+                                    <?php endif; ?>
+                                </td>
                                 <td><?= htmlspecialchars($u['apellido'] ?? '') ?></td>
                                 <td><?= htmlspecialchars($u['nombre'] ?? '') ?></td>
                                 <td><?= htmlspecialchars($u['email'] ?? '') ?></td>
@@ -100,7 +141,9 @@ $csrfToken = $_SESSION['csrf_usuario_toggle'];
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         let csrfToken = '<?= $csrfToken ?>';
+        let csrfRoleToken = '<?= $csrfRoleToken ?>';
         const toggles = document.querySelectorAll('.toggle-habilitado');
+        const roleSelects = document.querySelectorAll('.role-select');
         toggles.forEach(function(cb) {
             cb.addEventListener('change', function() {
                 const id = this.dataset.id;
@@ -141,6 +184,70 @@ $csrfToken = $_SESSION['csrf_usuario_toggle'];
                     });
             });
         });
+
+        roleSelects.forEach(function(selectEl) {
+            selectEl.addEventListener('change', function() {
+                const id = this.dataset.id;
+                const previousRoleId = this.dataset.currentRoleId;
+                const newRoleId = this.value;
+
+                if (newRoleId === previousRoleId) {
+                    return;
+                }
+
+                selectEl.disabled = true;
+
+                fetch('<?= BASE_URL ?>/src/Controllers/usuarioController.php?action=cambiar_rol', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: 'id=' + encodeURIComponent(id) + '&id_rol=' + encodeURIComponent(newRoleId) + '&csrf_token=' + encodeURIComponent(csrfRoleToken)
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast('Rol actualizado correctamente', 'success');
+                            selectEl.dataset.currentRoleId = newRoleId;
+                            if (data.new_csrf_role) {
+                                csrfRoleToken = data.new_csrf_role;
+                            }
+                            reorderRoleOptions(selectEl, newRoleId);
+                        } else {
+                            showToast('Error actualizando rol: ' + (data.error || 'error desconocido'), 'danger');
+                            selectEl.value = previousRoleId;
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error AJAX cambiar_rol:', err);
+                        showToast('Error comunicándose con el servidor', 'danger');
+                        selectEl.value = previousRoleId;
+                    })
+                    .finally(() => {
+                        selectEl.disabled = false;
+                    });
+            });
+        });
+
+        function reorderRoleOptions(selectEl, selectedValue) {
+            const options = Array.from(selectEl.options);
+            options.forEach(function(option) {
+                option.textContent = option.textContent.replace(' (actual)', '');
+            });
+
+            const selectedOption = options.find(function(option) {
+                return option.value === selectedValue;
+            });
+
+            if (!selectedOption) {
+                return;
+            }
+
+            selectedOption.textContent = selectedOption.textContent + ' (actual)';
+            selectEl.insertBefore(selectedOption, selectEl.firstChild);
+            selectEl.value = selectedValue;
+        }
 
         // Toast helper using Bootstrap 5
         function showToast(message, type = 'info', timeout = 4000) {

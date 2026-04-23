@@ -1,12 +1,22 @@
 <?php
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/UserAvatarHelper.php';
+require_once __DIR__ . '/../Model/SiteCustomizationModel.php';
+
+use App\Model\SiteCustomizationModel;
+
 $isLoggedIn = isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
 $userEmail = $_SESSION['email'] ?? '';
 $userIdRol = isset($_SESSION['id_rol']) ? intval($_SESSION['id_rol']) : (isset($_SESSION['role_id']) ? intval($_SESSION['role_id']) : null);
 $roleNames = [1 => 'Alumno', 2 => 'Profesor', 3 => 'Administrativo', 4 => 'Directivo', 5 => 'Administrador'];
 $userRole = $roleNames[$userIdRol] ?? 'Alumno';
 $avatarUrl = $isLoggedIn ? getUserAvatarUrl($conn) : null;
+
+$siteNavbar = SiteCustomizationModel::getNavbar($conn);
+$navbarBrand = trim((string)($siteNavbar['brand_text'] ?? 'IFTS15'));
+$navbarLogo = (!empty($siteNavbar['habilitado']) && !empty($siteNavbar['logo_url']))
+    ? (string)$siteNavbar['logo_url']
+    : (BASE_URL . '/src/Public/images/logo.png');
 // ...existing code...
 ?>
 <!-- Navbar Bootstrap 5 minimalista y robusta -->
@@ -25,12 +35,14 @@ $avatarUrl = $isLoggedIn ? getUserAvatarUrl($conn) : null;
             <?php endif; ?>
         </div>
 
-        <!-- Logo centrado absoluto -->
+        <!-- Logo + texto centrados -->
         <div class="position-absolute top-50 start-50 translate-middle" style="z-index:2;">
             <a class="navbar-brand d-flex align-items-center justify-content-center" href="<?php echo BASE_URL; ?>/index.php">
-                <!-- Logo: solo círculo en móvil (usa el .ico del favicon), logo completo en desktop -->
-                <img src="<?php echo BASE_URL; ?>/src/Public/images/logo_solo_circulo.ico" alt="IFTS N° 15" class="d-block d-md-none" style="height:32px;width:32px;max-width:32px;max-height:32px;object-fit:contain;">
-                <img src="<?php echo BASE_URL; ?>/src/Public/images/logo.png" alt="IFTS N° 15" class="d-none d-md-block me-2" style="height:38px;">
+                <img src="<?php echo htmlspecialchars($navbarLogo, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($navbarBrand, ENT_QUOTES, 'UTF-8'); ?>" class="d-block d-md-none" style="height:32px;width:32px;max-width:32px;max-height:32px;object-fit:contain;">
+                <img src="<?php echo htmlspecialchars($navbarLogo, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($navbarBrand, ENT_QUOTES, 'UTF-8'); ?>" class="d-none d-md-block me-2" style="height:38px;object-fit:contain;">
+                <span class="d-none d-md-inline-block text-white fw-semibold navbar-brand-text-custom">
+                    <?php echo htmlspecialchars($navbarBrand, ENT_QUOTES, 'UTF-8'); ?>
+                </span>
             </a>
         </div>
 

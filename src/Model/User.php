@@ -431,6 +431,21 @@ class User
         return $stmt->execute();
     }
 
+    /**
+     * Actualizar rol de un usuario
+     */
+    public static function actualizarRol($conn, $id_usuario, $id_rol)
+    {
+        $sql = "UPDATE usuario SET id_rol = ? WHERE id_usuario = ?";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            error_log('Error preparando actualizarRol: ' . $conn->error);
+            return false;
+        }
+        $stmt->bind_param("ii", $id_rol, $id_usuario);
+        return $stmt->execute();
+    }
+
 
 
     // ========================================

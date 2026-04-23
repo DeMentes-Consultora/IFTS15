@@ -59,14 +59,79 @@ class usuarioController
 		try {
 			$total = User::contarTodos($this->conn);
 			$usuarios = User::obtenerTodos($this->conn, $limit, $offset);
+			$canChangeRoles = function_exists('getUserRoleId') && getUserRoleId() === 5;
+			$roles = $canChangeRoles ? User::obtenerRolesHabilitados($this->conn) : [];
 		} catch (Exception $e) {
 			error_log('Error al obtener usuarios: ' . $e->getMessage());
 			$usuarios = [];
 			$total = 0;
+			$canChangeRoles = false;
+			$roles = [];
 		}
 
 		// Incluir la vista (solo vista)
 		include __DIR__ . '/../Views/usuarios.php';
+	}
+
+	/**
+	 * Cambiar rol de usuario via AJAX (solo Administrador: id_rol = 5)
+	 */
+	public function cambiarRol()
+	{
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+			$this->jsonResponse(['success' => false, 'error' => 'Método no permitido'], 405);
+		}
+
+		if (!function_exists('isLoggedIn') || !function_exists('getUserRoleId')) {
+			require_once __DIR__ . '/../config.php';
+		}
+
+		if (!isLoggedIn() || getUserRoleId() !== 5) {
+			$this->jsonResponse(['success' => false, 'error' => 'Acceso denegado'], 403);
+		}
+
+		$postedToken = $_POST['csrf_token'] ?? '';
+		if (empty($postedToken) || empty($_SESSION['csrf_usuario_role']) || !hash_equals($_SESSION['csrf_usuario_role'], $postedToken)) {
+			$this->jsonResponse(['success' => false, 'error' => 'Token CSRF inválido'], 403);
+		}
+
+		$id = intval($_POST['id'] ?? 0);
+		$idRol = intval($_POST['id_rol'] ?? 0);
+		$currentUserId = intval($_SESSION['user_id'] ?? 0);
+
+		if ($id <= 0 || $idRol <= 0) {
+			$this->jsonResponse(['success' => false, 'error' => 'Datos inválidos'], 400);
+		}
+
+		if ($currentUserId > 0 && $id === $currentUserId) {
+			$this->jsonResponse(['success' => false, 'error' => 'No podés cambiar tu propio rol'], 403);
+		}
+
+		if (!User::esRolHabilitado($this->conn, $idRol)) {
+			$this->jsonResponse(['success' => false, 'error' => 'Rol inválido o deshabilitado'], 400);
+		}
+
+		try {
+			$ok = User::actualizarRol($this->conn, $id, $idRol);
+			if (!$ok) {
+				$this->jsonResponse(['success' => false, 'error' => 'No se pudo actualizar el rol'], 500);
+			}
+
+			try {
+				$newToken = bin2hex(random_bytes(32));
+			} catch (Exception $e) {
+				$newToken = bin2hex(openssl_random_pseudo_bytes(32));
+			}
+			$_SESSION['csrf_usuario_role'] = $newToken;
+
+			$this->jsonResponse([
+				'success' => true,
+				'new_csrf_role' => $newToken,
+			]);
+		} catch (Exception $e) {
+			error_log('[usuarioController::cambiarRol] ' . $e->getMessage());
+			$this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
+		}
 	}
 
 	/**
@@ -143,6 +208,91 @@ class usuarioController
 			$this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
 		}
 	}
+
+	/**
+	 * Habilitar múltiples usuarios en lote via AJAX
+	 */
+	public function habilitarLote()
+	{
+		// Permitir solo POST
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+			$this->jsonResponse(['success' => false, 'error' => 'Método no permitido'], 405);
+		}
+
+		// Verificar permisos (roles administrativos)
+		if (!function_exists('isAdminRole')) {
+			require_once __DIR__ . '/../config.php';
+		}
+		if (!isLoggedIn() || !isAdminRole()) {
+			$this->jsonResponse(['success' => false, 'error' => 'Acceso denegado'], 403);
+		}
+
+		// Leer JSON del body
+		$input = json_decode(file_get_contents('php://input'), true);
+		$ids = $input['ids'] ?? [];
+
+		if (!is_array($ids) || empty($ids)) {
+			$this->jsonResponse(['success' => false, 'error' => 'IDs inválidos o vacíos'], 400);
+		}
+
+		// Sanitizar IDs
+		$ids = array_map('intval', $ids);
+		$ids = array_filter($ids, function($id) { return $id > 0; });
+
+		if (empty($ids)) {
+			$this->jsonResponse(['success' => false, 'error' => 'No hay IDs válidos'], 400);
+		}
+
+		$habilitados = 0;
+		$errores = [];
+
+		try {
+			foreach ($ids as $id) {
+				try {
+					$ok = User::actualizarHabilitado($this->conn, $id, 1);
+					if ($ok) {
+						$habilitados++;
+						// Enviar mail de habilitación
+						try {
+							$datosUsuario = User::obtenerUsuarioCompleto($this->conn, $id);
+							if ($datosUsuario && !empty($datosUsuario['email'])) {
+								$to = $datosUsuario['email'];
+								$nombre = trim(($datosUsuario['nombre'] ?? '') . ' ' . ($datosUsuario['apellido'] ?? ''));
+								$subject = 'Tu cuenta en IFTS15 ha sido habilitada';
+								$body = '<p>Hola ' . htmlspecialchars($nombre) . ',</p>';
+								$body .= '<p>Tu cuenta en el campus IFTS15 ha sido habilitada. Ya podés iniciar sesión con tu correo y contraseña.</p>';
+								$body .= '<p>Si no reconocés esta acción, contactá con el área de soporte.</p>';
+								$body .= '<p>Saludos,<br>Equipo IFTS15</p>';
+								$mailer = new MailerService();
+								$resMail = $mailer->send($to, $subject, $body, true, $to);
+								if (!$resMail['success']) {
+									error_log('[usuarioController::habilitarLote] Error enviando mail a ' . $to . ': ' . ($resMail['message'] ?? 'sin detalle'));
+								}
+							}
+						} catch (Exception $e) {
+							error_log('[usuarioController::habilitarLote] Excepción al notificar habilitación por mail para usuario ' . $id . ': ' . $e->getMessage());
+						}
+					} else {
+						$errores[] = 'Usuario ' . $id . ' no se pudo actualizar';
+					}
+				} catch (Exception $e) {
+					error_log('[usuarioController::habilitarLote] Error habilitando usuario ' . $id . ': ' . $e->getMessage());
+					$errores[] = 'Usuario ' . $id . ': ' . $e->getMessage();
+				}
+			}
+
+			$this->jsonResponse([
+				'success' => true,
+				'habilitados' => $habilitados,
+				'total' => count($ids),
+				'errores' => $errores,
+				'mensaje' => $habilitados . ' usuario(s) habilitado(s) correctamente.'
+			]);
+		} catch (Exception $e) {
+			error_log('[usuarioController::habilitarLote] ' . $e->getMessage());
+			$this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
+		}
+	}
 }
 
 // Procesamiento de requests cuando se accede directamente al archivo
@@ -154,8 +304,14 @@ if (basename($_SERVER['PHP_SELF']) === 'usuarioController.php') {
 		case 'listar':
 			$controller->listar();
 			break;
+		case 'cambiar_rol':
+			$controller->cambiarRol();
+			break;
 		case 'toggle':
 			$controller->toggleHabilitado();
+			break;
+		case 'habilitar_lote':
+			$controller->habilitarLote();
 			break;
 		default:
 			// Acción por defecto: listar

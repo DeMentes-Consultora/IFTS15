@@ -1,3 +1,22 @@
+<?php
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../Model/SiteCustomizationModel.php';
+
+use App\ConectionBD\ConectionDB;
+use App\Model\SiteCustomizationModel;
+
+if (!isset($conn) || !($conn instanceof mysqli)) {
+    $footerDb = new ConectionDB();
+    $conn = $footerDb->getConnection();
+}
+
+$siteFooter = SiteCustomizationModel::getFooter($conn);
+$footerCreditText = trim((string)($siteFooter['credit_text'] ?? 'Desarrollado por Les muchaches del Inap'));
+$footerCreditLogo = (!empty($siteFooter['habilitado']) && !empty($siteFooter['logo_url']))
+    ? (string)$siteFooter['logo_url']
+    : null;
+?>
+
 <!-- Footer Simplificado -->
 <footer class="bg-dark text-white mt-5" style="background: #343a40 !important; padding: 30px 0 20px 0 !important; display: block !important; visibility: visible !important;">
     <div class="container py-4" style="background: #343a40 !important;">
@@ -98,7 +117,10 @@
             </div>
             <div class="col-md-6 text-md-end">
                 <small style="color: white !important;">
-                    Desarrollado por Les muchaches del Inap
+                    <?php if (!empty($footerCreditLogo)): ?>
+                        <img src="<?php echo htmlspecialchars($footerCreditLogo, ENT_QUOTES, 'UTF-8'); ?>" alt="Logo footer" style="height:20px;max-width:120px;object-fit:contain;vertical-align:middle;margin-right:8px;">
+                    <?php endif; ?>
+                    <?php echo htmlspecialchars($footerCreditText, ENT_QUOTES, 'UTF-8'); ?>
                 </small>
             </div>
         </div>

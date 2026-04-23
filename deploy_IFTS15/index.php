@@ -7,6 +7,7 @@
 
 // Cargar configuración central (incluye autoloader)
 require_once __DIR__ . '/src/config.php';
+require_once __DIR__ . '/src/Model/SiteCustomizationModel.php';
 
 // Usar las clases con namespaces
 use App\ConectionBD\ConectionDB;
@@ -14,15 +15,19 @@ use App\Model\Person;
 use App\Model\User;
 use App\Controllers\AuthController;
 use App\Controllers\EstadisticasController;
+use App\Model\SiteCustomizationModel;
 
 // Instanciar conexión a la base de datos
 try {
     $conectarDB = new ConectionDB();
     $conn = $conectarDB->getConnection();
+    $customization = SiteCustomizationModel::getPublicConfig($conn);
+    $siteCarousel = is_array($customization['carousel'] ?? null) ? $customization['carousel'] : [];
 } catch (Exception $e) {
     error_log("Error cargando MVC: " . $e->getMessage());
     // En caso de error, continuar sin MVC para mostrar la página básica
     $conn = null;
+    $siteCarousel = [];
 }
 
 // Verificar estado de sesión
@@ -162,57 +167,59 @@ $userRole = $roleNames[$userIdRol] ?? 'Alumno';
 <main class="flex-fill">
 
     <!-- Carrusel Hero Section -->
+    <?php
+    if (empty($siteCarousel)) {
+        $siteCarousel = [
+            [
+                'titulo' => 'Contenidos y Modelos Digitales',
+                'descripcion' => 'Creación de contenido audiovisual para medios digitales y televisión',
+                'link_url' => null,
+                'image_url' => BASE_URL . '/src/Public/images/carrussel_1.jpeg',
+            ],
+            [
+                'titulo' => 'Instituto de Formación Técnica Superior N° 15',
+                'descripcion' => 'Carrera: Realizador y Productor Televisivo',
+                'link_url' => null,
+                'image_url' => BASE_URL . '/src/Public/images/carrussel_2.jpeg',
+            ],
+            [
+                'titulo' => 'Taller de Prácticas Pre Profesionales',
+                'descripcion' => 'Experiencia práctica en entornos profesionales reales',
+                'link_url' => null,
+                'image_url' => BASE_URL . '/src/Public/images/carrussel_3.jpeg',
+            ],
+        ];
+    }
+    ?>
     <div id="carouselHero" class="carousel slide carousel-hero" data-bs-ride="carousel" data-bs-interval="5000">
-        <!-- Indicadores -->
         <div class="carousel-indicators">
-            <button type="button" data-bs-target="#carouselHero" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-            <button type="button" data-bs-target="#carouselHero" data-bs-slide-to="1" aria-label="Slide 2"></button>
-            <button type="button" data-bs-target="#carouselHero" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            <?php foreach ($siteCarousel as $idx => $slide): ?>
+                <button type="button" data-bs-target="#carouselHero" data-bs-slide-to="<?php echo $idx; ?>" class="<?php echo $idx === 0 ? 'active' : ''; ?>" <?php echo $idx === 0 ? 'aria-current="true"' : ''; ?> aria-label="Slide <?php echo $idx + 1; ?>"></button>
+            <?php endforeach; ?>
         </div>
 
-        <!-- Slides -->
         <div class="carousel-inner">
-            <!-- Slide 1: Contenidos y Modelos Digitales -->
-            <div class="carousel-item active">
-                <img src="/src/Public/images/carrussel_1.jpeg"
-                    class="d-block w-100"
-                    alt="Contenidos y Modelos Digitales"
-                    onerror="this.src='https://via.placeholder.com/1200x400/333333/ffd700?text=IMAGEN+1+NO+ENCONTRADA'">
-                <div class="carousel-caption d-none d-md-block">
-                    <div class="carousel-caption-custom">
-                        <h2 class="fw-bold text-white">Contenidos y Modelos Digitales</h2>
-                        <p class="lead text-light">Creación de contenido audiovisual para medios digitales y televisión</p>
+            <?php foreach ($siteCarousel as $idx => $slide): ?>
+                <?php
+                $slideImage = !empty($slide['image_url']) ? (string)$slide['image_url'] : (BASE_URL . '/src/Public/images/carrussel_' . ($idx + 1) . '.jpeg');
+                $slideTitle = trim((string)($slide['titulo'] ?? 'Slide ' . ($idx + 1)));
+                $slideDescription = trim((string)($slide['descripcion'] ?? ''));
+                ?>
+                <div class="carousel-item <?php echo $idx === 0 ? 'active' : ''; ?>">
+                    <img src="<?php echo htmlspecialchars($slideImage, ENT_QUOTES, 'UTF-8'); ?>"
+                        class="d-block w-100"
+                        alt="<?php echo htmlspecialchars($slideTitle, ENT_QUOTES, 'UTF-8'); ?>"
+                        onerror="this.src='https://via.placeholder.com/1200x400/333333/ffd700?text=IMAGEN+NO+ENCONTRADA'">
+                    <div class="carousel-caption d-none d-md-block">
+                        <div class="carousel-caption-custom">
+                            <h2 class="fw-bold text-white"><?php echo htmlspecialchars($slideTitle, ENT_QUOTES, 'UTF-8'); ?></h2>
+                            <?php if ($slideDescription !== ''): ?>
+                                <p class="lead text-light"><?php echo htmlspecialchars($slideDescription, ENT_QUOTES, 'UTF-8'); ?></p>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Slide 2: Instituto -->
-            <div class="carousel-item">
-                <img src="/src/Public/images/carrussel_2.jpeg"
-                    class="d-block w-100"
-                    alt="Instituto de Formación Técnica Superior 15"
-                    onerror="this.src='https://via.placeholder.com/1200x400/495057/ffd700?text=IMAGEN+2+NO+ENCONTRADA'">
-                <div class="carousel-caption d-none d-md-block">
-                    <div class="carousel-caption-custom">
-                        <h2 class="fw-bold text-warning">Instituto de Formación Técnica Superior N° 15</h2>
-                        <p class="lead text-white">Carrera: Realizador y Productor Televisivo</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Slide 3: Taller de Prácticas -->
-            <div class="carousel-item">
-                <img src="/src/Public/images/carrussel_3.jpeg"
-                    class="d-block w-100"
-                    alt="Taller de Prácticas Pre Profesionales"
-                    onerror="this.src='https://via.placeholder.com/1200x400/1e3a8a/ffd700?text=IMAGEN+3+NO+ENCONTRADA'">
-                <div class="carousel-caption d-none d-md-block">
-                    <div class="carousel-caption-custom">
-                        <h2 class="fw-bold text-white">Taller de Prácticas Pre Profesionales</h2>
-                        <p class="lead text-light">Experiencia práctica en entornos profesionales reales</p>
-                    </div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
 
         <!-- Controles -->

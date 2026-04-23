@@ -192,3 +192,13 @@ function isAdminRole() {
     if ($rid === null) return false;
     return in_array($rid, [3,4,5], true);
 }
+
+/**
+ * Determinar si el usuario puede acceder al dashboard de personalizacion del sitio
+ * Roles permitidos: 3=Administrativo, 5=Administrador
+ */
+function canManageSiteCustomization() {
+    $rid = getUserRoleId();
+    if ($rid === null) return false;
+    return in_array($rid, [3,5], true);
+}
