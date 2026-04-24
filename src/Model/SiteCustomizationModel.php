@@ -8,6 +8,40 @@ class SiteCustomizationModel
 {
     private static bool $tablesReady = false;
 
+    private static function defaultNavbar(): array
+    {
+        return [
+            'id_navbar' => null,
+            'brand_text' => 'IFTS15',
+            'logo_url' => null,
+            'logo_public_id' => null,
+            'habilitado' => 1,
+        ];
+    }
+
+    private static function defaultSidebar(): array
+    {
+        return [
+            'id_sidebar' => null,
+            'brand_text' => 'Panel de Usuario',
+            'logo_url' => null,
+            'logo_public_id' => null,
+            'habilitado' => 1,
+        ];
+    }
+
+    private static function defaultFooter(): array
+    {
+        return [
+            'id_footer' => null,
+            'credit_text' => 'Desarrollado por Les muchaches del Inap',
+            'credit_url' => 'https://github.com/DeMentes-Consultora/IFTS15',
+            'logo_url' => null,
+            'logo_public_id' => null,
+            'habilitado' => 1,
+        ];
+    }
+
     private static function ensureTables(mysqli $conn): void
     {
         if (self::$tablesReady) {
@@ -63,6 +97,7 @@ class SiteCustomizationModel
             "CREATE TABLE IF NOT EXISTS site_footer (
                 id_footer INT(11) NOT NULL AUTO_INCREMENT,
                 credit_text VARCHAR(255) NOT NULL DEFAULT 'Desarrollado por Les muchaches del Inap',
+                credit_url VARCHAR(500) NULL,
                 logo_url TEXT NULL,
                 logo_public_id VARCHAR(255) NULL,
                 habilitado TINYINT(1) NOT NULL DEFAULT 1,
@@ -73,11 +108,21 @@ class SiteCustomizationModel
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
         );
 
+        // Migracion para instalaciones existentes
+        $creditUrlColumn = $conn->query("SHOW COLUMNS FROM site_footer LIKE 'credit_url'");
+        if (!$creditUrlColumn || (int)$creditUrlColumn->num_rows === 0) {
+            $conn->query("ALTER TABLE site_footer ADD COLUMN credit_url VARCHAR(500) NULL AFTER credit_text");
+        }
+
         self::$tablesReady = true;
     }
 
-    public static function getNavbar(mysqli $conn): array
+    public static function getNavbar(?mysqli $conn): array
     {
+        if (!$conn instanceof mysqli) {
+            return self::defaultNavbar();
+        }
+
         self::ensureTables($conn);
 
         $sql = "SELECT id_navbar, brand_text, logo_url, logo_public_id, habilitado
@@ -91,10 +136,10 @@ class SiteCustomizationModel
 
         return [
             'id_navbar' => isset($row['id_navbar']) ? (int)$row['id_navbar'] : null,
-            'brand_text' => trim((string)($row['brand_text'] ?? 'IFTS15')),
+            'brand_text' => trim((string)($row['brand_text'] ?? self::defaultNavbar()['brand_text'])),
             'logo_url' => self::nullableText($row['logo_url'] ?? null),
             'logo_public_id' => self::nullableText($row['logo_public_id'] ?? null),
-            'habilitado' => isset($row['habilitado']) ? (int)$row['habilitado'] : 1,
+            'habilitado' => isset($row['habilitado']) ? (int)$row['habilitado'] : self::defaultNavbar()['habilitado'],
         ];
     }
 
@@ -131,8 +176,12 @@ class SiteCustomizationModel
         return self::getNavbar($conn);
     }
 
-    public static function getSidebar(mysqli $conn): array
+    public static function getSidebar(?mysqli $conn): array
     {
+        if (!$conn instanceof mysqli) {
+            return self::defaultSidebar();
+        }
+
         self::ensureTables($conn);
 
         $sql = "SELECT id_sidebar, brand_text, logo_url, logo_public_id, habilitado
@@ -146,10 +195,10 @@ class SiteCustomizationModel
 
         return [
             'id_sidebar' => isset($row['id_sidebar']) ? (int)$row['id_sidebar'] : null,
-            'brand_text' => trim((string)($row['brand_text'] ?? 'Panel de Usuario')),
+            'brand_text' => trim((string)($row['brand_text'] ?? self::defaultSidebar()['brand_text'])),
             'logo_url' => self::nullableText($row['logo_url'] ?? null),
             'logo_public_id' => self::nullableText($row['logo_public_id'] ?? null),
-            'habilitado' => isset($row['habilitado']) ? (int)$row['habilitado'] : 1,
+            'habilitado' => isset($row['habilitado']) ? (int)$row['habilitado'] : self::defaultSidebar()['habilitado'],
         ];
     }
 
@@ -186,8 +235,12 @@ class SiteCustomizationModel
         return self::getSidebar($conn);
     }
 
-    public static function getCarousel(mysqli $conn, bool $includeDisabled = false): array
+    public static function getCarousel(?mysqli $conn, bool $includeDisabled = false): array
     {
+        if (!$conn instanceof mysqli) {
+            return [];
+        }
+
         self::ensureTables($conn);
 
         $sql = "SELECT id_slide, titulo, descripcion, link_url, orden_visual, image_url, image_public_id, habilitado
@@ -280,7 +333,7 @@ class SiteCustomizationModel
         return self::getCarousel($conn, true);
     }
 
-    public static function getPublicConfig(mysqli $conn): array
+    public static function getPublicConfig(?mysqli $conn): array
     {
         return [
             'navbar' => self::getNavbar($conn),
@@ -290,11 +343,15 @@ class SiteCustomizationModel
         ];
     }
 
-    public static function getFooter(mysqli $conn): array
+    public static function getFooter(?mysqli $conn): array
     {
+        if (!$conn instanceof mysqli) {
+            return self::defaultFooter();
+        }
+
         self::ensureTables($conn);
 
-        $sql = "SELECT id_footer, credit_text, logo_url, logo_public_id, habilitado
+        $sql = "SELECT id_footer, credit_text, credit_url, logo_url, logo_public_id, habilitado
                 FROM site_footer
                 WHERE cancelado = 0
                 ORDER BY id_footer ASC
@@ -305,10 +362,11 @@ class SiteCustomizationModel
 
         return [
             'id_footer' => isset($row['id_footer']) ? (int)$row['id_footer'] : null,
-            'credit_text' => trim((string)($row['credit_text'] ?? 'Desarrollado por Les muchaches del Inap')),
+            'credit_text' => trim((string)($row['credit_text'] ?? self::defaultFooter()['credit_text'])),
+            'credit_url' => self::nullableText($row['credit_url'] ?? self::defaultFooter()['credit_url']),
             'logo_url' => self::nullableText($row['logo_url'] ?? null),
             'logo_public_id' => self::nullableText($row['logo_public_id'] ?? null),
-            'habilitado' => isset($row['habilitado']) ? (int)$row['habilitado'] : 1,
+            'habilitado' => isset($row['habilitado']) ? (int)$row['habilitado'] : self::defaultFooter()['habilitado'],
         ];
     }
 
@@ -318,6 +376,7 @@ class SiteCustomizationModel
 
         $current = self::getFooter($conn);
         $creditText = trim((string)($footer['credit_text'] ?? 'Desarrollado por Les muchaches del Inap'));
+        $creditUrl = self::nullableText($footer['credit_url'] ?? self::defaultFooter()['credit_url']);
         $logoUrl = self::nullableText($footer['logo_url'] ?? null);
         $logoPublicId = self::nullableText($footer['logo_public_id'] ?? null);
         $enabled = isset($footer['habilitado']) ? (int)((bool)$footer['habilitado']) : 1;
@@ -325,19 +384,19 @@ class SiteCustomizationModel
         if (!empty($current['id_footer'])) {
             $stmt = $conn->prepare(
                 "UPDATE site_footer
-                 SET credit_text = ?, logo_url = ?, logo_public_id = ?, habilitado = ?, cancelado = 0
+                 SET credit_text = ?, credit_url = ?, logo_url = ?, logo_public_id = ?, habilitado = ?, cancelado = 0
                  WHERE id_footer = ?"
             );
             $id = (int)$current['id_footer'];
-            $stmt->bind_param('sssii', $creditText, $logoUrl, $logoPublicId, $enabled, $id);
+            $stmt->bind_param('ssssii', $creditText, $creditUrl, $logoUrl, $logoPublicId, $enabled, $id);
             $stmt->execute();
             $stmt->close();
         } else {
             $stmt = $conn->prepare(
-                "INSERT INTO site_footer (credit_text, logo_url, logo_public_id, habilitado, cancelado)
-                 VALUES (?, ?, ?, ?, 0)"
+                "INSERT INTO site_footer (credit_text, credit_url, logo_url, logo_public_id, habilitado, cancelado)
+                 VALUES (?, ?, ?, ?, ?, 0)"
             );
-            $stmt->bind_param('sssi', $creditText, $logoUrl, $logoPublicId, $enabled);
+            $stmt->bind_param('ssssi', $creditText, $creditUrl, $logoUrl, $logoPublicId, $enabled);
             $stmt->execute();
             $stmt->close();
         }

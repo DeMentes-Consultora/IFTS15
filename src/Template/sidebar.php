@@ -10,9 +10,12 @@ $userEmail = $_SESSION['email'] ?? '';
 $userIdRol = isset($_SESSION['id_rol']) ? intval($_SESSION['id_rol']) : (isset($_SESSION['role_id']) ? intval($_SESSION['role_id']) : null);
 $roleNames = [1 => 'Alumno', 2 => 'Profesor', 3 => 'Administrativo', 4 => 'Directivo', 5 => 'Administrador'];
 $userRole = $roleNames[$userIdRol] ?? 'Alumno';
-$datosUsuarioSidebar = isset($_SESSION['user_id']) ? App\Model\User::obtenerUsuarioCompleto($conn, $_SESSION['user_id']) : null;
+$datosUsuarioSidebar = [];
+if (($conn ?? null) instanceof mysqli && isset($_SESSION['user_id'])) {
+    $datosUsuarioSidebar = App\Model\User::obtenerUsuarioCompleto($conn, $_SESSION['user_id']) ?: [];
+}
 $avatarUrl = $datosUsuarioSidebar['foto_perfil_url'] ?? null;
-$nombreCompletoSidebar = trim(($datosUsuarioSidebar['nombre'] ?? '') . ' ' . ($datosUsuarioSidebar['apellido'] ?? ''));
+$nombreCompletoSidebar = trim(($datosUsuarioSidebar['nombre'] ?? ($_SESSION['nombre'] ?? '')) . ' ' . ($datosUsuarioSidebar['apellido'] ?? ($_SESSION['apellido'] ?? '')));
 
 $siteSidebar = SiteCustomizationModel::getSidebar($conn);
 $sidebarBrandText = trim((string)($siteSidebar['brand_text'] ?? 'Panel de Usuario'));

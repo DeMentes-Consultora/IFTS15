@@ -255,7 +255,13 @@ function handleFooter($conn): void
 {
     $current = SiteCustomizationModel::getFooter($conn);
     $creditText = trim((string)($_POST['footer_credit_text'] ?? 'Desarrollado por Les muchaches del Inap'));
+    $creditUrlInput = trim((string)($_POST['footer_credit_url'] ?? ''));
     $enabled = isset($_POST['footer_enabled']) ? 1 : 0;
+
+    $creditUrl = $creditUrlInput !== '' ? $creditUrlInput : (string)($current['credit_url'] ?? 'https://github.com/DeMentes-Consultora/IFTS15');
+    if (!preg_match('/^https?:\/\//i', $creditUrl)) {
+        throw new \InvalidArgumentException('La URL del footer debe comenzar con http:// o https://');
+    }
 
     $logoUrl = $current['logo_url'] ?? null;
     $logoPublicId = $current['logo_public_id'] ?? null;
@@ -281,6 +287,7 @@ function handleFooter($conn): void
 
     SiteCustomizationModel::saveFooter($conn, [
         'credit_text' => $creditText,
+        'credit_url' => $creditUrl,
         'logo_url' => $logoUrl,
         'logo_public_id' => $logoPublicId,
         'habilitado' => $enabled,

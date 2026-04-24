@@ -47,9 +47,30 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+function resolveBaseUrl(): string {
+    $configuredBaseUrl = trim((string)($_ENV['BASE_URL'] ?? ''));
+    $httpHost = trim((string)($_SERVER['HTTP_HOST'] ?? ''));
+    $serverName = trim((string)($_SERVER['SERVER_NAME'] ?? ''));
+    $host = $httpHost !== '' ? $httpHost : $serverName;
+
+    if ($configuredBaseUrl !== '' && !($host !== '' && stripos($configuredBaseUrl, 'localhost') !== false && stripos($host, 'localhost') === false)) {
+        return rtrim($configuredBaseUrl, '/');
+    }
+
+    if ($host !== '') {
+        $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (isset($_SERVER['SERVER_PORT']) && (string)$_SERVER['SERVER_PORT'] === '443')
+            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower((string)$_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https');
+
+        return ($isHttps ? 'https://' : 'http://') . $host;
+    }
+
+    return 'http://localhost:8000';
+}
+
 // Definir BASE_URL desde variable de entorno
 if (!defined('BASE_URL')) {
-    $baseUrl = $_ENV['BASE_URL'] ?? 'http://localhost:8000';
+    $baseUrl = resolveBaseUrl();
     define('BASE_URL', $baseUrl);
 }
 

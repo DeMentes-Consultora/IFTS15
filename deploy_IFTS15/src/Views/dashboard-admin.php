@@ -195,6 +195,11 @@ $pageTitle = 'Dashboard de Personalizacion - IFTS15';
                         </div>
 
                         <div class="mb-3">
+                            <label class="form-label">URL del crédito</label>
+                            <input type="url" class="form-control" name="footer_credit_url" value="<?php echo htmlspecialchars((string)($footer['credit_url'] ?? 'https://github.com/DeMentes-Consultora/IFTS15'), ENT_QUOTES, 'UTF-8'); ?>" placeholder="https://..." maxlength="500">
+                        </div>
+
+                        <div class="mb-3">
                             <label class="form-label">Logo actual</label>
                             <div class="logo-preview-box">
                                 <?php if (!empty($footer['logo_url'])): ?>

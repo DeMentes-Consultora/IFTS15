@@ -19,12 +19,6 @@ DirectoryIndex index.php
 # RewriteRule ^carrera/?$ pages/realizador-productor-tv.php [L]
 # RewriteRule ^contacto/?$ pages/consultas.php [L]
 
-# Configuraciones de PHP
-php_value memory_limit 128M
-php_value max_execution_time 60
-php_value upload_max_filesize 10M
-php_value post_max_size 10M
-
 # Manejo de errores
 ErrorDocument 404 /error404.php
 ErrorDocument 500 /error500.php

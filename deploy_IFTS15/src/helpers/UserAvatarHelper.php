@@ -5,6 +5,7 @@
 use App\Model\User;
 
 function getUserAvatarUrl($conn) {
+    if (!$conn instanceof mysqli) return null;
     if (!isset($_SESSION['user_id'])) return null;
     $userId = $_SESSION['user_id'];
     $datos = User::obtenerUsuarioCompleto($conn, $userId);

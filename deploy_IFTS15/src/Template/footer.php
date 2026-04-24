@@ -2,16 +2,15 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../Model/SiteCustomizationModel.php';
 
-use App\ConectionBD\ConectionDB;
 use App\Model\SiteCustomizationModel;
 
 if (!isset($conn) || !($conn instanceof mysqli)) {
-    $footerDb = new ConectionDB();
-    $conn = $footerDb->getConnection();
+    $conn = null;
 }
 
 $siteFooter = SiteCustomizationModel::getFooter($conn);
-$footerCreditText = trim((string)($siteFooter['credit_text'] ?? 'Desarrollado por Les muchaches del Inap'));
+$footerCreditText = trim((string)($siteFooter['credit_text'] ?? 'Desarrollado por DeMentesConsultora'));
+$footerCreditUrl = trim((string)($siteFooter['credit_url'] ?? env('FOOTER_CREDIT_URL', 'https://github.com/DeMentes-Consultora/IFTS15')));
 $footerCreditLogo = (!empty($siteFooter['habilitado']) && !empty($siteFooter['logo_url']))
     ? (string)$siteFooter['logo_url']
     : null;
@@ -120,7 +119,13 @@ $footerCreditLogo = (!empty($siteFooter['habilitado']) && !empty($siteFooter['lo
                     <?php if (!empty($footerCreditLogo)): ?>
                         <img src="<?php echo htmlspecialchars($footerCreditLogo, ENT_QUOTES, 'UTF-8'); ?>" alt="Logo footer" style="height:20px;max-width:120px;object-fit:contain;vertical-align:middle;margin-right:8px;">
                     <?php endif; ?>
-                    <?php echo htmlspecialchars($footerCreditText, ENT_QUOTES, 'UTF-8'); ?>
+                    <?php if (!empty($footerCreditUrl)): ?>
+                        <a href="<?php echo htmlspecialchars($footerCreditUrl, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener noreferrer" style="color: #FFD700 !important; text-decoration: none;">
+                            <?php echo htmlspecialchars($footerCreditText, ENT_QUOTES, 'UTF-8'); ?>
+                        </a>
+                    <?php else: ?>
+                        <?php echo htmlspecialchars($footerCreditText, ENT_QUOTES, 'UTF-8'); ?>
+                    <?php endif; ?>
                 </small>
             </div>
         </div>

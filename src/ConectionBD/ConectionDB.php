@@ -20,6 +20,7 @@ class ConectionDB
     private $username;
     private $password;
     private $dbname;
+    private $port;
     private $conn;
     private $charset;
 
@@ -35,6 +36,7 @@ class ConectionDB
         $this->username = env('DB_USERNAME', 'root');
         $this->password = env('DB_PASSWORD', '');
         $this->dbname   = env('DB_NAME', 'ifts15');
+        $this->port     = (int) env('DB_PORT', 3306);
         $this->charset  = env('DB_CHARSET', 'utf8mb4');
 
         // Crear conexión MySQLi
@@ -42,17 +44,18 @@ class ConectionDB
             $this->host,
             $this->username,
             $this->password,
-            $this->dbname
+            $this->dbname,
+            $this->port
         );
-
-        // Configurar charset
-        $this->conn->set_charset($this->charset);
 
         // Verificar conexión
         if ($this->conn->connect_error) {
             error_log("Error de conexión BD: " . $this->conn->connect_error);
-            die("Error de conexión a la base de datos");
+            throw new Exception("Error de conexión a la base de datos");
         }
+
+        // Configurar charset
+        $this->conn->set_charset($this->charset);
     }
 
     /**
