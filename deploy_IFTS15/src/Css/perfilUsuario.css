@@ -2,6 +2,18 @@
    Estilos exclusivos para perfil de usuario (Alumno)
    ============================= */
 
+/* Ampliar el contenedor del perfil y reducir márgenes laterales */
+.fade-in.container {
+  max-width: 95%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Alinear el row a la izquierda (sin centrado) */
+.fade-in.container .row {
+  justify-content: flex-start;
+}
+
 
 .perfil-avatar {
   width: 120px;
@@ -38,8 +50,52 @@
 }
 
 .card, .card-body, .card-header {
+  text-align: left;
+}
+
+/* Mantener centrado solo la card de bienvenida/foto */
+.card-welcome,
+.card-welcome .card-body {
   text-align: center;
 }
+
+#tabla-inscripciones-profesor th,
+#tabla-inscripciones-profesor td {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+#tabla-inscripciones-profesor td:nth-child(2),
+#tabla-inscripciones-profesor td:nth-child(3),
+#tabla-inscripciones-profesor td:nth-child(6),
+#tabla-inscripciones-profesor td:nth-child(7) {
+  text-align: left;
+}
+
+.checklist-matricula {
+  transform: scale(1.1);
+}
+
+#matricula-feedback {
+  font-weight: 600;
+}
+
+@media (max-width: 991.98px) {
+  .card, .card-body, .card-header {
+    text-align: left;
+  }
+
+  .fade-in.container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  #tabla-inscripciones-profesor th,
+  #tabla-inscripciones-profesor td {
+    font-size: 0.9rem;
+  }
+}
+
 .fade-in {
   animation: fadeIn 0.6s ease-out;
 }

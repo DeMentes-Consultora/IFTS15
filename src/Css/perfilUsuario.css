@@ -2,6 +2,18 @@
    Estilos exclusivos para perfil de usuario (Alumno)
    ============================= */
 
+/* Ampliar el contenedor del perfil y reducir márgenes laterales */
+.fade-in.container {
+  max-width: 95%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Alinear el row a la izquierda (sin centrado) */
+.fade-in.container .row {
+  justify-content: flex-start;
+}
+
 
 .perfil-avatar {
   width: 120px;
@@ -38,6 +50,12 @@
 }
 
 .card, .card-body, .card-header {
+  text-align: left;
+}
+
+/* Mantener centrado solo la card de bienvenida/foto */
+.card-welcome,
+.card-welcome .card-body {
   text-align: center;
 }
 
@@ -65,6 +83,11 @@
 @media (max-width: 991.98px) {
   .card, .card-body, .card-header {
     text-align: left;
+  }
+
+  .fade-in.container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 
   #tabla-inscripciones-profesor th,

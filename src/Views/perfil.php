@@ -41,10 +41,10 @@ if (isset($error)) {
 ?>
 
 <div class="container mt-4 fade-in">
-    <div class="row justify-content-center">
+    <div class="row">
         <!-- Columna lateral: Foto y datos personales -->
-        <div class="col-lg-4 mb-4">
-            <div class="card card-welcome text-center h-100">
+        <div class="col-lg-3 mb-4">
+            <div class="card card-welcome h-100">
                 <div class="card-body">
                     <div style="position: relative; display: inline-block;">
                         <?php if ($persona && !empty($persona->getFotoPerfilUrl())): ?>
@@ -210,7 +210,7 @@ if (isset($error)) {
         </div>
 
         <!-- Columna principal -->
-        <div class="col-lg-8 mb-4">
+        <div class="col-lg-9 mb-4">
             <?php if ($esProfesor): ?>
                 <div class="card mb-4 slide-in-left">
                     <div class="card-header bg-primary text-dark">
