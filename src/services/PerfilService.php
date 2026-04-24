@@ -529,7 +529,10 @@ class PerfilService {
 
             try {
                 $mailer = new MailerService();
-                $mailer->send($alumno['email'], $subject, $body, true, null);
+                $mailResult = $mailer->send($alumno['email'], $subject, $body, true, null);
+                if (!$mailResult['success']) {
+                    error_log('[PerfilService::actualizarEstadoMatricula] Fallo de envío de mail de matriculación: ' . ($mailResult['message'] ?? 'sin detalle'));
+                }
             } catch (\Throwable $e) {
                 error_log('[PerfilService::actualizarEstadoMatricula] Error enviando mail de matriculación: ' . $e->getMessage());
             }

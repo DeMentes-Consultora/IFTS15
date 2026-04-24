@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 // Cargar variables de entorno desde .env
 if (file_exists(__DIR__ . '/../../.env')) {
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../../');
+    $dotenv = Dotenv\Dotenv::createMutable(__DIR__ . '/../../');
     if (method_exists($dotenv, 'safeLoad')) {
         $dotenv->safeLoad();
     } else {
@@ -75,14 +75,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $cuerpoMensaje .= "<p><b>Mensaje:</b></p><p>" . nl2br(htmlspecialchars($consulta->getMensaje())) . "</p>";
 
-        // Destinatario: admin o email configurado
-        $destinatario = $_ENV['ADMIN_EMAILS'] ?? $_ENV['MAIL_USERNAME'] ?? '';
-        if (empty($destinatario)) {
+        // Destinatario(s): admin(s) o email configurado
+        $destinatarioConfig = trim((string)($_ENV['ADMIN_EMAILS'] ?? $_ENV['ADMIN_EMAIL'] ?? $_ENV['MAIL_USERNAME'] ?? ''));
+        $destinatarios = array_values(array_filter(array_map('trim', preg_split('/[,;]+/', $destinatarioConfig))));
+        if (empty($destinatarios)) {
             throw new Exception('No hay destinatario configurado (ADMIN_EMAILS o MAIL_USERNAME)');
         }
         
         $mailer = new MailerService();
-        $result = $mailer->send($destinatario, $subject, $cuerpoMensaje, true, $consulta->getEmail());
+        $result = $mailer->send($destinatarios, $subject, $cuerpoMensaje, true, $consulta->getEmail());
         if ($result['success']) {
             $_SESSION['consultas_message'] = '¡Consulta enviada correctamente! Te responderemos a la brevedad a tu email: ' . htmlspecialchars($consulta->getEmail());
         } else {

@@ -304,15 +304,22 @@ class AuthController
             $body .= '<p>Saludos,<br>Equipo IFTS15</p>';
 
             $mailer = new MailerService();
-            $mailer->send($email, $subject, $body, true, $email);
+            $resUserMail = $mailer->send($email, $subject, $body, true, $email);
+            if (!$resUserMail['success']) {
+                error_log('[AuthController::register] Error enviando mail al usuario: ' . ($resUserMail['message'] ?? 'sin detalle'));
+            }
             
             // Notificar admins
-            $admins = array_map('trim', explode(',', $_ENV['ADMIN_EMAILS'] ?? ''));
+            $adminsRaw = trim((string)($_ENV['ADMIN_EMAILS'] ?? $_ENV['ADMIN_EMAIL'] ?? ''));
+            $admins = array_values(array_filter(array_map('trim', preg_split('/[,;]+/', $adminsRaw))));
             if (!empty($admins)) {
                 $subjectAdmin = 'Nuevo registro pendiente en IFTS15';
                 $bodyAdmin = '<p>Se registró un nuevo usuario: <b>' . htmlspecialchars($nombre . ' ' . $apellido) . '</b> (' . htmlspecialchars($email) . ').</p>';
                 $bodyAdmin .= '<p>Revisá el panel de administración para habilitarlo.</p>';
-                $mailer->send($admins, $subjectAdmin, $bodyAdmin);
+                $resAdminMail = $mailer->send($admins, $subjectAdmin, $bodyAdmin);
+                if (!$resAdminMail['success']) {
+                    error_log('[AuthController::register] Error enviando mail a admins: ' . ($resAdminMail['message'] ?? 'sin detalle'));
+                }
             }
             
             // Indicar que el registro quedó pendiente de habilitación administrativa

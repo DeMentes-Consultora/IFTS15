@@ -15,7 +15,7 @@ use App\Database;
 // Cargar phpdotenv solo una vez
 if (!isset($_ENV['BASE_URL']) && !defined('DOTENV_LOADED')) {
     require_once __DIR__ . '/../vendor/autoload.php';
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+    $dotenv = Dotenv\Dotenv::createMutable(__DIR__ . '/..');
     // Usar safeLoad para evitar excepción si no existe el archivo .env en desarrollo
     if (method_exists($dotenv, 'safeLoad')) {
         $dotenv->safeLoad();
