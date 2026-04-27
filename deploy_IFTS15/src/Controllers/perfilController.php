@@ -84,6 +84,49 @@ if (isset($_GET['action']) && $_GET['action'] === 'actualizar_matricula') {
     exit;
 }
 
+if (isset($_GET['action']) && $_GET['action'] === 'guardar_notas') {
+    $controller = new perfilController();
+    header('Content-Type: application/json; charset=utf-8');
+
+    if (!isset($_SESSION['id_usuario']) || !isset($_SESSION['id_rol'])) {
+        echo json_encode(['success' => false, 'message' => 'No autenticado.']);
+        exit;
+    }
+
+    if ((int)$_SESSION['id_rol'] !== 2) {
+        echo json_encode(['success' => false, 'message' => 'Solo profesores pueden realizar esta acción.']);
+        exit;
+    }
+
+    $payload = $_POST;
+    if (empty($payload)) {
+        $raw = file_get_contents('php://input');
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded)) {
+            $payload = $decoded;
+        }
+    }
+
+    $idAlumno = (int)($payload['id_alumno'] ?? 0);
+    $idMateria = (int)($payload['id_materia'] ?? 0);
+    $notaP1 = $payload['nota_p1'] ?? null;
+    $notaP2 = $payload['nota_p2'] ?? null;
+    $notaFinal = $payload['nota_final'] ?? null;
+
+    $resultado = PerfilService::actualizarNotasAlumnoMateria(
+        $controller->conn,
+        (int)$_SESSION['id_usuario'],
+        $idAlumno,
+        $idMateria,
+        $notaP1,
+        $notaP2,
+        $notaFinal
+    );
+
+    echo json_encode($resultado);
+    exit;
+}
+
 // Acción AJAX para cambiar la foto de perfil
 if (isset($_GET['action']) && $_GET['action'] === 'cambiar_foto') {
     $controller = new perfilController();

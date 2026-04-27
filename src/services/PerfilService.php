@@ -132,7 +132,9 @@ class PerfilService {
             $materiasPerfil[] = [
                 'id_materia' => $idMateria,
                 'nombre_materia' => $materia['nombre_materia'] ?? '',
-                'nota' => $notaMateria['nota'] ?? null,
+                'nota_p1' => $notaMateria['nota_p1'] ?? null,
+                'nota_p2' => $notaMateria['nota_p2'] ?? null,
+                'nota_final' => $notaMateria['nota_final'] ?? null,
                 'fecha_nota' => $notaMateria['fecha'] ?? ($notaMateria['idCreate'] ?? null)
             ];
         }
@@ -217,11 +219,25 @@ class PerfilService {
         $filtroCarrera = isset($filtros['id_carrera']) ? (int)$filtros['id_carrera'] : 0;
         $filtroMateria = isset($filtros['id_materia']) ? (int)$filtros['id_materia'] : 0;
         $filtroAnio = isset($filtros['id_anio_cursada']) ? (int)$filtros['id_anio_cursada'] : 0;
+        $columnasNotas = Nota::obtenerColumnasNotas($conn);
 
         $tieneRelacionProfesorMateria = self::tablaExiste($conn, 'profesor_materia');
         $tieneTablaMatricula = self::tablaExiste($conn, 'matricula_materia');
 
         if ($tieneRelacionProfesorMateria) {
+            $selectNotas = "0 AS nota_p1, 0 AS nota_p2, 0 AS nota_final";
+            $joinNotas = "";
+            if (!empty($columnasNotas['p1'])) {
+                $selectNotas = "n.`{$columnasNotas['p1']}` AS nota_p1,
+                    n.`{$columnasNotas['p2']}` AS nota_p2,
+                    n.`{$columnasNotas['final']}` AS nota_final";
+                $joinNotas = "LEFT JOIN notas n
+                    ON n.id_usuario = u.id_usuario
+                    AND n.id_materia = m.id_materia
+                    AND n.habilitado = 1
+                    AND n.cancelado = 0";
+            }
+
             $sql = "SELECT
                     u.id_usuario AS id_alumno,
                     c.id_carrera,
@@ -233,6 +249,7 @@ class PerfilService {
                     ac.año AS anio,
                     p.apellido,
                     u.email,
+                    {$selectNotas},
                     " . ($tieneTablaMatricula ? "COALESCE(mm.estado, 'espera')" : "'espera'") . " AS estado_matricula
                 FROM usuario u
                 INNER JOIN persona p
@@ -259,6 +276,7 @@ class PerfilService {
                     AND mm.id_materia = m.id_materia
                     AND mm.habilitado = 1
                     AND mm.cancelado = 0" : "") . "
+                                {$joinNotas}
                 WHERE u.id_rol = 1
                   AND u.habilitado = 1
                   AND u.cancelado = 0
@@ -342,6 +360,19 @@ class PerfilService {
             }
         } else {
             // Fallback seguro si la tabla de relación no está disponible.
+            $selectNotas = "0 AS nota_p1, 0 AS nota_p2, 0 AS nota_final";
+            $joinNotas = "";
+            if (!empty($columnasNotas['p1'])) {
+                $selectNotas = "n.`{$columnasNotas['p1']}` AS nota_p1,
+                    n.`{$columnasNotas['p2']}` AS nota_p2,
+                    n.`{$columnasNotas['final']}` AS nota_final";
+                $joinNotas = "LEFT JOIN notas n
+                    ON n.id_usuario = u.id_usuario
+                    AND n.id_materia = m.id_materia
+                    AND n.habilitado = 1
+                    AND n.cancelado = 0";
+            }
+
             $sql = "SELECT
                         u.id_usuario AS id_alumno,
                         c.id_carrera,
@@ -353,6 +384,7 @@ class PerfilService {
                         ac.año AS anio,
                         p.apellido,
                         u.email,
+                        {$selectNotas},
                         'espera' AS estado_matricula
                     FROM usuario u
                     INNER JOIN persona p
@@ -363,6 +395,7 @@ class PerfilService {
                     LEFT JOIN comision co ON co.id_comision = u.id_comision
                     LEFT JOIN añocursada ac ON ac.id_añoCursada = u.id_añoCursada
                     INNER JOIN materia m ON m.id_carrera = u.id_carrera AND m.habilitado = 1 AND m.cancelado = 0
+                                        {$joinNotas}
                     WHERE u.id_rol = 1
                       AND u.habilitado = 1
                       AND u.cancelado = 0
@@ -429,6 +462,94 @@ class PerfilService {
                 'anios' => $anios,
             ]
         ];
+    }
+
+    private static function normalizarNota($valor, $nombreCampo)
+    {
+        if ($valor === null || $valor === '') {
+            return null;
+        }
+
+        if (!is_numeric($valor)) {
+            throw new \InvalidArgumentException("El campo {$nombreCampo} debe ser numérico.");
+        }
+
+        $nota = (int)$valor;
+        if ($nota < 0 || $nota > 10) {
+            throw new \InvalidArgumentException("El campo {$nombreCampo} debe estar entre 0 y 10.");
+        }
+
+        return $nota;
+    }
+
+    public static function actualizarNotasAlumnoMateria($conn, $idProfesor, $idAlumno, $idMateria, $notaP1, $notaP2, $notaFinal)
+    {
+        $idProfesor = (int)$idProfesor;
+        $idAlumno = (int)$idAlumno;
+        $idMateria = (int)$idMateria;
+
+        if ($idProfesor <= 0 || $idAlumno <= 0 || $idMateria <= 0) {
+            return ['success' => false, 'message' => 'Parámetros inválidos para guardar notas.'];
+        }
+
+        try {
+            $notaP1Normalizada = self::normalizarNota($notaP1, 'P1');
+            $notaP2Normalizada = self::normalizarNota($notaP2, 'P2');
+            $notaFinalNormalizada = self::normalizarNota($notaFinal, 'Final');
+        } catch (\InvalidArgumentException $e) {
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+
+        if ($notaP1Normalizada !== null && $notaP2Normalizada !== null && $notaP1Normalizada >= 7 && $notaP2Normalizada >= 7) {
+            $notaFinalNormalizada = 0;
+        }
+
+        $stmtValProf = $conn->prepare("SELECT id_usuario FROM usuario WHERE id_usuario = ? AND id_rol = 2 AND habilitado = 1 AND cancelado = 0");
+        $stmtValProf->bind_param('i', $idProfesor);
+        $stmtValProf->execute();
+        if (!$stmtValProf->get_result()->fetch_assoc()) {
+            return ['success' => false, 'message' => 'Acción permitida solo para profesores habilitados.'];
+        }
+
+        $stmtValAlumno = $conn->prepare("SELECT id_usuario FROM usuario WHERE id_usuario = ? AND id_rol = 1 AND habilitado = 1 AND cancelado = 0");
+        $stmtValAlumno->bind_param('i', $idAlumno);
+        $stmtValAlumno->execute();
+        if (!$stmtValAlumno->get_result()->fetch_assoc()) {
+            return ['success' => false, 'message' => 'Alumno no encontrado o inhabilitado.'];
+        }
+
+        $stmtValMateria = $conn->prepare("SELECT id_materia FROM materia WHERE id_materia = ? AND habilitado = 1 AND cancelado = 0");
+        $stmtValMateria->bind_param('i', $idMateria);
+        $stmtValMateria->execute();
+        if (!$stmtValMateria->get_result()->fetch_assoc()) {
+            return ['success' => false, 'message' => 'Materia no disponible.'];
+        }
+
+        if (!self::tablaExiste($conn, 'profesor_materia')) {
+            return ['success' => false, 'message' => 'No existe la relación profesor_materia para validar permisos.'];
+        }
+
+        $stmtValAsignacion = $conn->prepare("SELECT id_profesor_materia
+                                            FROM profesor_materia
+                                            WHERE id_profesor = ?
+                                              AND id_materia = ?
+                                              AND habilitado = 1
+                                              AND cancelado = 0
+                                            LIMIT 1");
+        $stmtValAsignacion->bind_param('ii', $idProfesor, $idMateria);
+        $stmtValAsignacion->execute();
+        if (!$stmtValAsignacion->get_result()->fetch_assoc()) {
+            return ['success' => false, 'message' => 'No tenés asignada esa materia.'];
+        }
+
+        return Nota::guardarNotas(
+            $conn,
+            $idAlumno,
+            $idMateria,
+            $notaP1Normalizada,
+            $notaP2Normalizada,
+            $notaFinalNormalizada
+        );
     }
 
     public static function actualizarEstadoMatricula($conn, $idProfesor, $idAlumno, $idMateria, $esRegular)

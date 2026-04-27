@@ -43,7 +43,7 @@ if (isset($error)) {
 <div class="container mt-4 fade-in">
     <div class="row">
         <!-- Columna lateral: Foto y datos personales -->
-        <div class="col-lg-3 mb-4">
+        <div class="col-lg-2 mb-4">
             <div class="card card-welcome h-100">
                 <div class="card-body">
                     <div style="position: relative; display: inline-block;">
@@ -210,7 +210,7 @@ if (isset($error)) {
         </div>
 
         <!-- Columna principal -->
-        <div class="col-lg-9 mb-4">
+        <div class="col-lg-10 mb-4">
             <?php if ($esProfesor): ?>
                 <div class="card mb-4 slide-in-left">
                     <div class="card-header bg-primary text-dark">
@@ -276,17 +276,25 @@ if (isset($error)) {
                                         <th>Año</th>
                                         <th>Apellido</th>
                                         <th>Mail</th>
+                                        <th>P1</th>
+                                        <th>P2</th>
+                                        <th>Final</th>
                                         <th>Checklist</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php if (empty($inscripcionesTabla)): ?>
                                         <tr>
-                                            <td colspan="8" class="text-center text-muted">No hay alumnos para los filtros seleccionados.</td>
+                                            <td colspan="11" class="text-center text-muted">No hay alumnos para los filtros seleccionados.</td>
                                         </tr>
                                     <?php else: ?>
                                         <?php foreach ($inscripcionesTabla as $idx => $fila): ?>
-                                            <?php $esRegularFila = (($fila['estado_matricula'] ?? 'espera') === 'regular'); ?>
+                                            <?php
+                                                $esRegularFila = (($fila['estado_matricula'] ?? 'espera') === 'regular');
+                                                $esPromocionalFila = $esRegularFila
+                                                    && isset($fila['nota_p1']) && (int)$fila['nota_p1'] >= 7
+                                                    && isset($fila['nota_p2']) && (int)$fila['nota_p2'] >= 7;
+                                            ?>
                                             <tr>
                                                 <td><?= $idx + 1 ?></td>
                                                 <td><?= htmlspecialchars($fila['carrera'] ?? '') ?></td>
@@ -295,6 +303,47 @@ if (isset($error)) {
                                                 <td><?= htmlspecialchars((string)($fila['anio'] ?? '')) ?></td>
                                                 <td><?= htmlspecialchars($fila['apellido'] ?? '') ?></td>
                                                 <td><?= htmlspecialchars($fila['email'] ?? '') ?></td>
+                                                <td>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        max="10"
+                                                        class="form-control form-control-sm nota-input"
+                                                        placeholder="P1"
+                                                        data-id-alumno="<?= (int)($fila['id_alumno'] ?? 0) ?>"
+                                                        data-id-materia="<?= (int)($fila['id_materia'] ?? 0) ?>"
+                                                        data-campo="nota_p1"
+                                                        value="<?= isset($fila['nota_p1']) && (int)$fila['nota_p1'] > 0 ? (int)$fila['nota_p1'] : '' ?>"
+                                                        <?= !$esRegularFila ? 'disabled' : '' ?>>
+                                                </td>
+                                                <td>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        max="10"
+                                                        class="form-control form-control-sm nota-input"
+                                                        placeholder="P2"
+                                                        data-id-alumno="<?= (int)($fila['id_alumno'] ?? 0) ?>"
+                                                        data-id-materia="<?= (int)($fila['id_materia'] ?? 0) ?>"
+                                                        data-campo="nota_p2"
+                                                        value="<?= isset($fila['nota_p2']) && (int)$fila['nota_p2'] > 0 ? (int)$fila['nota_p2'] : '' ?>"
+                                                        <?= !$esRegularFila ? 'disabled' : '' ?>>
+                                                </td>
+                                                <td>
+                                                    <input
+                                                            type="text"
+                                                            inputmode="numeric"
+                                                            maxlength="12"
+                                                            autocomplete="off"
+                                                        class="form-control form-control-sm nota-input<?= $esPromocionalFila ? ' nota-final-promocionado' : '' ?>"
+                                                            placeholder="Final"
+                                                        data-id-alumno="<?= (int)($fila['id_alumno'] ?? 0) ?>"
+                                                        data-id-materia="<?= (int)($fila['id_materia'] ?? 0) ?>"
+                                                        data-campo="nota_final"
+                                                            data-promocionado="<?= $esPromocionalFila ? '1' : '0' ?>"
+                                                            value="<?= $esPromocionalFila ? 'Promocionado' : (isset($fila['nota_final']) && (int)$fila['nota_final'] > 0 ? (int)$fila['nota_final'] : '') ?>"
+                                                        <?= (!$esRegularFila || $esPromocionalFila) ? 'disabled' : '' ?>>
+                                                </td>
                                                 <td>
                                                     <div class="form-check d-flex justify-content-center">
                                                         <input
@@ -316,6 +365,7 @@ if (isset($error)) {
                             </table>
                         </div>
                         <div id="matricula-feedback" class="small mt-3" style="display:none;"></div>
+                        <div id="notas-feedback" class="small mt-2" style="display:none;"></div>
                     </div>
                 </div>
             <?php elseif ($esAdministrativo): ?>
@@ -540,20 +590,24 @@ if (isset($error)) {
                                 <thead class="table-warning">
                                     <tr>
                                         <th>Materia</th>
-                                        <th>Nota</th>
+                                        <th>1er Parcial</th>
+                                        <th>2do Parcial</th>
+                                        <th>Final</th>
                                         <th>Fecha</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php if (empty($materiasPerfil)): ?>
                                         <tr>
-                                            <td colspan="3" class="text-center text-muted">No hay materias asociadas a tu carrera.</td>
+                                            <td colspan="5" class="text-center text-muted">No hay materias asociadas a tu carrera.</td>
                                         </tr>
                                     <?php else: ?>
                                         <?php foreach ($materiasPerfil as $materia): ?>
                                             <tr>
                                                 <td><?= htmlspecialchars($materia['nombre_materia'] ?? '') ?></td>
-                                                <td><?= htmlspecialchars($materia['nota'] ?? 'Sin nota') ?></td>
+                                                <td><?= isset($materia['nota_p1']) && (int)$materia['nota_p1'] > 0 ? (int)$materia['nota_p1'] : 'Sin nota' ?></td>
+                                                <td><?= isset($materia['nota_p2']) && (int)$materia['nota_p2'] > 0 ? (int)$materia['nota_p2'] : 'Sin nota' ?></td>
+                                                <td><?= isset($materia['nota_final']) && (int)$materia['nota_final'] > 0 ? (int)$materia['nota_final'] : 'Sin nota' ?></td>
                                                 <td><?= htmlspecialchars($materia['fecha_nota'] ?? '-') ?></td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -569,61 +623,271 @@ if (isset($error)) {
 </div>
 
 <?php if ($esProfesor): ?>
+<style>
+    .nota-input:disabled {
+        background-color: #e9ecef;
+        color: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+</style>
 <script>
-document.querySelectorAll('.checklist-matricula').forEach(function(checkbox) {
-    checkbox.addEventListener('change', function() {
-        var idAlumno = parseInt(this.dataset.idAlumno || '0', 10);
-        var idMateria = parseInt(this.dataset.idMateria || '0', 10);
-        var matriculado = this.checked ? 1 : 0;
-        var input = this;
-        var estadoLabel = this.closest('td').querySelector('.estado-matricula-label');
-        var feedback = document.getElementById('matricula-feedback');
+(function() {
+    document.querySelectorAll('.checklist-matricula').forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            var idAlumno = parseInt(this.dataset.idAlumno || '0', 10);
+            var idMateria = parseInt(this.dataset.idMateria || '0', 10);
+            var matriculado = this.checked ? 1 : 0;
+            var input = this;
+            var estadoLabel = this.closest('td').querySelector('.estado-matricula-label');
+            var feedback = document.getElementById('matricula-feedback');
 
-        input.disabled = true;
-        fetch('../Controllers/perfilController.php?action=actualizar_matricula', {
+            input.disabled = true;
+            fetch('../Controllers/perfilController.php?action=actualizar_matricula', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                },
+                body: 'id_alumno=' + encodeURIComponent(idAlumno)
+                    + '&id_materia=' + encodeURIComponent(idMateria)
+                    + '&matriculado=' + encodeURIComponent(matriculado)
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (!data || !data.success) {
+                    input.checked = !input.checked;
+                    feedback.className = 'small mt-3 text-danger';
+                    feedback.textContent = (data && data.message) ? data.message : 'No se pudo actualizar la matrícula.';
+                    feedback.style.display = 'block';
+                    return;
+                }
+
+                if (input.checked) {
+                    estadoLabel.textContent = 'Regular';
+                    estadoLabel.classList.remove('text-muted');
+                    estadoLabel.classList.add('text-success');
+                } else {
+                    estadoLabel.textContent = 'En espera';
+                    estadoLabel.classList.remove('text-success');
+                    estadoLabel.classList.add('text-muted');
+                }
+
+                var tr = input.closest('tr');
+                if (tr) {
+                    actualizarEstadoFilaNotas(tr, input.checked);
+                }
+
+                feedback.className = 'small mt-3 text-success';
+                feedback.textContent = data.message || 'Matrícula actualizada correctamente.';
+                feedback.style.display = 'block';
+            })
+            .catch(function() {
+                input.checked = !input.checked;
+                feedback.className = 'small mt-3 text-danger';
+                feedback.textContent = 'Error de red al actualizar matrícula.';
+                feedback.style.display = 'block';
+            })
+            .finally(function() {
+                input.disabled = false;
+            });
+        });
+    });
+
+    function valorNota(input) {
+        var value = (input.value || '').trim();
+        if (input.dataset.campo === 'nota_final' && input.dataset.promocionado === '1') {
+            return '';
+        }
+        if (value === '') {
+            return '';
+        }
+        var numero = parseInt(value, 10);
+        if (Number.isNaN(numero) || numero < 0 || numero > 10) {
+            return null;
+        }
+        return String(numero);
+    }
+
+    function actualizarEstadoFilaNotas(tr, esRegular) {
+        var inputP1 = tr.querySelector('.nota-input[data-campo="nota_p1"]');
+        var inputP2 = tr.querySelector('.nota-input[data-campo="nota_p2"]');
+        var inputFinal = tr.querySelector('.nota-input[data-campo="nota_final"]');
+
+        if (!inputP1 || !inputP2 || !inputFinal) {
+            return;
+        }
+
+        inputP1.disabled = !esRegular;
+        inputP2.disabled = !esRegular;
+
+        if (!esRegular) {
+            inputFinal.disabled = true;
+            inputFinal.dataset.promocionado = '0';
+            if (inputFinal.value === 'Promocionado') {
+                inputFinal.value = '';
+            }
+            inputFinal.placeholder = 'Final';
+            inputFinal.classList.remove('nota-final-promocionado');
+            return;
+        }
+
+        actualizarEstadoPromocion(tr);
+    }
+
+    function guardarNotasFila(idAlumno, idMateria, filaInputs, inputDisparador) {
+        var feedback = document.getElementById('notas-feedback');
+        var notaP1 = valorNota(filaInputs.nota_p1);
+        var notaP2 = valorNota(filaInputs.nota_p2);
+        var notaFinal = valorNota(filaInputs.nota_final);
+
+        if (notaP1 === null || notaP2 === null || notaFinal === null) {
+            feedback.className = 'small mt-2 text-danger';
+            feedback.textContent = 'Las notas deben estar entre 0 y 10.';
+            feedback.style.display = 'block';
+            inputDisparador.focus();
+            return;
+        }
+
+        filaInputs.nota_p1.disabled = true;
+        filaInputs.nota_p2.disabled = true;
+        filaInputs.nota_final.disabled = true;
+
+        fetch('../Controllers/perfilController.php?action=guardar_notas', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
             },
             body: 'id_alumno=' + encodeURIComponent(idAlumno)
                 + '&id_materia=' + encodeURIComponent(idMateria)
-                + '&matriculado=' + encodeURIComponent(matriculado)
+                + '&nota_p1=' + encodeURIComponent(notaP1)
+                + '&nota_p2=' + encodeURIComponent(notaP2)
+                + '&nota_final=' + encodeURIComponent(notaFinal)
         })
         .then(function(response) { return response.json(); })
         .then(function(data) {
             if (!data || !data.success) {
-                input.checked = !input.checked;
-                feedback.className = 'small mt-3 text-danger';
-                feedback.textContent = (data && data.message) ? data.message : 'No se pudo actualizar la matrícula.';
+                feedback.className = 'small mt-2 text-danger';
+                feedback.textContent = (data && data.message) ? data.message : 'No se pudieron guardar las notas.';
                 feedback.style.display = 'block';
                 return;
             }
 
-            if (input.checked) {
-                estadoLabel.textContent = 'Regular';
-                estadoLabel.classList.remove('text-muted');
-                estadoLabel.classList.add('text-success');
-            } else {
-                estadoLabel.textContent = 'En espera';
-                estadoLabel.classList.remove('text-success');
-                estadoLabel.classList.add('text-muted');
-            }
-
-            feedback.className = 'small mt-3 text-success';
-            feedback.textContent = data.message || 'Matrícula actualizada correctamente.';
+            feedback.className = 'small mt-2 text-success';
+            feedback.textContent = data.message || 'Notas guardadas correctamente.';
             feedback.style.display = 'block';
         })
         .catch(function() {
-            input.checked = !input.checked;
-            feedback.className = 'small mt-3 text-danger';
-            feedback.textContent = 'Error de red al actualizar matrícula.';
+            feedback.className = 'small mt-2 text-danger';
+            feedback.textContent = 'Error de red al guardar las notas.';
             feedback.style.display = 'block';
         })
         .finally(function() {
-            input.disabled = false;
+            filaInputs.nota_p1.disabled = false;
+            filaInputs.nota_p2.disabled = false;
+            if (!filaInputs.nota_final.classList.contains('nota-final-promocionado')) {
+                filaInputs.nota_final.disabled = false;
+            }
+            var tr = filaInputs.nota_p1.closest('tr');
+            if (tr) actualizarEstadoPromocion(tr);
         });
+    }
+
+    function actualizarEstadoPromocion(tr) {
+        var inputP1 = tr.querySelector('.nota-input[data-campo="nota_p1"]');
+        var inputP2 = tr.querySelector('.nota-input[data-campo="nota_p2"]');
+        var inputFinal = tr.querySelector('.nota-input[data-campo="nota_final"]');
+        var checkboxMatricula = tr.querySelector('.checklist-matricula');
+
+        if (!inputP1 || !inputP2 || !inputFinal) return;
+        if (!checkboxMatricula || !checkboxMatricula.checked) {
+            inputFinal.disabled = true;
+            inputFinal.dataset.promocionado = '0';
+            if (inputFinal.value === 'Promocionado') {
+                inputFinal.value = '';
+            }
+            inputFinal.placeholder = 'Final';
+            inputFinal.classList.remove('nota-final-promocionado');
+            return;
+        }
+
+        var p1 = parseInt(inputP1.value, 10);
+        var p2 = parseInt(inputP2.value, 10);
+        var esPromocionado = !isNaN(p1) && !isNaN(p2) && p1 >= 7 && p2 >= 7;
+
+        if (esPromocionado) {
+            inputFinal.value = 'Promocionado';
+            inputFinal.dataset.promocionado = '1';
+            inputFinal.placeholder = 'Final';
+            inputFinal.disabled = true;
+            inputFinal.classList.add('nota-final-promocionado');
+        } else {
+            if (inputFinal.value === 'Promocionado') {
+                inputFinal.value = '';
+            }
+            inputFinal.dataset.promocionado = '0';
+            inputFinal.placeholder = 'Final';
+            inputFinal.disabled = false;
+            inputFinal.classList.remove('nota-final-promocionado');
+        }
+    }
+
+    document.querySelectorAll('.nota-input').forEach(function(input) {
+        function dispararGuardado() {
+            var tr = input.closest('tr');
+            if (!tr) {
+                return;
+            }
+
+            var idAlumno = parseInt(input.dataset.idAlumno || '0', 10);
+            var idMateria = parseInt(input.dataset.idMateria || '0', 10);
+            if (idAlumno <= 0 || idMateria <= 0) {
+                return;
+            }
+
+            var inputsFila = {
+                nota_p1: tr.querySelector('.nota-input[data-campo="nota_p1"]'),
+                nota_p2: tr.querySelector('.nota-input[data-campo="nota_p2"]'),
+                nota_final: tr.querySelector('.nota-input[data-campo="nota_final"]')
+            };
+
+            if (!inputsFila.nota_p1 || !inputsFila.nota_p2 || !inputsFila.nota_final) {
+                return;
+            }
+
+            guardarNotasFila(idAlumno, idMateria, inputsFila, input);
+        }
+
+        input.addEventListener('blur', dispararGuardado);
+        input.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                input.blur();
+            }
+        });
+
+        if (input.dataset.campo === 'nota_final') {
+            input.addEventListener('input', function() {
+                if (input.dataset.promocionado === '1') {
+                    return;
+                }
+                input.value = input.value.replace(/\D/g, '').slice(0, 2);
+            });
+        }
+
+        // Actualizar estado de promoción al escribir en P1 o P2
+        if (input.dataset.campo === 'nota_p1' || input.dataset.campo === 'nota_p2') {
+            input.addEventListener('input', function() {
+                var tr = input.closest('tr');
+                if (tr) actualizarEstadoPromocion(tr);
+            });
+        }
     });
-});
+
+    // Evaluar estado de promoción en carga de página
+    document.querySelectorAll('#tabla-inscripciones-profesor tbody tr').forEach(function(tr) {
+        actualizarEstadoPromocion(tr);
+    });
+})();
 </script>
 <?php endif; ?>
 

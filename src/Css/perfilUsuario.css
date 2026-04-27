@@ -80,6 +80,43 @@
   font-weight: 600;
 }
 
+/* Ancho mínimo para columnas de notas (P1, P2, Final) */
+#tabla-inscripciones-profesor th:nth-child(8),
+#tabla-inscripciones-profesor th:nth-child(9),
+#tabla-inscripciones-profesor th:nth-child(10),
+#tabla-inscripciones-profesor td:nth-child(8),
+#tabla-inscripciones-profesor td:nth-child(9),
+#tabla-inscripciones-profesor td:nth-child(10) {
+  min-width: 60px;
+  width: 60px;
+  text-align: center;
+}
+
+/* Ocultar flechas de incremento en inputs de notas */
+.nota-input::-webkit-outer-spin-button,
+.nota-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.nota-input {
+  -moz-appearance: textfield;
+  text-align: center;
+}
+
+/* Input final en modo Promocionado */
+.nota-input.nota-final-promocionado {
+  background-color: #d1e7dd !important;
+  border-color: #0f5132 !important;
+  color: #0f5132;
+  font-weight: 700;
+  cursor: not-allowed;
+}
+.nota-input.nota-final-promocionado::placeholder {
+  color: #0a3622;
+  font-weight: 700;
+  opacity: 1;
+}
+
 @media (max-width: 991.98px) {
   .card, .card-body, .card-header {
     text-align: left;

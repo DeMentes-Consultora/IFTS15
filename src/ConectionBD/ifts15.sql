@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 22-04-2026 a las 20:40:33
+-- Tiempo de generación: 27-04-2026 a las 16:43:50
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -158,7 +158,9 @@ CREATE TABLE `notas` (
   `id_nota` int(11) NOT NULL,
   `id_usuario` int(11) NOT NULL,
   `id_materia` int(11) NOT NULL,
-  `nota` int(11) NOT NULL,
+  `1er_piarcial` int(2) NOT NULL,
+  `2do_parcial` int(2) NOT NULL,
+  `final` int(2) NOT NULL,
   `habilitado` int(1) NOT NULL DEFAULT 1,
   `cancelado` int(1) NOT NULL,
   `idCreate` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -216,9 +218,9 @@ CREATE TABLE `persona` (
 --
 
 INSERT INTO `persona` (`id_persona`, `apellido`, `fecha_nacimiento`, `nombre`, `telefono`, `foto_perfil_url`, `foto_perfil_public_id`, `dni`, `edad`, `habilitado`, `cancelado`, `idCreate`, `idUpdate`) VALUES
-(1, 'prueba', '0000-00-00', 'prueba', '1156423659', NULL, NULL, '265528963', 18, 1, 0, '2025-09-17 22:24:24', '2025-09-17 22:24:24'),
+(1, 'prueba', '0000-00-00', 'prueba', '1156423659', 'https://res.cloudinary.com/dm8ds67tb/image/upload/v1776952704/ifts15/perfiles/ifts15/perfiles/69ea2574ba69d.png', 'ifts15/perfiles/ifts15/perfiles/69ea2574ba69d', '265528963', 18, 1, 0, '2025-09-17 22:24:24', '2026-04-23 13:58:28'),
 (4, 'nueva', '1978-10-16', 'nueva', '1152369852', NULL, NULL, '12365423', 46, 1, 0, '2025-09-20 02:47:28', '2025-09-20 02:47:28'),
-(5, 'free', '1978-10-16', 'infunity', '1156452365', NULL, NULL, '52369852', 46, 1, 0, '2025-09-21 17:36:53', '2025-09-21 17:36:53'),
+(5, 'free', '1978-10-16', 'infunity', '1156452365', 'https://res.cloudinary.com/dm8ds67tb/image/upload/v1776954722/ifts15/perfiles/ifts15/perfiles/69ea2d60df8db.jpg', 'ifts15/perfiles/ifts15/perfiles/69ea2d60df8db', '52369852', 46, 1, 0, '2025-09-21 17:36:53', '2026-04-23 14:32:03'),
 (6, 'gomez', '1978-11-16', 'nora', '1125365475', NULL, NULL, '12536985', 46, 1, 0, '2025-09-24 19:40:46', '2025-09-24 19:40:46'),
 (7, 'lopez', '1978-10-16', 'loli', '1152369852', NULL, NULL, '12365236', 46, 1, 0, '2025-09-24 19:46:19', '2025-09-24 19:46:19'),
 (8, 'nombre', '1978-01-16', 'tunombre', '1152365475', NULL, NULL, '12253632', 47, 1, 0, '2025-09-25 02:03:05', '2025-09-25 02:03:05'),
@@ -250,7 +252,7 @@ CREATE TABLE `profesor_materia` (
 --
 
 INSERT INTO `profesor_materia` (`id_profesor_materia`, `id_profesor`, `id_materia`, `habilitado`, `cancelado`, `idCreate`, `idUpdate`) VALUES
-(1, 12, 2, 1, 0, '2026-04-22 17:48:20', '2026-04-22 18:35:10'),
+(1, 12, 2, 1, 0, '2026-04-22 17:48:20', '2026-04-24 14:28:35'),
 (3, 12, 4, 1, 0, '2026-04-22 18:32:27', '2026-04-22 18:32:27'),
 (4, 12, 5, 1, 0, '2026-04-22 18:32:29', '2026-04-22 18:32:29');
 
@@ -283,6 +285,78 @@ INSERT INTO `roles` (`id_rol`, `rol`, `habilitado`, `cancelado`, `idcCreate`, `i
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `site_carousel`
+--
+
+CREATE TABLE `site_carousel` (
+  `id_slide` int(11) NOT NULL,
+  `titulo` varchar(255) NOT NULL DEFAULT '',
+  `descripcion` text DEFAULT NULL,
+  `link_url` varchar(255) DEFAULT NULL,
+  `orden_visual` int(11) NOT NULL DEFAULT 1,
+  `image_url` text DEFAULT NULL,
+  `image_public_id` varchar(255) DEFAULT NULL,
+  `habilitado` tinyint(1) NOT NULL DEFAULT 1,
+  `cancelado` tinyint(1) NOT NULL DEFAULT 0,
+  `idCreate` timestamp NULL DEFAULT current_timestamp(),
+  `idUpdate` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `site_footer`
+--
+
+CREATE TABLE `site_footer` (
+  `id_footer` int(11) NOT NULL,
+  `credit_text` varchar(255) NOT NULL DEFAULT 'Desarrollado por Les muchaches del Inap',
+  `credit_url` varchar(500) DEFAULT NULL,
+  `logo_url` text DEFAULT NULL,
+  `logo_public_id` varchar(255) DEFAULT NULL,
+  `habilitado` tinyint(1) NOT NULL DEFAULT 1,
+  `cancelado` tinyint(1) NOT NULL DEFAULT 0,
+  `idCreate` timestamp NULL DEFAULT current_timestamp(),
+  `idUpdate` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `site_navbar`
+--
+
+CREATE TABLE `site_navbar` (
+  `id_navbar` int(11) NOT NULL,
+  `brand_text` varchar(255) NOT NULL DEFAULT 'IFTS15',
+  `logo_url` text DEFAULT NULL,
+  `logo_public_id` varchar(255) DEFAULT NULL,
+  `habilitado` tinyint(1) NOT NULL DEFAULT 1,
+  `cancelado` tinyint(1) NOT NULL DEFAULT 0,
+  `idCreate` timestamp NULL DEFAULT current_timestamp(),
+  `idUpdate` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `site_sidebar`
+--
+
+CREATE TABLE `site_sidebar` (
+  `id_sidebar` int(11) NOT NULL,
+  `brand_text` varchar(255) NOT NULL DEFAULT 'Panel de Usuario',
+  `logo_url` text DEFAULT NULL,
+  `logo_public_id` varchar(255) DEFAULT NULL,
+  `habilitado` tinyint(1) NOT NULL DEFAULT 1,
+  `cancelado` tinyint(1) NOT NULL DEFAULT 0,
+  `idCreate` timestamp NULL DEFAULT current_timestamp(),
+  `idUpdate` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `usuario`
 --
 
@@ -308,16 +382,16 @@ CREATE TABLE `usuario` (
 INSERT INTO `usuario` (`id_usuario`, `email`, `clave`, `id_comision`, `id_carrera`, `id_añoCursada`, `id_rol`, `id_persona`, `habilitado`, `cancelado`, `idCreate`, `idUpdate`) VALUES
 (1, 'administrativo@gmail.com', '$2y$12$sVaFyYEqkJ9GQk9XFoQMxuOcbIwXltz5yai4P6fxu4VKRlWBGo8Ou', 2, 1, 2, 3, 1, 1, 0, '2025-09-17 22:24:25', '2026-04-22 18:30:00'),
 (2, 'nueva@hotmail.com', '$2y$12$BC9jClOBpderkWsFtafl1eQdoGb8G3AuVfweDbv8ImfHJ0xUt0Mly', NULL, NULL, NULL, 1, 4, 1, 0, '2025-09-20 02:47:28', '2025-10-24 01:36:49'),
-(3, 'infinityfree@gmail.com', '$2y$12$TQqKsojLT/TD8isbcOn6ausWmHcIAaxV0dZ7ULQQbOuJW58ZuPGgm', 2, 1, 3, 1, 5, 1, 0, '2025-09-21 17:36:53', '2025-09-21 17:36:53'),
-(4, 'noragomez@gimail.com', '$2y$12$00ZREWs/MCnUmd3dyJwvTeXO6U9A1SR4SwV76C.nnjSel5jjfg3wC', 2, 1, 3, 1, 6, 1, 0, '2025-09-24 19:40:46', '2025-09-24 19:40:46'),
+(3, 'alumno@gmail.com', '$2y$12$TQqKsojLT/TD8isbcOn6ausWmHcIAaxV0dZ7ULQQbOuJW58ZuPGgm', 2, 1, 3, 1, 5, 1, 0, '2025-09-21 17:36:53', '2026-04-23 14:29:55'),
+(4, 'alumno2@gimail.com', '$2y$12$00ZREWs/MCnUmd3dyJwvTeXO6U9A1SR4SwV76C.nnjSel5jjfg3wC', 2, 1, 3, 1, 6, 1, 0, '2025-09-24 19:40:46', '2026-04-23 14:30:11'),
 (5, 'lolilopez@gmail.com', '$2y$12$kQOvakhbfttqmy.FFKbnMuL6WmLL1JLBaZ7O02MqwWhvZoghGLnuC', 3, 1, 2, 1, 7, 1, 0, '2025-09-24 19:46:20', '2025-09-24 19:46:20'),
-(6, 'tunombre@gmail.com', '$2y$12$fNTR8ARN7n08cva4jHxlv.XX2uTyHFLgq4eZA6fE7WAM2Z6/nSOg.', 2, 1, 3, 1, 8, 1, 0, '2025-09-25 02:03:05', '2025-10-24 01:36:48'),
+(6, 'alumno3@gmail.com', '$2y$12$fNTR8ARN7n08cva4jHxlv.XX2uTyHFLgq4eZA6fE7WAM2Z6/nSOg.', 2, 1, 3, 1, 8, 1, 0, '2025-09-25 02:03:05', '2026-04-23 14:30:27'),
 (7, 'barbaro@gmail.com', '$2y$12$L./9ibHSdSjUSbxzzOdjMueCDHAGySw9ZFbxWZMO1hsq0.9GKrinK', 1, 1, 2, 1, 9, 1, 0, '2025-09-25 02:06:40', '2025-10-24 01:36:47'),
 (8, 'cabezon@gmail.com', '$2y$12$8IYGQ9hvWwKB0JZY3SNK2e05124T3fspcqKh/IhXSglPY5qOCChAy', 2, 1, 2, 1, 10, 1, 0, '2025-09-26 20:47:27', '2026-04-22 18:37:39'),
 (9, 'window@gmail.com', '$2y$12$fR0fIM.2bvmmdxBemte3sOgH0Rqp7WEfs80FPZ/y.SX4m0qtHiBDC', 2, 1, 2, 1, 11, 1, 0, '2025-10-24 02:43:37', '2025-10-24 02:44:21'),
-(10, 'seba@gmail.com', '$2y$12$.WXM/pHlVXTPczxF2mxpWupkveD8ZxCiR61MoM.hHrNcwDdLknSDu', 1, 1, 1, 5, 12, 1, 0, '2025-10-24 03:34:10', '2026-03-20 21:45:32'),
+(10, 'administrador@gmail.com', '$2y$12$.WXM/pHlVXTPczxF2mxpWupkveD8ZxCiR61MoM.hHrNcwDdLknSDu', 1, 1, 1, 5, 12, 1, 0, '2025-10-24 03:34:10', '2026-04-23 14:30:48'),
 (11, 'losmuchachosdelinapifts@gmail.com', '$2y$12$8IYGQ9hvWwKB0JZY3SNK2e05124T3fspcqKh/IhXSglPY5qOCChAy', 3, 1, 2, 4, 13, 1, 0, '2025-11-04 02:11:13', '2025-11-04 02:14:04'),
-(12, 'sebastianminotti@gmail.com', '$2y$10$8LpfnPvSMgsm9uucq4Cu8uHZumM5qxGwXT2dqvfequqqjR2N2DhAC', 1, 2, 1, 2, 14, 1, 0, '2026-03-27 17:35:28', '2026-04-22 17:45:52');
+(12, 'profesor@gmail.com', '$2y$10$8LpfnPvSMgsm9uucq4Cu8uHZumM5qxGwXT2dqvfequqqjR2N2DhAC', 1, 2, 1, 2, 14, 1, 0, '2026-03-27 17:35:28', '2026-04-23 14:31:14');
 
 --
 -- Índices para tablas volcadas
@@ -386,6 +460,30 @@ ALTER TABLE `roles`
   ADD PRIMARY KEY (`id_rol`);
 
 --
+-- Indices de la tabla `site_carousel`
+--
+ALTER TABLE `site_carousel`
+  ADD PRIMARY KEY (`id_slide`);
+
+--
+-- Indices de la tabla `site_footer`
+--
+ALTER TABLE `site_footer`
+  ADD PRIMARY KEY (`id_footer`);
+
+--
+-- Indices de la tabla `site_navbar`
+--
+ALTER TABLE `site_navbar`
+  ADD PRIMARY KEY (`id_navbar`);
+
+--
+-- Indices de la tabla `site_sidebar`
+--
+ALTER TABLE `site_sidebar`
+  ADD PRIMARY KEY (`id_sidebar`);
+
+--
 -- Indices de la tabla `usuario`
 --
 ALTER TABLE `usuario`
@@ -446,13 +544,37 @@ ALTER TABLE `persona`
 -- AUTO_INCREMENT de la tabla `profesor_materia`
 --
 ALTER TABLE `profesor_materia`
-  MODIFY `id_profesor_materia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id_profesor_materia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT de la tabla `roles`
 --
 ALTER TABLE `roles`
   MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT de la tabla `site_carousel`
+--
+ALTER TABLE `site_carousel`
+  MODIFY `id_slide` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `site_footer`
+--
+ALTER TABLE `site_footer`
+  MODIFY `id_footer` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `site_navbar`
+--
+ALTER TABLE `site_navbar`
+  MODIFY `id_navbar` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `site_sidebar`
+--
+ALTER TABLE `site_sidebar`
+  MODIFY `id_sidebar` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `usuario`
