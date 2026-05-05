@@ -99,8 +99,10 @@
   margin: 0;
 }
 .nota-input {
-  -moz-appearance: textfield;
+  width: 2.5em;
+  min-width: 2.5em;
   text-align: center;
+  -moz-appearance: textfield;
 }
 
 /* Input final en modo Promocionado */

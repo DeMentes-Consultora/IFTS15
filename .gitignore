@@ -38,6 +38,9 @@ desktop.ini
 
 # Dependencias Node.js (si las usas)
 node_modules/
+
+# No subir la carpeta de deploy
+deploy_IFTS15/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
