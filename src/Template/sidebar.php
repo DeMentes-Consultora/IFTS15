@@ -90,6 +90,7 @@ $sidebarBrandLogo = (!empty($siteSidebar['habilitado']) && !empty($siteSidebar['
                 </a>
                 <div class="collapse" id="academico-menu">
                     <ul class="nav nav-pills flex-column ms-4">
+                        <!--
                         <?php if ($userIdRol === 1): ?>
                             <li class="nav-item">
                                 <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/pages/mis-materias.php">
@@ -99,11 +100,6 @@ $sidebarBrandLogo = (!empty($siteSidebar['habilitado']) && !empty($siteSidebar['
                             <li class="nav-item">
                                 <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/pages/calificaciones.php">
                                     <i class="bi bi-star me-2"></i> Calificaciones
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/pages/horarios.php">
-                                    <i class="bi bi-clock me-2"></i> Horarios
                                 </a>
                             </li>
                         <?php elseif ($userIdRol === 2): ?>
@@ -123,6 +119,12 @@ $sidebarBrandLogo = (!empty($siteSidebar['habilitado']) && !empty($siteSidebar['
                                 </a>
                             </li>
                         <?php endif; ?>
+                        -->
+                        <li class="nav-item">
+                            <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/pages/horarios.php">
+                                <i class="bi bi-clock me-2"></i> Horarios
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
