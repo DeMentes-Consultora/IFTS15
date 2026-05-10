@@ -218,7 +218,7 @@ if (isset($error)) {
                     </div>
                     <div class="card-body">
                         <form method="GET" action="<?= htmlspecialchars(BASE_URL) ?>/src/Controllers/perfilController.php" class="row g-3 align-items-end">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="filtro-carrera" class="form-label">Carrera</label>
                                 <select class="form-select" id="filtro-carrera" name="id_carrera">
                                     <option value="0">Todas</option>
@@ -229,7 +229,7 @@ if (isset($error)) {
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="filtro-materia" class="form-label">Materia</label>
                                 <select class="form-select" id="filtro-materia" name="id_materia">
                                     <option value="0">Todas</option>
@@ -247,6 +247,17 @@ if (isset($error)) {
                                     <?php foreach (($opcionesFiltros['anios'] ?? []) as $itemAnio): ?>
                                         <option value="<?= (int)($itemAnio['id_añoCursada'] ?? 0) ?>" <?= (int)($filtros['id_anio_cursada'] ?? 0) === (int)($itemAnio['id_añoCursada'] ?? 0) ? 'selected' : '' ?>>
                                             <?= htmlspecialchars((string)($itemAnio['año'] ?? '')) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="filtro-alumno" class="form-label">Alumno</label>
+                                <select class="form-select" id="filtro-alumno" name="id_alumno">
+                                    <option value="0">Todos</option>
+                                    <?php foreach (($opcionesFiltros['alumnos'] ?? []) as $itemAlumno): ?>
+                                        <option value="<?= (int)($itemAlumno['id_alumno'] ?? 0) ?>" <?= (int)($filtros['id_alumno'] ?? 0) === (int)($itemAlumno['id_alumno'] ?? 0) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars(($itemAlumno['apellido'] ?? '') . ', ' . ($itemAlumno['nombre'] ?? '')) ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
