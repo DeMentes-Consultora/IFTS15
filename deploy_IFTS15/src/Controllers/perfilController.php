@@ -33,6 +33,7 @@ class perfilController {
             'id_carrera' => isset($_GET['id_carrera']) ? (int)$_GET['id_carrera'] : 0,
             'id_materia' => isset($_GET['id_materia']) ? (int)$_GET['id_materia'] : 0,
             'id_anio_cursada' => isset($_GET['id_anio_cursada']) ? (int)$_GET['id_anio_cursada'] : 0,
+            'id_alumno' => isset($_GET['id_alumno']) ? (int)$_GET['id_alumno'] : 0,
         ];
         $datosPerfil = PerfilService::obtenerDatosPerfil($this->conn, $id_usuario, $filtros);
         if (!$datosPerfil) {

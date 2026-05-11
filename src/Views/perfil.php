@@ -255,11 +255,17 @@ if (isset($error)) {
                                 <label for="filtro-alumno" class="form-label">Alumno</label>
                                 <select class="form-select" id="filtro-alumno" name="id_alumno">
                                     <option value="0">Todos</option>
-                                    <?php foreach (($opcionesFiltros['alumnos'] ?? []) as $itemAlumno): ?>
+                                    <?php $alumnosDebug = $opcionesFiltros['alumnos'] ?? []; ?>
+                                    <?php foreach ($alumnosDebug as $itemAlumno): ?>
                                         <option value="<?= (int)($itemAlumno['id_alumno'] ?? 0) ?>" <?= (int)($filtros['id_alumno'] ?? 0) === (int)($itemAlumno['id_alumno'] ?? 0) ? 'selected' : '' ?>>
                                             <?= htmlspecialchars(($itemAlumno['apellido'] ?? '') . ', ' . ($itemAlumno['nombre'] ?? '')) ?>
                                         </option>
                                     <?php endforeach; ?>
+                                </select>
+                                <script>
+                                // Debug: mostrar en consola la cantidad de alumnos cargados en el filtro
+                                console.log('Alumnos en filtro:', <?= json_encode(count($alumnosDebug)) ?>, <?= json_encode($alumnosDebug) ?>);
+                                </script>
                                 </select>
                             </div>
                             <div class="col-md-2 d-grid">
