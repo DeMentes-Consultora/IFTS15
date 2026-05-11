@@ -219,6 +219,7 @@ class PerfilService {
         $filtroCarrera = isset($filtros['id_carrera']) ? (int)$filtros['id_carrera'] : 0;
         $filtroMateria = isset($filtros['id_materia']) ? (int)$filtros['id_materia'] : 0;
         $filtroAnio = isset($filtros['id_anio_cursada']) ? (int)$filtros['id_anio_cursada'] : 0;
+        $filtroAlumno = isset($filtros['id_alumno']) ? (int)$filtros['id_alumno'] : 0;
         $columnasNotas = Nota::obtenerColumnasNotas($conn);
 
         $tieneRelacionProfesorMateria = self::tablaExiste($conn, 'profesor_materia');
@@ -248,6 +249,7 @@ class PerfilService {
                     ac.id_añoCursada AS id_anio_cursada,
                     ac.año AS anio,
                     p.apellido,
+                    p.nombre,
                     u.email,
                     {$selectNotas},
                     " . ($tieneTablaMatricula ? "COALESCE(mm.estado, 'espera')" : "'espera'") . " AS estado_matricula
@@ -283,6 +285,7 @@ class PerfilService {
                   AND (? = 0 OR u.id_carrera = ?)
                   AND (? = 0 OR ac.id_añoCursada = ?)
                   AND (? = 0 OR m.id_materia = ?)
+                  AND (? = 0 OR u.id_usuario = ?)
                 ORDER BY c.nombreCarrera ASC, m.nombre_materia ASC, ac.año ASC, p.apellido ASC";
             $stmt = $conn->prepare($sql);
             if (!$stmt) {
@@ -290,14 +293,16 @@ class PerfilService {
             }
 
             $stmt->bind_param(
-                'iiiiiii',
+                'iiiiiiiii',
                 $idProfesor,
                 $filtroCarrera,
                 $filtroCarrera,
                 $filtroAnio,
                 $filtroAnio,
                 $filtroMateria,
-                $filtroMateria
+                $filtroMateria,
+                $filtroAlumno,
+                $filtroAlumno
             );
             $stmt->execute();
             $result = $stmt->get_result();
@@ -373,36 +378,37 @@ class PerfilService {
                     AND n.cancelado = 0";
             }
 
-            $sql = "SELECT
-                        u.id_usuario AS id_alumno,
-                        c.id_carrera,
-                        c.nombreCarrera AS carrera,
-                        m.id_materia,
-                        m.nombre_materia AS materia,
-                        co.comision,
-                        ac.id_añoCursada AS id_anio_cursada,
-                        ac.año AS anio,
-                        p.apellido,
-                        u.email,
-                        {$selectNotas},
-                        'espera' AS estado_matricula
-                    FROM usuario u
-                    INNER JOIN persona p
-                        ON p.id_persona = u.id_persona
-                        AND p.habilitado = 1
-                        AND p.cancelado = 0
-                    LEFT JOIN carrera c ON c.id_carrera = u.id_carrera
-                    LEFT JOIN comision co ON co.id_comision = u.id_comision
-                    LEFT JOIN añocursada ac ON ac.id_añoCursada = u.id_añoCursada
-                    INNER JOIN materia m ON m.id_carrera = u.id_carrera AND m.habilitado = 1 AND m.cancelado = 0
-                                        {$joinNotas}
-                    WHERE u.id_rol = 1
-                      AND u.habilitado = 1
-                      AND u.cancelado = 0
-                      AND (? = 0 OR u.id_carrera = ?)
-                      AND (? = 0 OR ac.id_añoCursada = ?)
-                      AND (? = 0 OR m.id_materia = ?)
-                    ORDER BY c.nombreCarrera ASC, m.nombre_materia ASC, ac.año ASC, p.apellido ASC";
+                        $sql = "SELECT
+                                                u.id_usuario AS id_alumno,
+                                                c.id_carrera,
+                                                c.nombreCarrera AS carrera,
+                                                m.id_materia,
+                                                m.nombre_materia AS materia,
+                                                co.comision,
+                                                ac.id_añoCursada AS id_anio_cursada,
+                                                ac.año AS anio,
+                                                p.apellido,
+                                                p.nombre,
+                                                u.email,
+                                                {$selectNotas},
+                                                'espera' AS estado_matricula
+                                        FROM usuario u
+                                        INNER JOIN persona p
+                                                ON p.id_persona = u.id_persona
+                                                AND p.habilitado = 1
+                                                AND p.cancelado = 0
+                                        LEFT JOIN carrera c ON c.id_carrera = u.id_carrera
+                                        LEFT JOIN comision co ON co.id_comision = u.id_comision
+                                        LEFT JOIN añocursada ac ON ac.id_añoCursada = u.id_añoCursada
+                                        INNER JOIN materia m ON m.id_carrera = u.id_carrera AND m.habilitado = 1 AND m.cancelado = 0
+                                                                                {$joinNotas}
+                                        WHERE u.id_rol = 1
+                                            AND u.habilitado = 1
+                                            AND u.cancelado = 0
+                                            AND (? = 0 OR u.id_carrera = ?)
+                                            AND (? = 0 OR ac.id_añoCursada = ?)
+                                            AND (? = 0 OR m.id_materia = ?)
+                                        ORDER BY c.nombreCarrera ASC, m.nombre_materia ASC, ac.año ASC, p.apellido ASC";
             $stmt = $conn->prepare($sql);
             if (!$stmt) {
                 throw new \RuntimeException('No se pudo preparar la consulta fallback de perfil profesor: ' . $conn->error);
@@ -445,6 +451,20 @@ class PerfilService {
             }
         }
 
+        // Generar lista única de alumnos para el filtro
+        $alumnos = [];
+        $idsAlumnos = [];
+        foreach ($filas as $fila) {
+            $idAlumno = (int)($fila['id_alumno'] ?? 0);
+            if ($idAlumno > 0 && !isset($idsAlumnos[$idAlumno])) {
+                $alumnos[] = [
+                    'id_alumno' => $idAlumno,
+                    'nombre' => $fila['nombre'] ?? '',
+                    'apellido' => $fila['apellido'] ?? ''
+                ];
+                $idsAlumnos[$idAlumno] = true;
+            }
+        }
         return [
             'tipo_perfil' => 'profesor',
             'usuario' => $usuario,
@@ -455,11 +475,13 @@ class PerfilService {
                 'id_carrera' => $filtroCarrera,
                 'id_materia' => $filtroMateria,
                 'id_anio_cursada' => $filtroAnio,
+                'id_alumno' => $filtroAlumno,
             ],
             'opciones_filtros' => [
                 'carreras' => $carreras,
                 'materias' => $materias,
                 'anios' => $anios,
+                'alumnos' => $alumnos,
             ]
         ];
     }

@@ -219,6 +219,7 @@ class PerfilService {
         $filtroCarrera = isset($filtros['id_carrera']) ? (int)$filtros['id_carrera'] : 0;
         $filtroMateria = isset($filtros['id_materia']) ? (int)$filtros['id_materia'] : 0;
         $filtroAnio = isset($filtros['id_anio_cursada']) ? (int)$filtros['id_anio_cursada'] : 0;
+        $filtroAlumno = isset($filtros['id_alumno']) ? (int)$filtros['id_alumno'] : 0;
         $columnasNotas = Nota::obtenerColumnasNotas($conn);
 
         $tieneRelacionProfesorMateria = self::tablaExiste($conn, 'profesor_materia');
@@ -248,6 +249,7 @@ class PerfilService {
                     ac.id_añoCursada AS id_anio_cursada,
                     ac.año AS anio,
                     p.apellido,
+                    p.nombre,
                     u.email,
                     {$selectNotas},
                     " . ($tieneTablaMatricula ? "COALESCE(mm.estado, 'espera')" : "'espera'") . " AS estado_matricula
@@ -283,6 +285,7 @@ class PerfilService {
                   AND (? = 0 OR u.id_carrera = ?)
                   AND (? = 0 OR ac.id_añoCursada = ?)
                   AND (? = 0 OR m.id_materia = ?)
+                  AND (? = 0 OR u.id_usuario = ?)
                 ORDER BY c.nombreCarrera ASC, m.nombre_materia ASC, ac.año ASC, p.apellido ASC";
             $stmt = $conn->prepare($sql);
             if (!$stmt) {
@@ -290,14 +293,16 @@ class PerfilService {
             }
 
             $stmt->bind_param(
-                'iiiiiii',
+                'iiiiiiiii',
                 $idProfesor,
                 $filtroCarrera,
                 $filtroCarrera,
                 $filtroAnio,
                 $filtroAnio,
                 $filtroMateria,
-                $filtroMateria
+                $filtroMateria,
+                $filtroAlumno,
+                $filtroAlumno
             );
             $stmt->execute();
             $result = $stmt->get_result();
@@ -455,11 +460,13 @@ class PerfilService {
                 'id_carrera' => $filtroCarrera,
                 'id_materia' => $filtroMateria,
                 'id_anio_cursada' => $filtroAnio,
+                'id_alumno' => $filtroAlumno,
             ],
             'opciones_filtros' => [
                 'carreras' => $carreras,
                 'materias' => $materias,
                 'anios' => $anios,
+                'alumnos' => $alumnos,
             ]
         ];
     }
