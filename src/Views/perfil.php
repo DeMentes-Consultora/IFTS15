@@ -348,18 +348,20 @@ if (isset($error)) {
                                                 </td>
                                                 <td>
                                                     <input
-                                                            type="text"
-                                                            inputmode="numeric"
-                                                            maxlength="12"
-                                                            autocomplete="off"
+                                                        type="text"
+                                                        inputmode="numeric"
+                                                        maxlength="12"
+                                                        autocomplete="off"
                                                         class="form-control form-control-sm nota-input<?= $esPromocionalFila ? ' nota-final-promocionado' : '' ?>"
-                                                            placeholder="Final"
+                                                        placeholder="Final"
                                                         data-id-alumno="<?= (int)($fila['id_alumno'] ?? 0) ?>"
                                                         data-id-materia="<?= (int)($fila['id_materia'] ?? 0) ?>"
                                                         data-campo="nota_final"
-                                                            data-promocionado="<?= $esPromocionalFila ? '1' : '0' ?>"
-                                                            value="<?= $esPromocionalFila ? 'Promocionado' : (isset($fila['nota_final']) && (int)$fila['nota_final'] > 0 ? (int)$fila['nota_final'] : '') ?>"
-                                                        <?= (!$esRegularFila || $esPromocionalFila) ? 'disabled' : '' ?>>
+                                                        data-promocionado="<?= $esPromocionalFila ? '1' : '0' ?>"
+                                                        value="<?= $esPromocionalFila ? '<b>P</b>' : (isset($fila['nota_final']) && (int)$fila['nota_final'] > 0 ? (int)$fila['nota_final'] : '') ?>"
+                                                        <?= (!$esRegularFila || $esPromocionalFila) ? 'disabled' : '' ?>
+                                                        style="<?= $esPromocionalFila ? 'font-weight:bold;color:#198754;background-color:#e9fbe5;text-align:center;' : '' ?>"
+                                                    >
                                                 </td>
                                                 <td>
                                                     <div class="form-check d-flex justify-content-center">
@@ -624,7 +626,16 @@ if (isset($error)) {
                                                 <td><?= htmlspecialchars($materia['nombre_materia'] ?? '') ?></td>
                                                 <td><?= isset($materia['nota_p1']) && (int)$materia['nota_p1'] > 0 ? (int)$materia['nota_p1'] : 'Sin nota' ?></td>
                                                 <td><?= isset($materia['nota_p2']) && (int)$materia['nota_p2'] > 0 ? (int)$materia['nota_p2'] : 'Sin nota' ?></td>
-                                                <td><?= isset($materia['nota_final']) && (int)$materia['nota_final'] > 0 ? (int)$materia['nota_final'] : 'Sin nota' ?></td>
+                                                <td>
+                                                    <?php
+                                                    $esPromocionado = isset($materia['nota_p1']) && isset($materia['nota_p2']) && (int)$materia['nota_p1'] >= 7 && (int)$materia['nota_p2'] >= 7;
+                                                    if ($esPromocionado) {
+                                                        echo '<span style="font-weight:bold;color:#198754;background-color:#e9fbe5;padding:2px 8px;border-radius:6px;display:inline-block;text-align:center;">P</span>';
+                                                    } else {
+                                                        echo isset($materia['nota_final']) && (int)$materia['nota_final'] > 0 ? (int)$materia['nota_final'] : 'Sin nota';
+                                                    }
+                                                    ?>
+                                                </td>
                                                 <td><?= htmlspecialchars($materia['fecha_nota'] ?? '-') ?></td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -832,19 +843,27 @@ if (isset($error)) {
         var esPromocionado = !isNaN(p1) && !isNaN(p2) && p1 >= 7 && p2 >= 7;
 
         if (esPromocionado) {
-            inputFinal.value = 'Promocionado';
+            inputFinal.value = 'P';
             inputFinal.dataset.promocionado = '1';
             inputFinal.placeholder = 'Final';
             inputFinal.disabled = true;
             inputFinal.classList.add('nota-final-promocionado');
+            inputFinal.style.fontWeight = 'bold';
+            inputFinal.style.color = '#198754';
+            inputFinal.style.backgroundColor = '#e9fbe5';
+            inputFinal.style.textAlign = 'center';
         } else {
-            if (inputFinal.value === 'Promocionado') {
+            if (inputFinal.value === 'P' || inputFinal.value === 'Promocionado') {
                 inputFinal.value = '';
             }
             inputFinal.dataset.promocionado = '0';
             inputFinal.placeholder = 'Final';
             inputFinal.disabled = false;
             inputFinal.classList.remove('nota-final-promocionado');
+            inputFinal.style.fontWeight = '';
+            inputFinal.style.color = '';
+            inputFinal.style.backgroundColor = '';
+            inputFinal.style.textAlign = '';
         }
     }
 
