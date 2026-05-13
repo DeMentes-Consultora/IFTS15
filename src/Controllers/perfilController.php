@@ -132,8 +132,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'guardar_notas') {
 if (isset($_GET['action']) && $_GET['action'] === 'cambiar_foto') {
     $controller = new perfilController();
     header('Content-Type: application/json; charset=utf-8');
-    $maxFileSize = 2 * 1024 * 1024;
-    $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    require_once __DIR__ . '/../services/ImageValidatorService.php';
 
     if (!isset($_SESSION['id_usuario'])) {
         echo json_encode(['success' => false, 'error' => 'No autenticado']);
@@ -159,35 +158,22 @@ if (isset($_GET['action']) && $_GET['action'] === 'cambiar_foto') {
         exit;
     }
 
+
     if ((int)$_FILES['nueva_foto']['size'] <= 0) {
         echo json_encode(['success' => false, 'error' => 'La imagen recibida está vacía.']);
         exit;
     }
 
-    if ((int)$_FILES['nueva_foto']['size'] > $maxFileSize) {
-        echo json_encode(['success' => false, 'error' => 'La imagen no puede superar los 2 MB.']);
-        exit;
-    }
-
     $fileTmpPath = $_FILES['nueva_foto']['tmp_name'];
+    $fileName = $_FILES['nueva_foto']['name'];
+    $fileSize = (int)$_FILES['nueva_foto']['size'];
     if (!is_uploaded_file($fileTmpPath)) {
         echo json_encode(['success' => false, 'error' => 'No se pudo validar la imagen subida.']);
         exit;
     }
-
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mimeType = $finfo ? finfo_file($finfo, $fileTmpPath) : false;
-    if ($finfo) {
-        finfo_close($finfo);
-    }
-
-    if (!$mimeType || !in_array($mimeType, $allowedMimeTypes, true)) {
-        echo json_encode(['success' => false, 'error' => 'Formato inválido. Solo se permiten JPG, PNG o WEBP.']);
-        exit;
-    }
-
-    if (@getimagesize($fileTmpPath) === false) {
-        echo json_encode(['success' => false, 'error' => 'El archivo seleccionado no es una imagen válida.']);
+    $imgError = \App\Services\ImageValidatorService::validateImage($fileTmpPath, $fileName, $fileSize);
+    if ($imgError !== null) {
+        echo json_encode(['success' => false, 'error' => $imgError]);
         exit;
     }
 

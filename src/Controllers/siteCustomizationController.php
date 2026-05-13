@@ -91,15 +91,22 @@ function handleNavbar($conn): void
     }
 
     if (!empty($_FILES['logo_file']) && (int)$_FILES['logo_file']['error'] === UPLOAD_ERR_OK) {
-        $cloudinary = new CloudinaryService();
-        $upload = $cloudinary->uploadImage($_FILES['logo_file']['tmp_name'], $_FILES['logo_file']['name'], 'ifts15/navbar');
-
-        if (!empty($logoPublicId) && $logoPublicId !== ($upload['public_id'] ?? null)) {
-            $cloudinary->deleteImage($logoPublicId);
+        require_once __DIR__ . '/../services/ImageValidatorService.php';
+        $fileName = $_FILES['logo_file']['name'];
+        $fileTmpPath = $_FILES['logo_file']['tmp_name'];
+        $fileSize = (int)$_FILES['logo_file']['size'];
+        if (is_uploaded_file($fileTmpPath)) {
+            $imgError = \App\Services\ImageValidatorService::validateImage($fileTmpPath, $fileName, $fileSize);
+            if ($imgError === null) {
+                $cloudinary = new CloudinaryService();
+                $upload = $cloudinary->uploadImage($fileTmpPath, $fileName, 'ifts15/navbar');
+                if (!empty($logoPublicId) && $logoPublicId !== ($upload['public_id'] ?? null)) {
+                    $cloudinary->deleteImage($logoPublicId);
+                }
+                $logoUrl = $upload['secure_url'] ?? ($upload['url'] ?? null);
+                $logoPublicId = $upload['public_id'] ?? null;
+            }
         }
-
-        $logoUrl = $upload['secure_url'] ?? ($upload['url'] ?? null);
-        $logoPublicId = $upload['public_id'] ?? null;
     }
 
     SiteCustomizationModel::saveNavbar($conn, [
@@ -127,15 +134,22 @@ function handleSidebar($conn): void
     }
 
     if (!empty($_FILES['sidebar_logo_file']) && (int)$_FILES['sidebar_logo_file']['error'] === UPLOAD_ERR_OK) {
-        $cloudinary = new CloudinaryService();
-        $upload = $cloudinary->uploadImage($_FILES['sidebar_logo_file']['tmp_name'], $_FILES['sidebar_logo_file']['name'], 'ifts15/sidebar');
-
-        if (!empty($logoPublicId) && $logoPublicId !== ($upload['public_id'] ?? null)) {
-            $cloudinary->deleteImage($logoPublicId);
+        require_once __DIR__ . '/../services/ImageValidatorService.php';
+        $fileName = $_FILES['sidebar_logo_file']['name'];
+        $fileTmpPath = $_FILES['sidebar_logo_file']['tmp_name'];
+        $fileSize = (int)$_FILES['sidebar_logo_file']['size'];
+        if (is_uploaded_file($fileTmpPath)) {
+            $imgError = \App\Services\ImageValidatorService::validateImage($fileTmpPath, $fileName, $fileSize);
+            if ($imgError === null) {
+                $cloudinary = new CloudinaryService();
+                $upload = $cloudinary->uploadImage($fileTmpPath, $fileName, 'ifts15/sidebar');
+                if (!empty($logoPublicId) && $logoPublicId !== ($upload['public_id'] ?? null)) {
+                    $cloudinary->deleteImage($logoPublicId);
+                }
+                $logoUrl = $upload['secure_url'] ?? ($upload['url'] ?? null);
+                $logoPublicId = $upload['public_id'] ?? null;
+            }
         }
-
-        $logoUrl = $upload['secure_url'] ?? ($upload['url'] ?? null);
-        $logoPublicId = $upload['public_id'] ?? null;
     }
 
     SiteCustomizationModel::saveSidebar($conn, [
@@ -218,8 +232,19 @@ function handleCarousel($conn): void
 
         $fileField = 'slide_image_' . $i;
         if (!empty($_FILES[$fileField]) && (int)($_FILES[$fileField]['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+            require_once __DIR__ . '/../services/ImageValidatorService.php';
+            $fileName = $_FILES[$fileField]['name'];
+            $fileTmpPath = $_FILES[$fileField]['tmp_name'];
+            $fileSize = (int)$_FILES[$fileField]['size'];
+            if (!is_uploaded_file($fileTmpPath)) {
+                continue;
+            }
+            $imgError = \App\Services\ImageValidatorService::validateImage($fileTmpPath, $fileName, $fileSize);
+            if ($imgError !== null) {
+                continue;
+            }
             $cloudinary = new CloudinaryService();
-            $upload = $cloudinary->uploadImage($_FILES[$fileField]['tmp_name'], $_FILES[$fileField]['name'], 'ifts15/carousel');
+            $upload = $cloudinary->uploadImage($fileTmpPath, $fileName, 'ifts15/carousel');
 
             if (!empty($imagePublicId) && $imagePublicId !== ($upload['public_id'] ?? null)) {
                 $cloudinary->deleteImage($imagePublicId);
