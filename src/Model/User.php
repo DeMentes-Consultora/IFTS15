@@ -189,18 +189,19 @@ class User
         
         if ($fila = $resultado->fetch_assoc()) {
             $user = new User(
-                $fila['email'], 
-                $fila['clave'], // Usar 'clave' que es el nombre real
-                $fila['id_persona'], 
-                $fila['id_rol'], // Usar 'id_rol' que es el nombre real
-                $fila['id_usuario'], 
+                $fila['email'],
+                $fila['clave'],
+                $fila['id_persona'],
+                $fila['id_rol'],
+                $fila['id_carrera'] ?? null,
+                $fila['id_comision'] ?? null,
+                $fila['id_añoCursada'] ?? null,
+                $fila['id_usuario'],
                 false // No hashear, ya viene hasheado
             );
-            // Usar solo campos que existen en la BD
             $user->is_active = $fila['habilitado'] ?? 1;
             $user->created_at = $fila['idCreate'] ?? null;
             $user->updated_at = $fila['idUpdate'] ?? null;
-            // last_login no existe en tu esquema
             return $user;
         }
         return null;

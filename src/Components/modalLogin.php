@@ -73,7 +73,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     </button>
                 </div>
             </form>
-            <div class="modal-footer border-top-0 pt-0">
+            <div class="modal-footer border-top-0 pt-0 flex-column">
+                <small class="text-muted w-100 text-center mb-2">
+                    <a href="<?php echo BASE_URL; ?>/recuperar.php" class="text-warning text-decoration-none">
+                        <i class="bi bi-key"></i> ¿Olvidaste tu contraseña?
+                    </a>
+                </small>
                 <small class="text-muted w-100 text-center">
                     ¿No tienes cuenta? 
                     <a href="#modalRegistrar" 

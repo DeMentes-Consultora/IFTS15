@@ -111,8 +111,13 @@ include __DIR__ . '/src/Template/head.php';
                             <i class="bi bi-person-plus"></i> Registrarse
                         </a>
                     </div>
-                    
+                                    <!--RECUPERAR LA CONTRASEÑA-->
                     <div class="text-center mt-3">
+                        <a href="recuperar.php" class="text-decoration-none text-warning">
+                            <i class="bi bi-key"></i> ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
+                    <div class="text-center mt-2">
                         <a href="<?php echo BASE_URL; ?>" class="text-decoration-none text-muted">
                             <i class="bi bi-house"></i> Volver al inicio
                         </a>

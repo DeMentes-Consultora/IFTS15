@@ -1,5 +1,16 @@
 <?php
 /**
+ * Obtener conexión global a la base de datos (helper)
+ */
+function getConnection() {
+    static $conn = null;
+    if ($conn === null) {
+        $db = new \App\ConectionBD\ConectionDB();
+        $conn = $db->getConnection();
+    }
+    return $conn;
+}
+/**
  * Configuración Central - IFTS15 con phpdotenv
  * Archivo de configuración centralizada que carga variables de entorno
  * 
