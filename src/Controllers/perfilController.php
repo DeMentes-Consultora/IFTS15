@@ -1,15 +1,21 @@
 <?php
+
+namespace App\Controllers;
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // src/Controllers/perfilController.php
 // Controlador para mostrar el perfil del usuario logueado (alumno)
 
-namespace App\Controllers;
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 use App\ConectionBD\ConectionDB;
-use App\Services\PerfilService;
+use App\services\PerfilService;
 
 class perfilController {
     public $conn;
@@ -178,7 +184,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'cambiar_foto') {
     }
 
     require_once __DIR__ . '/../Model/Person.php';
-    require_once __DIR__ . '/../Services/CloudinaryService.php';
+    require_once __DIR__ . '/../services/CloudinaryService.php';
     $id_usuario = $_SESSION['id_usuario'];
     // Buscar id_persona del usuario
     require_once __DIR__ . '/../Model/User.php';
