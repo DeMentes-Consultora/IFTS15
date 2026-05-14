@@ -1,3 +1,11 @@
+# Actualización 14 de mayo 2026
+
+## Sincronización y solución de errores recientes
+- Se resolvió un problema de incompatibilidad Linux/Windows por el uso de mayúsculas/minúsculas en namespaces y rutas.
+- Se unificaron los require/include para usar solo `../services/` (minúscula).
+- Se corrigió el namespace de PerfilService para que coincida con la carpeta y el autoload.
+- Se revisó la integración de Cloudinary para el cambio de foto de perfil.
+- Todo el flujo de perfiles y servicios ahora es compatible multiplataforma.
 # IFTS15 - Contexto del Proyecto
 
 ## 📋 Estado Actual del Proyecto

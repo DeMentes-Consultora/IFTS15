@@ -1,3 +1,14 @@
+# Sesión: 14 de mayo 2026
+
+### Problema: Perfiles no cargan en producción (Linux)
+- El acceso a los perfiles dejó de funcionar solo en producción.
+- Se detectó que el problema era el uso incorrecto de mayúsculas/minúsculas en el namespace:
+   - `use App\services\PerfilService;` (incorrecto)
+   - Solución: Cambiar a `use App\Services\PerfilService;` para coincidir con la carpeta y el autoload PSR-4.
+- También se corrigieron los require/include para usar siempre `../services/` (minúscula), ya que en Linux es case-sensitive.
+- Se revisó y sincronizó la carpeta de servicios, eliminando referencias a `Services` (mayúscula).
+- Se verificó que CloudinaryService.php y PerfilService.php estén correctamente ubicados y referenciados.
+- Resultado: Los perfiles y el cambio de foto funcionan tanto en desarrollo como en producción.
 # Historial de Conversaciones - IFTS15
 
 ## 📅 Sesión: 16 de Septiembre 2025
