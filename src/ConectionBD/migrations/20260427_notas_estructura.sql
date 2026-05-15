@@ -5,6 +5,12 @@
 -- 2. Permitir NULL en las 3 columnas de notas (para carga progresiva)
 -- 3. Agregar índice único alumno+materia para evitar duplicados
 
+-- Paso 0: Crear columnas si no existen
+ALTER TABLE `notas`
+ADD COLUMN IF NOT EXISTS `1er_parcial` INT(2) NULL DEFAULT NULL,
+ADD COLUMN IF NOT EXISTS `2do_parcial` INT(2) NULL DEFAULT NULL,
+ADD COLUMN IF NOT EXISTS `final` INT(2) NULL DEFAULT NULL;
+
 -- Paso 1: Renombrar columna si existe con typo
 -- (Se verifica primero porque el rename es seguro en MariaDB/MySQL)
 ALTER TABLE `notas` 

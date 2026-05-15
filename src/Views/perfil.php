@@ -44,8 +44,8 @@ if (isset($error)) {
     <div class="row">
         <!-- Columna lateral: Foto y datos personales -->
         <div class="col-lg-2 mb-4">
-            <div class="card card-welcome h-100">
-                <div class="card-body">
+                <div class="card card-welcome h-100">
+                    <div class="card-body perfil-datos-personales">
                     <div style="position: relative; display: inline-block;">
                         <?php if ($persona && !empty($persona->getFotoPerfilUrl())): ?>
                             <img id="foto-perfil-img" src="<?= htmlspecialchars($persona->getFotoPerfilUrl()) ?>" alt="Foto de perfil" class="rounded-circle mb-3 border border-3 border-warning" style="width:120px;height:120px;object-fit:cover;">
@@ -293,16 +293,17 @@ if (isset($error)) {
                                         <th>Año</th>
                                         <th>Apellido</th>
                                         <th>Mail</th>
+                                        <th>Concepto</th>
                                         <th>P1</th>
                                         <th>P2</th>
                                         <th>Final</th>
-                                        <th>Checklist</th>
+                                        <th>Estado</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php if (empty($inscripcionesTabla)): ?>
                                         <tr>
-                                            <td colspan="11" class="text-center text-muted">No hay alumnos para los filtros seleccionados.</td>
+                                            <td colspan="12" class="text-center text-muted">No hay alumnos para los filtros seleccionados.</td>
                                         </tr>
                                     <?php else: ?>
                                         <?php foreach ($inscripcionesTabla as $idx => $fila): ?>
@@ -321,12 +322,37 @@ if (isset($error)) {
                                                 <td><?= htmlspecialchars($fila['apellido'] ?? '') ?></td>
                                                 <td><?= htmlspecialchars($fila['email'] ?? '') ?></td>
                                                 <td>
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        max="10"
-                                                        class="form-control form-control-sm nota-input"
-                                                        placeholder="P1"
+                                                    <?php
+                                                        // Obtener conceptos y promedio para el alumno/materia
+                                                        $conceptos = [];
+                                                        $promedioConcepto = '-';
+                                                        if (function_exists('App\\Model\\ConceptoAlumno::obtenerPorAlumnoMateria')) {
+                                                            $conceptos = App\Model\ConceptoAlumno::obtenerPorAlumnoMateria($conn, (int)($fila['id_alumno'] ?? 0), (int)($fila['id_materia'] ?? 0));
+                                                        } else if (class_exists('App\\Model\\ConceptoAlumno')) {
+                                                            $conceptoModel = new App\Model\ConceptoAlumno();
+                                                            $conceptos = $conceptoModel::obtenerPorAlumnoMateria($conn, (int)($fila['id_alumno'] ?? 0), (int)($fila['id_materia'] ?? 0));
+                                                        }
+                                                        if ($conceptos && is_array($conceptos) && count($conceptos) > 0) {
+                                                            $notas = array_column($conceptos, 'nota');
+                                                            $notas = array_filter($notas, fn($n) => is_numeric($n));
+                                                            if (count($notas) > 0) {
+                                                                $promedioConcepto = number_format(array_sum($notas) / count($notas), 2, ',', '.');
+                                                            }
+                                                        }
+                                                    ?>
+                                                    <button type="button" class="btn btn-outline-warning btn-sm btn-concepto-modal" 
+                                                        data-id-alumno="<?= (int)($fila['id_alumno'] ?? 0) ?>"
+                                                        data-id-materia="<?= (int)($fila['id_materia'] ?? 0) ?>"
+                                                        data-nombre-alumno="<?= htmlspecialchars(($fila['apellido'] ?? '') . ', ' . ($fila['nombre'] ?? '')) ?>"
+                                                        title="Editar conceptos">
+                                                        <i class="bi bi-lightbulb"></i>
+                                                        <span class="badge bg-warning text-dark ms-1 promedio-concepto" style="font-size:0.9em;">
+                                                            <?= $promedioConcepto ?>
+                                                        </span>
+                                                    </button>
+                                                </td>
+                                                <td>
+                                                    <input type="number" min="0" max="10" class="form-control form-control-sm nota-input" placeholder="P1"
                                                         data-id-alumno="<?= (int)($fila['id_alumno'] ?? 0) ?>"
                                                         data-id-materia="<?= (int)($fila['id_materia'] ?? 0) ?>"
                                                         data-campo="nota_p1"
@@ -334,12 +360,7 @@ if (isset($error)) {
                                                         <?= !$esRegularFila ? 'disabled' : '' ?>>
                                                 </td>
                                                 <td>
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        max="10"
-                                                        class="form-control form-control-sm nota-input"
-                                                        placeholder="P2"
+                                                    <input type="number" min="0" max="10" class="form-control form-control-sm nota-input" placeholder="P2"
                                                         data-id-alumno="<?= (int)($fila['id_alumno'] ?? 0) ?>"
                                                         data-id-materia="<?= (int)($fila['id_materia'] ?? 0) ?>"
                                                         data-campo="nota_p2"
@@ -347,11 +368,7 @@ if (isset($error)) {
                                                         <?= !$esRegularFila ? 'disabled' : '' ?>>
                                                 </td>
                                                 <td>
-                                                    <input
-                                                        type="text"
-                                                        inputmode="numeric"
-                                                        maxlength="12"
-                                                        autocomplete="off"
+                                                    <input type="text" inputmode="numeric" maxlength="12" autocomplete="off"
                                                         class="form-control form-control-sm nota-input<?= $esPromocionalFila ? ' nota-final-promocionado' : '' ?>"
                                                         placeholder="Final"
                                                         data-id-alumno="<?= (int)($fila['id_alumno'] ?? 0) ?>"
@@ -365,16 +382,14 @@ if (isset($error)) {
                                                 </td>
                                                 <td>
                                                     <div class="form-check d-flex justify-content-center">
-                                                        <input
-                                                            class="form-check-input checklist-matricula"
-                                                            type="checkbox"
+                                                        <input class="form-check-input checklist-matricula" type="checkbox"
                                                             <?= $esRegularFila ? 'checked' : '' ?>
                                                             data-id-alumno="<?= (int)($fila['id_alumno'] ?? 0) ?>"
                                                             data-id-materia="<?= (int)($fila['id_materia'] ?? 0) ?>"
                                                             title="Marcar como regular">
                                                     </div>
                                                     <small class="d-block text-center mt-1 estado-matricula-label <?= $esRegularFila ? 'text-success' : 'text-muted' ?>">
-                                                        <?= $esRegularFila ? 'Regular' : 'En espera' ?>
+                                                        <?= $esRegularFila ? 'Matriculado' : 'Matricular' ?>
                                                     </small>
                                                 </td>
                                             </tr>
@@ -651,279 +666,135 @@ if (isset($error)) {
 </div>
 
 <?php if ($esProfesor): ?>
-<style>
-    .nota-input:disabled {
-        background-color: #e9ecef;
-        color: #6c757d;
-        cursor: not-allowed;
-        opacity: 0.65;
-    }
-</style>
+<!-- Modal Concepto -->
+<div class="modal fade" id="modalConcepto" tabindex="-1" aria-labelledby="modalConceptoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalConceptoLabel">Conceptos de <span id="modalConceptoAlumno"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formConceptos">
+          <input type="hidden" id="concepto-id-alumno">
+          <input type="hidden" id="concepto-id-materia">
+          <div id="conceptos-lista">
+            <!-- Aquí se cargan los pares concepto/nota -->
+          </div>
+          <div class="mt-3">
+            <strong>Promedio:</strong> <span id="concepto-promedio" class="badge bg-info text-dark">-</span>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary" id="guardarConceptosBtn">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
-(function() {
-    document.querySelectorAll('.checklist-matricula').forEach(function(checkbox) {
-        checkbox.addEventListener('change', function() {
-            var idAlumno = parseInt(this.dataset.idAlumno || '0', 10);
-            var idMateria = parseInt(this.dataset.idMateria || '0', 10);
-            var matriculado = this.checked ? 1 : 0;
-            var input = this;
-            var estadoLabel = this.closest('td').querySelector('.estado-matricula-label');
-            var feedback = document.getElementById('matricula-feedback');
+document.addEventListener('DOMContentLoaded', function() {
+    let modalConcepto = new bootstrap.Modal(document.getElementById('modalConcepto'));
+    let conceptosLista = document.getElementById('conceptos-lista');
+    let conceptoPromedio = document.getElementById('concepto-promedio');
 
-            input.disabled = true;
-            fetch('../Controllers/perfilController.php?action=actualizar_matricula', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-                },
-                body: 'id_alumno=' + encodeURIComponent(idAlumno)
-                    + '&id_materia=' + encodeURIComponent(idMateria)
-                    + '&matriculado=' + encodeURIComponent(matriculado)
-            })
-            .then(function(response) { return response.json(); })
-            .then(function(data) {
-                if (!data || !data.success) {
-                    input.checked = !input.checked;
-                    feedback.className = 'small mt-3 text-danger';
-                    feedback.textContent = (data && data.message) ? data.message : 'No se pudo actualizar la matrícula.';
-                    feedback.style.display = 'block';
-                    return;
-                }
+    function calcularPromedioConceptos() {
+        let notas = Array.from(document.querySelectorAll('.concepto-nota-input'))
+            .map(inp => parseFloat(inp.value)).filter(v => !isNaN(v));
+        if (notas.length === 0) return '-';
+        let prom = notas.reduce((a, b) => a + b, 0) / notas.length;
+        return prom.toFixed(2);
+    }
 
-                if (input.checked) {
-                    estadoLabel.textContent = 'Regular';
-                    estadoLabel.classList.remove('text-muted');
-                    estadoLabel.classList.add('text-success');
-                } else {
-                    estadoLabel.textContent = 'En espera';
-                    estadoLabel.classList.remove('text-success');
-                    estadoLabel.classList.add('text-muted');
-                }
-
-                var tr = input.closest('tr');
-                if (tr) {
-                    actualizarEstadoFilaNotas(tr, input.checked);
-                }
-
-                feedback.className = 'small mt-3 text-success';
-                feedback.textContent = data.message || 'Matrícula actualizada correctamente.';
-                feedback.style.display = 'block';
-            })
-            .catch(function() {
-                input.checked = !input.checked;
-                feedback.className = 'small mt-3 text-danger';
-                feedback.textContent = 'Error de red al actualizar matrícula.';
-                feedback.style.display = 'block';
-            })
-            .finally(function() {
-                input.disabled = false;
+    function renderConceptosForm(conceptos = []) {
+        conceptosLista.innerHTML = '';
+        for (let i = 0; i < 5; i++) {
+            let c = conceptos[i] || { concepto: '', nota: '' };
+            conceptosLista.innerHTML += `
+            <div class="row mb-2 align-items-center">
+                <div class="col-md-7">
+                    <input type="text" class="form-control concepto-nombre-input" maxlength="40" placeholder="Concepto (ej: Participación, Trabajo, etc)" value="${c.concepto || ''}">
+                </div>
+                <div class="col-md-3">
+                    <input type="number" min="0" max="10" step="0.01" class="form-control concepto-nota-input" placeholder="Nota" value="${c.nota !== undefined && c.nota !== null ? c.nota : ''}">
+                </div>
+                <div class="col-md-2 text-end">
+                    <button type="button" class="btn btn-outline-danger btn-sm limpiar-concepto" title="Limpiar"><i class="bi bi-x"></i></button>
+                </div>
+            </div>`;
+        }
+        conceptoPromedio.textContent = calcularPromedioConceptos();
+        document.querySelectorAll('.concepto-nota-input').forEach(inp => {
+            inp.addEventListener('input', () => {
+                conceptoPromedio.textContent = calcularPromedioConceptos();
             });
+        });
+        document.querySelectorAll('.limpiar-concepto').forEach((btn, idx) => {
+            btn.addEventListener('click', () => {
+                conceptosLista.querySelectorAll('.concepto-nombre-input')[idx].value = '';
+                conceptosLista.querySelectorAll('.concepto-nota-input')[idx].value = '';
+                conceptoPromedio.textContent = calcularPromedioConceptos();
+            });
+        });
+    }
+
+    document.querySelectorAll('.btn-concepto-modal').forEach(btn => {
+        btn.addEventListener('click', function() {
+            let idAlumno = this.getAttribute('data-id-alumno');
+            let idMateria = this.getAttribute('data-id-materia');
+            let nombreAlumno = this.getAttribute('data-nombre-alumno');
+            document.getElementById('concepto-id-alumno').value = idAlumno;
+            document.getElementById('concepto-id-materia').value = idMateria;
+            document.getElementById('modalConceptoAlumno').textContent = nombreAlumno;
+            // Cargar conceptos existentes
+            fetch('../Controllers/perfilController.php?action=obtener_conceptos&id_alumno=' + idAlumno + '&id_materia=' + idMateria)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success && Array.isArray(data.conceptos)) {
+                        renderConceptosForm(data.conceptos);
+                    } else {
+                        renderConceptosForm();
+                    }
+                });
+            modalConcepto.show();
         });
     });
 
-    function valorNota(input) {
-        var value = (input.value || '').trim();
-        if (input.dataset.campo === 'nota_final' && input.dataset.promocionado === '1') {
-            return '';
-        }
-        if (value === '') {
-            return '';
-        }
-        var numero = parseInt(value, 10);
-        if (Number.isNaN(numero) || numero < 0 || numero > 10) {
-            return null;
-        }
-        return String(numero);
-    }
-
-    function actualizarEstadoFilaNotas(tr, esRegular) {
-        var inputP1 = tr.querySelector('.nota-input[data-campo="nota_p1"]');
-        var inputP2 = tr.querySelector('.nota-input[data-campo="nota_p2"]');
-        var inputFinal = tr.querySelector('.nota-input[data-campo="nota_final"]');
-
-        if (!inputP1 || !inputP2 || !inputFinal) {
-            return;
-        }
-
-        inputP1.disabled = !esRegular;
-        inputP2.disabled = !esRegular;
-
-        if (!esRegular) {
-            inputFinal.disabled = true;
-            inputFinal.dataset.promocionado = '0';
-            if (inputFinal.value === 'Promocionado') {
-                inputFinal.value = '';
+    document.getElementById('guardarConceptosBtn').addEventListener('click', function() {
+        let idAlumno = document.getElementById('concepto-id-alumno').value;
+        let idMateria = document.getElementById('concepto-id-materia').value;
+        let conceptos = [];
+        let nombres = conceptosLista.querySelectorAll('.concepto-nombre-input');
+        let notas = conceptosLista.querySelectorAll('.concepto-nota-input');
+        for (let i = 0; i < 5; i++) {
+            let nombre = nombres[i].value.trim();
+            let nota = notas[i].value.trim();
+            if (nombre !== '' && nota !== '') {
+                conceptos.push({ concepto: nombre, nota: parseFloat(nota) });
             }
-            inputFinal.placeholder = 'Final';
-            inputFinal.classList.remove('nota-final-promocionado');
-            return;
         }
-
-        actualizarEstadoPromocion(tr);
-    }
-
-    function guardarNotasFila(idAlumno, idMateria, filaInputs, inputDisparador) {
-        var feedback = document.getElementById('notas-feedback');
-        var notaP1 = valorNota(filaInputs.nota_p1);
-        var notaP2 = valorNota(filaInputs.nota_p2);
-        var notaFinal = valorNota(filaInputs.nota_final);
-
-        if (notaP1 === null || notaP2 === null || notaFinal === null) {
-            feedback.className = 'small mt-2 text-danger';
-            feedback.textContent = 'Las notas deben estar entre 0 y 10.';
-            feedback.style.display = 'block';
-            inputDisparador.focus();
-            return;
-        }
-
-        filaInputs.nota_p1.disabled = true;
-        filaInputs.nota_p2.disabled = true;
-        filaInputs.nota_final.disabled = true;
-
-        fetch('../Controllers/perfilController.php?action=guardar_notas', {
+        fetch('../Controllers/perfilController.php?action=guardar_conceptos', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-            },
-            body: 'id_alumno=' + encodeURIComponent(idAlumno)
-                + '&id_materia=' + encodeURIComponent(idMateria)
-                + '&nota_p1=' + encodeURIComponent(notaP1)
-                + '&nota_p2=' + encodeURIComponent(notaP2)
-                + '&nota_final=' + encodeURIComponent(notaFinal)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_alumno: idAlumno, id_materia: idMateria, conceptos })
         })
-        .then(function(response) { return response.json(); })
-        .then(function(data) {
-            if (!data || !data.success) {
-                feedback.className = 'small mt-2 text-danger';
-                feedback.textContent = (data && data.message) ? data.message : 'No se pudieron guardar las notas.';
-                feedback.style.display = 'block';
-                return;
-            }
-
-            feedback.className = 'small mt-2 text-success';
-            feedback.textContent = data.message || 'Notas guardadas correctamente.';
-            feedback.style.display = 'block';
-        })
-        .catch(function() {
-            feedback.className = 'small mt-2 text-danger';
-            feedback.textContent = 'Error de red al guardar las notas.';
-            feedback.style.display = 'block';
-        })
-        .finally(function() {
-            filaInputs.nota_p1.disabled = false;
-            filaInputs.nota_p2.disabled = false;
-            if (!filaInputs.nota_final.classList.contains('nota-final-promocionado')) {
-                filaInputs.nota_final.disabled = false;
-            }
-            var tr = filaInputs.nota_p1.closest('tr');
-            if (tr) actualizarEstadoPromocion(tr);
-        });
-    }
-
-    function actualizarEstadoPromocion(tr) {
-        var inputP1 = tr.querySelector('.nota-input[data-campo="nota_p1"]');
-        var inputP2 = tr.querySelector('.nota-input[data-campo="nota_p2"]');
-        var inputFinal = tr.querySelector('.nota-input[data-campo="nota_final"]');
-        var checkboxMatricula = tr.querySelector('.checklist-matricula');
-
-        if (!inputP1 || !inputP2 || !inputFinal) return;
-        if (!checkboxMatricula || !checkboxMatricula.checked) {
-            inputFinal.disabled = true;
-            inputFinal.dataset.promocionado = '0';
-            if (inputFinal.value === 'Promocionado') {
-                inputFinal.value = '';
-            }
-            inputFinal.placeholder = 'Final';
-            inputFinal.classList.remove('nota-final-promocionado');
-            return;
-        }
-
-        var p1 = parseInt(inputP1.value, 10);
-        var p2 = parseInt(inputP2.value, 10);
-        var esPromocionado = !isNaN(p1) && !isNaN(p2) && p1 >= 7 && p2 >= 7;
-
-        if (esPromocionado) {
-            inputFinal.value = 'P';
-            inputFinal.dataset.promocionado = '1';
-            inputFinal.placeholder = 'Final';
-            inputFinal.disabled = true;
-            inputFinal.classList.add('nota-final-promocionado');
-            inputFinal.style.fontWeight = 'bold';
-            inputFinal.style.color = '#198754';
-            inputFinal.style.backgroundColor = '#e9fbe5';
-            inputFinal.style.textAlign = 'center';
-        } else {
-            if (inputFinal.value === 'P' || inputFinal.value === 'Promocionado') {
-                inputFinal.value = '';
-            }
-            inputFinal.dataset.promocionado = '0';
-            inputFinal.placeholder = 'Final';
-            inputFinal.disabled = false;
-            inputFinal.classList.remove('nota-final-promocionado');
-            inputFinal.style.fontWeight = '';
-            inputFinal.style.color = '';
-            inputFinal.style.backgroundColor = '';
-            inputFinal.style.textAlign = '';
-        }
-    }
-
-    document.querySelectorAll('.nota-input').forEach(function(input) {
-        function dispararGuardado() {
-            var tr = input.closest('tr');
-            if (!tr) {
-                return;
-            }
-
-            var idAlumno = parseInt(input.dataset.idAlumno || '0', 10);
-            var idMateria = parseInt(input.dataset.idMateria || '0', 10);
-            if (idAlumno <= 0 || idMateria <= 0) {
-                return;
-            }
-
-            var inputsFila = {
-                nota_p1: tr.querySelector('.nota-input[data-campo="nota_p1"]'),
-                nota_p2: tr.querySelector('.nota-input[data-campo="nota_p2"]'),
-                nota_final: tr.querySelector('.nota-input[data-campo="nota_final"]')
-            };
-
-            if (!inputsFila.nota_p1 || !inputsFila.nota_p2 || !inputsFila.nota_final) {
-                return;
-            }
-
-            guardarNotasFila(idAlumno, idMateria, inputsFila, input);
-        }
-
-        input.addEventListener('blur', dispararGuardado);
-        input.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                input.blur();
-            }
-        });
-
-        if (input.dataset.campo === 'nota_final') {
-            input.addEventListener('input', function() {
-                if (input.dataset.promocionado === '1') {
-                    return;
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                // Actualizar badge de promedio en la tabla
+                let btn = document.querySelector(`.btn-concepto-modal[data-id-alumno="${idAlumno}"][data-id-materia="${idMateria}"]`);
+                if (btn) {
+                    let badge = btn.querySelector('.promedio-concepto');
+                    badge.textContent = calcularPromedioConceptos();
                 }
-                input.value = input.value.replace(/\D/g, '').slice(0, 2);
-            });
-        }
-
-        // Actualizar estado de promoción al escribir en P1 o P2
-        if (input.dataset.campo === 'nota_p1' || input.dataset.campo === 'nota_p2') {
-            input.addEventListener('input', function() {
-                var tr = input.closest('tr');
-                if (tr) actualizarEstadoPromocion(tr);
-            });
-        }
+                modalConcepto.hide();
+            } else {
+                alert(data.message || 'Error al guardar conceptos');
+            }
+        });
     });
-
-    // Evaluar estado de promoción en carga de página
-    document.querySelectorAll('#tabla-inscripciones-profesor tbody tr').forEach(function(tr) {
-        actualizarEstadoPromocion(tr);
-    });
-})();
+});
 </script>
 <?php endif; ?>
 

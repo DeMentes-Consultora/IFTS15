@@ -1,3 +1,13 @@
+/* Mostrar datos personales en blanco */
+.perfil-datos-personales,
+.perfil-datos-personales h4,
+.perfil-datos-personales p,
+.perfil-datos-personales span,
+.perfil-datos-personales ul,
+.perfil-datos-personales li,
+.perfil-datos-personales strong {
+  color: #fff !important;
+}
 /* =============================
    Estilos exclusivos para perfil de usuario (Alumno)
    ============================= */

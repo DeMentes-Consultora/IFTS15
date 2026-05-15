@@ -9,6 +9,7 @@ use App\Model\Nota;
 use App\Model\Person;
 use App\Model\Carrera;
 use App\Model\Materia;
+use App\Model\ConceptoAlumno;
 
 class PerfilService {
     private static function tablaExiste($conn, $tabla)
@@ -686,5 +687,13 @@ class PerfilService {
             'message' => $esRegular ? 'Alumno matriculado como regular.' : 'Alumno marcado en espera.',
             'estado' => $estado
         ];
+    }
+
+    public static function obtenerConceptosAlumnoMateria($conn, $idUsuario, $idMateria) {
+        return ConceptoAlumno::obtenerPorAlumnoMateria($conn, $idUsuario, $idMateria);
+    }
+
+    public static function guardarConceptosAlumnoMateria($conn, $idUsuario, $idMateria, $conceptos) {
+        return ConceptoAlumno::guardarConceptos($conn, $idUsuario, $idMateria, $conceptos);
     }
 }

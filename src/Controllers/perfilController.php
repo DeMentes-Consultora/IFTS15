@@ -134,6 +134,57 @@ if (isset($_GET['action']) && $_GET['action'] === 'guardar_notas') {
     exit;
 }
 
+if (isset($_GET['action']) && $_GET['action'] === 'obtener_conceptos') {
+    $controller = new perfilController();
+    header('Content-Type: application/json; charset=utf-8');
+
+    if (!isset($_SESSION['id_usuario']) || !isset($_SESSION['id_rol'])) {
+        echo json_encode(['success' => false, 'message' => 'No autenticado.']);
+        exit;
+    }
+    $idAlumno = (int)($_GET['id_alumno'] ?? 0);
+    $idMateria = (int)($_GET['id_materia'] ?? 0);
+    if ($idAlumno === 0 || $idMateria === 0) {
+        echo json_encode(['success' => false, 'message' => 'Faltan parámetros.']);
+        exit;
+    }
+    $conceptos = PerfilService::obtenerConceptosAlumnoMateria($controller->conn, $idAlumno, $idMateria);
+    echo json_encode(['success' => true, 'conceptos' => $conceptos]);
+    exit;
+}
+
+if (isset($_GET['action']) && $_GET['action'] === 'guardar_conceptos') {
+    $controller = new perfilController();
+    header('Content-Type: application/json; charset=utf-8');
+
+    if (!isset($_SESSION['id_usuario']) || !isset($_SESSION['id_rol'])) {
+        echo json_encode(['success' => false, 'message' => 'No autenticado.']);
+        exit;
+    }
+    if ((int)$_SESSION['id_rol'] !== 2) {
+        echo json_encode(['success' => false, 'message' => 'Solo profesores pueden realizar esta acción.']);
+        exit;
+    }
+    $payload = $_POST;
+    if (empty($payload)) {
+        $raw = file_get_contents('php://input');
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded)) {
+            $payload = $decoded;
+        }
+    }
+    $idAlumno = (int)($payload['id_alumno'] ?? 0);
+    $idMateria = (int)($payload['id_materia'] ?? 0);
+    $conceptos = $payload['conceptos'] ?? [];
+    if ($idAlumno === 0 || $idMateria === 0 || !is_array($conceptos)) {
+        echo json_encode(['success' => false, 'message' => 'Faltan parámetros.']);
+        exit;
+    }
+    $resultado = PerfilService::guardarConceptosAlumnoMateria($controller->conn, $idAlumno, $idMateria, $conceptos);
+    echo json_encode($resultado);
+    exit;
+}
+
 // Acción AJAX para cambiar la foto de perfil
 if (isset($_GET['action']) && $_GET['action'] === 'cambiar_foto') {
     $controller = new perfilController();
