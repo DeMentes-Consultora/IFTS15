@@ -375,7 +375,7 @@ if (isset($error)) {
                                                         data-id-materia="<?= (int)($fila['id_materia'] ?? 0) ?>"
                                                         data-campo="nota_final"
                                                         data-promocionado="<?= $esPromocionalFila ? '1' : '0' ?>"
-                                                        value="<?= $esPromocionalFila ? '<b>P</b>' : (isset($fila['nota_final']) && (int)$fila['nota_final'] > 0 ? (int)$fila['nota_final'] : '') ?>"
+                                                        value="<?= $esPromocionalFila ? 'P' : (isset($fila['nota_final']) && (int)$fila['nota_final'] > 0 ? (int)$fila['nota_final'] : '') ?>"
                                                         <?= (!$esRegularFila || $esPromocionalFila) ? 'disabled' : '' ?>
                                                         style="<?= $esPromocionalFila ? 'font-weight:bold;color:#198754;background-color:#e9fbe5;text-align:center;' : '' ?>"
                                                     >
@@ -698,6 +698,178 @@ document.addEventListener('DOMContentLoaded', function() {
     let modalConcepto = new bootstrap.Modal(document.getElementById('modalConcepto'));
     let conceptosLista = document.getElementById('conceptos-lista');
     let conceptoPromedio = document.getElementById('concepto-promedio');
+    let notasFeedback = document.getElementById('notas-feedback');
+
+    function mostrarFeedbackNotas(tipo, mensaje) {
+        if (!notasFeedback) {
+            return;
+        }
+
+        notasFeedback.className = 'small mt-2 text-' + tipo;
+        notasFeedback.textContent = mensaje;
+        notasFeedback.style.display = 'block';
+    }
+
+    function limpiarFeedbackNotas() {
+        if (!notasFeedback) {
+            return;
+        }
+
+        notasFeedback.style.display = 'none';
+        notasFeedback.textContent = '';
+    }
+
+    function obtenerInputNota(fila, campo) {
+        return fila ? fila.querySelector('.nota-input[data-campo="' + campo + '"]') : null;
+    }
+
+    function normalizarNotaInput(input) {
+        if (!input) {
+            return { ok: true, value: null };
+        }
+
+        let valorCrudo = String(input.value || '').trim();
+        if (valorCrudo === '' || valorCrudo.toUpperCase() === 'P') {
+            return { ok: true, value: null };
+        }
+
+        if (!/^\d+$/.test(valorCrudo)) {
+            return { ok: false, message: 'Las notas deben ser números enteros entre 0 y 10.' };
+        }
+
+        let valor = parseInt(valorCrudo, 10);
+        if (valor < 0 || valor > 10) {
+            return { ok: false, message: 'Las notas deben estar entre 0 y 10.' };
+        }
+
+        return { ok: true, value: valor };
+    }
+
+    function aplicarEstadoFinalPromocionado(inputFinal, estaPromocionado, esRegular) {
+        if (!inputFinal) {
+            return;
+        }
+
+        inputFinal.dataset.promocionado = estaPromocionado ? '1' : '0';
+
+        if (estaPromocionado) {
+            inputFinal.value = 'P';
+            inputFinal.disabled = true;
+            inputFinal.classList.add('nota-final-promocionado');
+            inputFinal.style.fontWeight = 'bold';
+            inputFinal.style.color = '#198754';
+            inputFinal.style.backgroundColor = '#e9fbe5';
+            inputFinal.style.textAlign = 'center';
+            return;
+        }
+
+        if (inputFinal.value.trim().toUpperCase() === 'P') {
+            inputFinal.value = '';
+        }
+        inputFinal.disabled = !esRegular;
+        inputFinal.classList.remove('nota-final-promocionado');
+        inputFinal.style.fontWeight = '';
+        inputFinal.style.color = '';
+        inputFinal.style.backgroundColor = '';
+        inputFinal.style.textAlign = '';
+    }
+
+    function sincronizarEstadoPromocion(fila) {
+        let inputP1 = obtenerInputNota(fila, 'nota_p1');
+        let inputP2 = obtenerInputNota(fila, 'nota_p2');
+        let inputFinal = obtenerInputNota(fila, 'nota_final');
+        let esRegular = !!(inputP1 && !inputP1.disabled);
+
+        let notaP1 = normalizarNotaInput(inputP1);
+        let notaP2 = normalizarNotaInput(inputP2);
+        let estaPromocionado = notaP1.ok && notaP2.ok && notaP1.value !== null && notaP2.value !== null && notaP1.value >= 7 && notaP2.value >= 7;
+
+        aplicarEstadoFinalPromocionado(inputFinal, estaPromocionado, esRegular);
+
+        return estaPromocionado;
+    }
+
+    function guardarNotasFila(fila) {
+        if (!fila) {
+            return;
+        }
+
+        let inputP1 = obtenerInputNota(fila, 'nota_p1');
+        let inputP2 = obtenerInputNota(fila, 'nota_p2');
+        let inputFinal = obtenerInputNota(fila, 'nota_final');
+
+        let notaP1 = normalizarNotaInput(inputP1);
+        let notaP2 = normalizarNotaInput(inputP2);
+        let notaFinal = normalizarNotaInput(inputFinal);
+
+        let errorValidacion = [notaP1, notaP2, notaFinal].find(item => !item.ok);
+        if (errorValidacion) {
+            mostrarFeedbackNotas('danger', errorValidacion.message);
+            return;
+        }
+
+        let estaPromocionado = sincronizarEstadoPromocion(fila);
+        if (estaPromocionado) {
+            notaFinal.value = null;
+        }
+
+        let payload = JSON.stringify({
+            id_alumno: (inputP1 && inputP1.dataset.idAlumno) || (inputP2 && inputP2.dataset.idAlumno) || (inputFinal && inputFinal.dataset.idAlumno) || 0,
+            id_materia: (inputP1 && inputP1.dataset.idMateria) || (inputP2 && inputP2.dataset.idMateria) || (inputFinal && inputFinal.dataset.idMateria) || 0,
+            nota_p1: notaP1.value,
+            nota_p2: notaP2.value,
+            nota_final: notaFinal.value
+        });
+
+        if (fila.dataset.lastNotasPayload === payload) {
+            return;
+        }
+        fila.dataset.lastNotasPayload = payload;
+
+        limpiarFeedbackNotas();
+
+        fetch('../Controllers/perfilController.php?action=guardar_notas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: payload
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message || 'No se pudieron guardar las notas.');
+            }
+
+            sincronizarEstadoPromocion(fila);
+            mostrarFeedbackNotas('success', data.message || 'Notas guardadas correctamente.');
+        })
+        .catch(error => {
+            delete fila.dataset.lastNotasPayload;
+            mostrarFeedbackNotas('danger', error.message || 'Error al guardar las notas.');
+        });
+    }
+
+    document.querySelectorAll('.nota-input').forEach(input => {
+        if (input.dataset.campo === 'nota_final') {
+            input.addEventListener('input', function() {
+                if (this.dataset.promocionado === '1') {
+                    return;
+                }
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 2);
+            });
+        }
+
+        input.addEventListener('change', function() {
+            guardarNotasFila(this.closest('tr'));
+        });
+
+        input.addEventListener('blur', function() {
+            guardarNotasFila(this.closest('tr'));
+        });
+    });
+
+    document.querySelectorAll('#tabla-inscripciones-profesor tbody tr').forEach(fila => {
+        sincronizarEstadoPromocion(fila);
+    });
 
     function calcularPromedioConceptos() {
         let notas = Array.from(document.querySelectorAll('.concepto-nota-input'))

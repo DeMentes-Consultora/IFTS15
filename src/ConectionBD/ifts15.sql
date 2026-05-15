@@ -20,9 +20,9 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `ifts15`
 --
-
+CREATE DATABASE IF NOT EXISTS `ifts15` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 -- --------------------------------------------------------
-
+USE `ifts15`;
 --
 -- Estructura de tabla para la tabla `añocursada`
 --
