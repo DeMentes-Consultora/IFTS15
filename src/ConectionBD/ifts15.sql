@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 15-05-2026 a las 03:06:13
+-- Tiempo de generación: 25-05-2026 a las 23:00:58
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -20,9 +20,9 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `ifts15`
 --
-CREATE DATABASE IF NOT EXISTS `ifts15` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
 -- --------------------------------------------------------
-USE `ifts15`;
+
 --
 -- Estructura de tabla para la tabla `añocursada`
 --
@@ -44,6 +44,31 @@ INSERT INTO `añocursada` (`id_añoCursada`, `año`, `habilitado`, `cancelado`, 
 (1, 1, 1, 0, '2025-09-16 20:54:25', '2025-09-16 20:54:25'),
 (2, 2, 1, 0, '2025-09-16 20:54:25', '2025-09-16 20:54:25'),
 (3, 3, 1, 0, '2025-09-16 20:54:25', '2025-09-16 20:54:25');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `bolsa_trabajo`
+--
+
+CREATE TABLE `bolsa_trabajo` (
+  `id_bolsa_trabajo` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `titulo_oferta` varchar(255) NOT NULL,
+  `texto_oferta` text NOT NULL,
+  `habilitado` int(1) NOT NULL DEFAULT 0,
+  `cancelado` int(1) NOT NULL DEFAULT 0,
+  `idCreate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `idUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `bolsa_trabajo`
+--
+
+INSERT INTO `bolsa_trabajo` (`id_bolsa_trabajo`, `id_usuario`, `titulo_oferta`, `texto_oferta`, `habilitado`, `cancelado`, `idCreate`, `idUpdate`) VALUES
+(1, 1, 'prueba 1', 'kblkhbklhblkbvlkj', 1, 0, '2026-05-25 19:23:52', '2026-05-25 19:23:57'),
+(2, 10, 'prueba 2', 'prueba 2prueba 2prueba 2prueba 2prueba 2prueba 2prueba 2prueba 2prueba 2prueba 2prueba 2prueba 2prueba 2prueba 2prueba 2prueba 2', 1, 0, '2026-05-25 19:55:00', '2026-05-25 19:55:02');
 
 -- --------------------------------------------------------
 
@@ -201,7 +226,8 @@ CREATE TABLE `notas` (
 --
 
 INSERT INTO `notas` (`id_nota`, `id_usuario`, `id_materia`, `nota`, `habilitado`, `cancelado`, `idCreate`, `idUpdate`, `1er_parcial`, `2do_parcial`, `final`) VALUES
-(1, 14, 2, 0, 1, 0, '2026-05-14 23:24:03', '2026-05-14 23:24:12', 5, 8, 7);
+(1, 14, 2, 0, 1, 0, '2026-05-14 23:24:03', '2026-05-15 02:07:45', 9, 8, 0),
+(2, 8, 4, 0, 1, 0, '2026-05-15 02:07:30', '2026-05-15 02:07:38', 8, 8, 0);
 
 -- --------------------------------------------------------
 
@@ -295,6 +321,31 @@ INSERT INTO `persona` (`id_persona`, `apellido`, `fecha_nacimiento`, `nombre`, `
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `postulacion_bolsa_trabajo`
+--
+
+CREATE TABLE `postulacion_bolsa_trabajo` (
+  `id_postulacion_bolsa_trabajo` int(11) NOT NULL,
+  `id_bolsa_trabajo` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `cv_url` varchar(512) DEFAULT NULL,
+  `cv_public_id` varchar(512) DEFAULT NULL,
+  `cancelado` int(1) NOT NULL DEFAULT 0,
+  `idCreate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `idUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `postulacion_bolsa_trabajo`
+--
+
+INSERT INTO `postulacion_bolsa_trabajo` (`id_postulacion_bolsa_trabajo`, `id_bolsa_trabajo`, `id_usuario`, `cv_url`, `cv_public_id`, `cancelado`, `idCreate`, `idUpdate`) VALUES
+(1, 2, 14, 'https://res.cloudinary.com/dm8ds67tb/raw/upload/v1779742379/ifts15/cv/ifts15/cv/6a14b6aac3143.tmp', 'ifts15/cv/ifts15/cv/6a14b6aac3143.tmp', 0, '2026-05-25 20:17:41', '2026-05-25 20:53:00'),
+(2, 1, 14, 'https://res.cloudinary.com/dm8ds67tb/raw/upload/v1779742311/ifts15/cv/ifts15/cv/6a14b66618111.tmp', 'ifts15/cv/ifts15/cv/6a14b66618111.tmp', 0, '2026-05-25 20:33:30', '2026-05-25 20:51:51');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `profesor_materia`
 --
 
@@ -313,7 +364,7 @@ CREATE TABLE `profesor_materia` (
 --
 
 INSERT INTO `profesor_materia` (`id_profesor_materia`, `id_profesor`, `id_materia`, `habilitado`, `cancelado`, `idCreate`, `idUpdate`) VALUES
-(1, 12, 2, 1, 0, '2026-04-22 17:48:20', '2026-05-14 23:53:44'),
+(1, 12, 2, 1, 0, '2026-04-22 17:48:20', '2026-05-15 02:07:18'),
 (3, 12, 4, 1, 0, '2026-04-22 18:32:27', '2026-04-22 18:32:27'),
 (4, 12, 5, 1, 0, '2026-04-22 18:32:29', '2026-04-22 18:32:29');
 
@@ -468,7 +519,7 @@ INSERT INTO `usuario` (`id_usuario`, `email`, `clave`, `id_comision`, `id_carrer
 (11, 'losmuchachosdelinapifts@gmail.com', '$2y$12$8IYGQ9hvWwKB0JZY3SNK2e05124T3fspcqKh/IhXSglPY5qOCChAy', 3, 1, 2, 4, 13, 1, 0, '2025-11-04 02:11:13', '2025-11-04 02:14:04'),
 (12, 'profesor@gmail.com', '$2y$10$8LpfnPvSMgsm9uucq4Cu8uHZumM5qxGwXT2dqvfequqqjR2N2DhAC', 1, 2, 1, 2, 14, 1, 0, '2026-03-27 17:35:28', '2026-04-22 19:48:02'),
 (13, 'seb@gmail.com', '$2y$12$hR3OOYpIEJxK1Mt0K3JCP.b4EvyfGn6NAQYROHK69l.e0AK55AAsy', 2, 1, 2, 1, 15, 1, 0, '2026-04-24 20:23:59', '2026-04-24 20:45:51'),
-(14, 'sebastianminotti@gmail.com', '$2y$12$uBA3z7c4zWgJv1mh9jf2oesxOmDIrUrdudaSyZK3F7qyxf90jnkBu', 2, 2, 2, 1, 16, 1, 0, '2026-04-24 20:57:26', '2026-05-14 22:41:48');
+(14, 'sebastianminotti@gmail.com', '$2y$12$hR3OOYpIEJxK1Mt0K3JCP.b4EvyfGn6NAQYROHK69l.e0AK55AAsy', 2, 2, 2, 1, 16, 1, 0, '2026-04-24 20:57:26', '2026-05-25 19:57:25');
 
 --
 -- Índices para tablas volcadas
@@ -479,6 +530,14 @@ INSERT INTO `usuario` (`id_usuario`, `email`, `clave`, `id_comision`, `id_carrer
 --
 ALTER TABLE `añocursada`
   ADD PRIMARY KEY (`id_añoCursada`);
+
+--
+-- Indices de la tabla `bolsa_trabajo`
+--
+ALTER TABLE `bolsa_trabajo`
+  ADD PRIMARY KEY (`id_bolsa_trabajo`),
+  ADD KEY `idx_bolsa_usuario` (`id_usuario`),
+  ADD KEY `idx_bolsa_estado` (`habilitado`,`cancelado`);
 
 --
 -- Indices de la tabla `carrera`
@@ -536,6 +595,15 @@ ALTER TABLE `password_resets`
 --
 ALTER TABLE `persona`
   ADD PRIMARY KEY (`id_persona`);
+
+--
+-- Indices de la tabla `postulacion_bolsa_trabajo`
+--
+ALTER TABLE `postulacion_bolsa_trabajo`
+  ADD PRIMARY KEY (`id_postulacion_bolsa_trabajo`),
+  ADD UNIQUE KEY `uq_postulacion_bolsa` (`id_bolsa_trabajo`,`id_usuario`),
+  ADD KEY `idx_postulacion_bolsa_usuario` (`id_usuario`),
+  ADD KEY `idx_postulacion_bolsa_cancelado` (`cancelado`);
 
 --
 -- Indices de la tabla `profesor_materia`
@@ -597,6 +665,12 @@ ALTER TABLE `añocursada`
   MODIFY `id_añoCursada` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+-- AUTO_INCREMENT de la tabla `bolsa_trabajo`
+--
+ALTER TABLE `bolsa_trabajo`
+  MODIFY `id_bolsa_trabajo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT de la tabla `carrera`
 --
 ALTER TABLE `carrera`
@@ -630,7 +704,7 @@ ALTER TABLE `matricula_materia`
 -- AUTO_INCREMENT de la tabla `notas`
 --
 ALTER TABLE `notas`
-  MODIFY `id_nota` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_nota` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `password_resets`
@@ -645,10 +719,16 @@ ALTER TABLE `persona`
   MODIFY `id_persona` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
+-- AUTO_INCREMENT de la tabla `postulacion_bolsa_trabajo`
+--
+ALTER TABLE `postulacion_bolsa_trabajo`
+  MODIFY `id_postulacion_bolsa_trabajo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT de la tabla `profesor_materia`
 --
 ALTER TABLE `profesor_materia`
-  MODIFY `id_profesor_materia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
+  MODIFY `id_profesor_materia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- AUTO_INCREMENT de la tabla `roles`
@@ -691,6 +771,12 @@ ALTER TABLE `usuario`
 --
 
 --
+-- Filtros para la tabla `bolsa_trabajo`
+--
+ALTER TABLE `bolsa_trabajo`
+  ADD CONSTRAINT `fk_bolsa_trabajo_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON UPDATE CASCADE;
+
+--
 -- Filtros para la tabla `conceptos_alumno`
 --
 ALTER TABLE `conceptos_alumno`
@@ -723,6 +809,13 @@ ALTER TABLE `notas`
 --
 ALTER TABLE `password_resets`
   ADD CONSTRAINT `password_resets_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `postulacion_bolsa_trabajo`
+--
+ALTER TABLE `postulacion_bolsa_trabajo`
+  ADD CONSTRAINT `fk_postulacion_bolsa_oferta` FOREIGN KEY (`id_bolsa_trabajo`) REFERENCES `bolsa_trabajo` (`id_bolsa_trabajo`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_postulacion_bolsa_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `profesor_materia`
