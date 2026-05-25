@@ -51,6 +51,20 @@ class CloudinaryService
         return $result;
     }
 
+    public function uploadRawFile($fileTmpPath, $fileName, $folder = 'ifts15/cv', $publicId = null)
+    {
+        $publicId = $publicId ?: $folder . '/' . uniqid();
+
+        return $this->cloudinary->uploadApi()->upload($fileTmpPath, [
+            'public_id' => $publicId,
+            'folder' => $folder,
+            'overwrite' => true,
+            'resource_type' => 'raw',
+            'use_filename' => true,
+            'unique_filename' => true,
+        ]);
+    }
+
     /**
      * Sube una foto de perfil y la normaliza a formato cuadrado optimizado.
      * @param string $fileTmpPath

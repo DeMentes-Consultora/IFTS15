@@ -234,3 +234,15 @@ function canManageSiteCustomization() {
     if ($rid === null) return false;
     return in_array($rid, [3,5], true);
 }
+
+function canManageBolsaTrabajo() {
+    $rid = getUserRoleId();
+    if ($rid === null) return false;
+    return in_array($rid, [3,5], true);
+}
+
+function canAccessBolsaTrabajo() {
+    $rid = getUserRoleId();
+    if ($rid === null) return false;
+    return in_array($rid, [1,3,5], true);
+}

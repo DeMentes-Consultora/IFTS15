@@ -201,6 +201,15 @@ $sidebarBrandLogo = (!empty($siteSidebar['habilitado']) && !empty($siteSidebar['
                 </a>
             </li>
 
+            <?php if (canAccessBolsaTrabajo()): ?>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=bolsa-trabajo">
+                    <i class="bi bi-briefcase me-3"></i>
+                    <?php echo canManageBolsaTrabajo() ? 'Gestion Bolsa Trabajo' : 'Bolsa de Trabajo'; ?>
+                </a>
+            </li>
+            <?php endif; ?>
+
             <?php if (isAdminRole()): ?>
                 <!-- Administración (solo admin) -->
                 <li class="nav-item mt-3">

@@ -142,4 +142,54 @@ class MailerService
             return ['success' => false, 'message' => $e->getMessage()];
         }
     }
+
+    public function notificarPostulacionAlumno(string $emailAlumno, string $nombreAlumno, string $tituloOferta, string $nombrePublicador): array
+    {
+        $nombreSeguro = htmlspecialchars($nombreAlumno, ENT_QUOTES, 'UTF-8');
+        $tituloSeguro = htmlspecialchars($tituloOferta, ENT_QUOTES, 'UTF-8');
+        $publicadorSeguro = htmlspecialchars($nombrePublicador, ENT_QUOTES, 'UTF-8');
+        $asunto = 'Postulacion recibida - IFTS15';
+
+        $body = <<<HTML
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.08); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #0d6efd, #0a58ca); color: #ffffff; padding: 28px; text-align: center; }
+        .header h1 { margin: 0; font-size: 22px; }
+        .body { padding: 28px; color: #333333; }
+        .box { background: #f8f9fa; border-left: 4px solid #0d6efd; padding: 16px; margin: 20px 0; }
+        .box p { margin: 6px 0; }
+        .footer { background: #f8f9fa; padding: 18px; text-align: center; font-size: 12px; color: #666666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Postulacion recibida</h1>
+        </div>
+        <div class="body">
+            <p>Hola <strong>{$nombreSeguro}</strong>,</p>
+            <p>Recibimos correctamente tu postulacion a la oferta laboral indicada a continuacion.</p>
+            <div class="box">
+                <p><strong>Oferta:</strong> {$tituloSeguro}</p>
+                <p><strong>Publicada por:</strong> {$publicadorSeguro}</p>
+                <p><strong>Estado:</strong> Postulacion recibida</p>
+            </div>
+            <p>Si tu postulacion avanza o hay novedades sobre este proceso, te avisaremos por este mismo medio.</p>
+            <p>Saludos,<br>Equipo de IFTS15</p>
+        </div>
+        <div class="footer">
+            Este es un correo automatico de IFTS15. No respondas este mensaje.
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+
+        return $this->send($emailAlumno, $asunto, $body, true, null);
+    }
 }

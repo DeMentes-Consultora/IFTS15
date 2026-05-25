@@ -37,6 +37,7 @@ $allowlist = [
     // Vista "Carreras" (nombre físico: realizador-productor-tv.php)
     'realizador-productor-tv' => 'public',
     'pagina_en_construccion' => 'public',
+    'bolsa-trabajo' => 'jobboard',
     // ABM Carreras y Materias
     'abm-carreras' => 'admin',
     'abm-profesores-materias' => 'admin',
@@ -98,6 +99,12 @@ switch ($required) {
     case 'admin':
         if (!$logged || !$isAdmin) {
             // acceso denegado
+            header('Location: ' . BASE_URL . '/index.php?error=acceso_denegado');
+            exit;
+        }
+        break;
+    case 'jobboard':
+        if (!$logged || !function_exists('canAccessBolsaTrabajo') || !canAccessBolsaTrabajo()) {
             header('Location: ' . BASE_URL . '/index.php?error=acceso_denegado');
             exit;
         }

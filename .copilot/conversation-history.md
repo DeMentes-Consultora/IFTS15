@@ -1,4 +1,13 @@
-# Sesión: 14 de mayo 2026
+# Historial de Conversaciones - IFTS15
+
+## Alcance de este archivo
+
+- Este documento es historico: registra problemas, decisiones y soluciones de sesiones pasadas.
+- No debe usarse como fuente unica de verdad sobre la estructura actual del proyecto.
+- Para estado vigente y rutas reales, priorizar docs/README.md, docs/estado-actual.md, .copilot/project-context.md y .copilot/copilot-guide.md.
+- Las referencias a register.php, navbar.php o estructuras previas pueden describir flujos legacy validos en su momento, no necesariamente el flujo principal actual.
+
+## Sesión: 14 de mayo 2026
 
 ### Problema: Perfiles no cargan en producción (Linux)
 - El acceso a los perfiles dejó de funcionar solo en producción.
@@ -9,9 +18,8 @@
 - Se revisó y sincronizó la carpeta de servicios, eliminando referencias a `Services` (mayúscula).
 - Se verificó que CloudinaryService.php y PerfilService.php estén correctamente ubicados y referenciados.
 - Resultado: Los perfiles y el cambio de foto funcionan tanto en desarrollo como en producción.
-# Historial de Conversaciones - IFTS15
 
-## 📅 Sesión: 16 de Septiembre 2025
+## Sesión: 16 de Septiembre 2025
 
 ### Problema Inicial: Navbar y Datos Académicos
 **Usuario:** "cuando hago click en inicio en el navbar no se ve el carrusel"
@@ -77,7 +85,7 @@ class Database {
 }
 ```
 
-#### Flujo de Registro Actual
+#### Flujo de Registro en esa sesión
 1. Usuario → Modal Registro (navbar.php)
 2. Envío → register.php (procesamiento)
 3. Éxito → Redirect `/#login` (modal login abierto)
@@ -133,4 +141,4 @@ class Database {
 
 ---
 
-Este historial se actualiza cada vez que se realiza una mejora relevante en el proyecto.
+Nota final: mantener este archivo como cronologia. Si una sesión cambia el estado operativo del proyecto, reflejar el estado vigente en la documentación principal y dejar aquí solo el registro histórico.

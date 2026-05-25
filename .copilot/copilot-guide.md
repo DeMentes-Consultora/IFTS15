@@ -1,143 +1,71 @@
-# Guía GitHub Copilot - IFTS15
+# Guia GitHub Copilot - IFTS15
 
-## 🤖 Instrucciones para Asistentes AI
+## Contexto del proyecto
 
-### Contexto del Proyecto
-Este proyecto es un **sistema educativo para IFTS15** construido en PHP puro con MySQL. El usuario está en proceso de **refactorización a patrón MVC** manteniendo toda la funcionalidad existente.
+IFTS15 es un sistema educativo en PHP con estructura MVC operativa dentro de src. La prioridad no es una refactorizacion futura abstracta sino mantener y extender la implementacion actual sin romper el flujo publico ni administrativo.
 
-### Estado Técnico Actual
-- **PHP 8.4.6** con MySQLi (PDO no disponible)
-- **Bootstrap 5.3.2** para UI
-- **Sistema de autenticación** funcional
-- **Registro con datos académicos** implementado
-- **Estructura monolítica** en proceso de refactorización
+La documentacion humana del proyecto vive en docs/. La carpeta .copilot queda para contexto interno de asistentes y trazabilidad de sesiones.
 
-### Perfil del Usuario
-- **Pragmático:** Quiere soluciones que funcionen
-- **Crítico:** Pide feedback honesto, no solo confirmación
-- **Metódico:** Prefiere pasos incrementales
-- **Documentador:** Valora sincronización de contexto
+## Estado tecnico vigente
 
-### 🎯 Objetivos de la Colaboración
+- PHP con autoload PSR-4 por Composer.
+- Configuracion global en src/config.php.
+- Base de datos con MySQLi usando App\ConectionBD\ConectionDB y el wrapper App\Database.
+- Templates reales en src/Template.
+- Modales reutilizables en src/Components.
+- Servicios de negocio e integraciones en src/services.
 
-#### Para el Asistente
-1. **Ser crítico constructivo:** Si algo no es la mejor práctica, explicarlo
-2. **Sugerir mejores alternativas:** No solo hacer lo que se pide
-3. **Explicar el "por qué":** Fundamentar las recomendaciones
-4. **Mantener funcionalidad:** Nunca romper lo que ya funciona
-5. **Documentar decisiones:** Actualizar este contexto regularmente
+## Archivos y superficies clave
 
-#### Para el Usuario
-1. **Código más limpio y mantenible**
-2. **Aprender mejores prácticas** de desarrollo
-3. **Arquitectura MVC** bien implementada
-4. **Base sólida** para futuras características
+- src/config.php: bootstrap, entorno, sesion y helpers globales.
+- src/ConectionBD/ConectionDB.php: conexion MySQLi.
+- src/Database.php: wrapper de consultas preparadas.
+- src/Template/head.php, navBar.php, sidebar.php, footer.php: layout compartido.
+- src/Components/modalLogin.php, modalRegistrar.php, modalConsultas.php: modales reutilizados por el sitio publico.
+- src/Controllers/perfilController.php: acceso al perfil y acciones asociadas.
+- src/services/PerfilService.php: logica de perfil, matriculacion y conceptos.
+- src/services/MailerService.php: normalizacion de destinatarios y envio.
+- src/services/CloudinaryService.php: validacion y subida de imagenes.
 
-### 📋 Protocolo de Trabajo
+## Reglas practicas para asistir en este repo
 
-#### Antes de Cualquier Cambio
-1. **Leer todo el contexto** en `.copilot/`
-2. **Entender el estado actual** del proyecto
-3. **Verificar funcionalidad existente** antes de modificar
-4. **Proponer plan paso a paso** si es un cambio grande
+1. Leer primero los .md de la raiz y .copilot si hace falta sincronizacion.
+2. Tratar como legacy cualquier referencia a layouts, includes, config o database fuera de src, salvo que el codigo actual la siga usando de verdad.
+3. Mantener el case correcto de src/services y App\Services; en Linux un error de mayusculas rompe produccion.
+4. No asumir que register.php sea el flujo principal de alta: el sitio actual usa modales y componentes.
+5. Si tocas mail, contemplar ADMIN_EMAILS y ADMIN_EMAIL, comas y punto y coma, y las variantes de MAIL_SMTP_AUTH.
+6. Si tocas imagenes, verificar antes las variables CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY y CLOUDINARY_API_SECRET.
+7. Si tocas el sitio publico, considerar que algunas rutas deben tolerar conexion nula para no romper la home.
+8. Si un cambio afecta despliegue, sincronizar tambien la documentacion de deploy y cualquier carpeta de deploy asociada.
 
-#### Durante el Desarrollo
-1. **Explicar cada decisión** técnica importante
-2. **Sugerir alternativas** cuando sea apropiado
-3. **Mantener TODO list actualizado** con progreso real
-4. **Testing continuo** de funcionalidades
+## Criterios tecnicos
 
-#### Después de Cambios
-1. **Actualizar documentación** en `.copilot/`
-2. **Verificar que todo funciona** como antes
-3. **Documentar nuevas funcionalidades** o cambios
-4. **Preparar siguiente paso** lógico
+- Preferir cambios pequenos e iterativos.
+- Usar consultas preparadas y transacciones cuando el flujo lo requiera.
+- Mantener separadas vista, controlador, modelo y servicio cuando ya existe esa separacion.
+- No reintroducir mezcla innecesaria de HTML, SQL y logica de negocio en una misma superficie.
+- Documentar solo lo que cambie el entendimiento operativo del proyecto.
 
-### 🔧 Aspectos Técnicos Críticos
+## Riesgos ya conocidos
 
-#### Base de Datos
-- **Solo MySQLi:** PDO no está disponible
-- **Queries preparadas:** Siempre usar parámetros
-- **Transacciones:** Para operaciones complejas
-- **Nombres consistentes:** Entre HTML, PHP y tablas
+- Cloudinary falla si faltan variables de entorno.
+- El envio de correo puede fallar si ADMIN_EMAILS llega como string sin normalizar.
+- Procesos PHP reutilizados pueden seguir con variables viejas si no se carga bien .env.
+- La home publica no debe asumir siempre una conexion valida.
 
-#### Arquitectura Actual
-```
-Monolítica → MVC (en progreso)
-- Models: Lógica de datos
-- Controllers: Lógica de negocio  
-- Views: Presentación
-- Core: Infraestructura común
-```
+## Expectativa de colaboracion
 
-#### Funcionalidades Críticas
-- **Autenticación:** Login/logout funcional
-- **Registro:** Modal con datos académicos
-- **Navegación:** Navbar con modales
-- **Roles:** Sistema básico implementado
+- El usuario prefiere analisis primero y cambios despues.
+- Quiere feedback directo cuando una idea tecnica sea floja o arriesgada.
+- Prefiere pasos concretos, no reescrituras masivas.
+- Valora que la documentacion quede actualizada en la misma sesion.
 
-### ⚠️ Red Flags - Evitar Absolutamente
+## Mantenimiento de esta guia
 
-#### Técnicas
-- ❌ Mezclar HTML + PHP + SQL en mismo archivo
-- ❌ Queries SQL directas sin preparación
-- ❌ Romper funcionalidad existente
-- ❌ Cambios masivos sin testing
-- ❌ Hardcodear valores sin constantes
+Actualizar esta guia cuando cambie una de estas cosas:
 
-#### De Proceso
-- ❌ Cambiar cosas sin entender el contexto actual
-- ❌ No documentar decisiones importantes
-- ❌ Asumir que algo funciona sin probarlo
-- ❌ Ignorar feedback del usuario
-- ❌ No actualizar la documentación
-
-### 📚 Referencias y Recursos
-
-#### Archivos Clave
-- `includes/init.php` - Bootstrap del sistema
-- `config/database_mysqli.php` - Clase de BD
-- `layouts/navbar.php` - Modal de registro
-- `register.php` - Procesamiento de registro
-
-#### Tablas de BD Importantes
-```sql
-usuario (id, email, clave, id_persona, id_rol, id_carrera, id_comision, id_añoCursada)
-persona (id, nombre, apellido, dni, telefono, edad)
-roles (id_rol, rol, habilitado)
-carrera (id_carrera, carrera, habilitado)
-```
-
-#### URLs del Sistema
-- `/` - Página principal
-- `/login.php` - Procesamiento login (POST only)
-- `/register.php` - Procesamiento registro (POST only)  
-- `/pages/dashboard.php` - Panel usuario logueado
-
-### 🎯 Próximos Pasos Planificados
-
-#### En Progreso
-- **Estructura MVC:** Crear carpetas y organización
-- **Models:** Abstraer User, Person, Career, etc.
-- **Controllers:** AuthController, HomeController
-
-#### Pendientes
-- **Views refactoring:** Adaptar templates existentes
-- **Router:** Sistema básico de rutas
-- **Testing:** Verificar toda funcionalidad
-
-### 💡 Tips para Nuevos Asistentes
-
-1. **Siempre leer primero** toda la documentación en `.copilot/`
-2. **Preguntar si no entiendes** algo del contexto
-3. **Ser honesto** sobre limitaciones o mejores enfoques
-4. **Proponer alternativas** cuando veas problemas
-5. **Mantener el TODO actualizado** con progreso real
-6. **Documentar las decisiones** importantes que tomes
-
-### 🔄 Actualización de Esta Guía
-
-**Última actualización:** 16 de septiembre de 2025
-**Próxima revisión:** Después de completar refactorización MVC
-
-**Cambios importantes siempre deben reflejarse aquí** para mantener continuidad entre sesiones y asistentes.
+- estructura real del proyecto
+- flujo principal de autenticacion
+- integraciones de correo o Cloudinary
+- convenciones de despliegue
+- rutas o nombres de archivos clave
