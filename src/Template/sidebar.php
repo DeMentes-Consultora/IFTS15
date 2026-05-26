@@ -201,11 +201,11 @@ $sidebarBrandLogo = (!empty($siteSidebar['habilitado']) && !empty($siteSidebar['
                 </a>
             </li>
 
-            <?php if (canAccessBolsaTrabajo()): ?>
+            <?php if (canAccessBolsaTrabajo() && !canManageBolsaTrabajo()): ?>
             <li class="nav-item mb-2">
                 <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=bolsa-trabajo">
                     <i class="bi bi-briefcase me-3"></i>
-                    <?php echo canManageBolsaTrabajo() ? 'Gestion Bolsa Trabajo' : 'Bolsa de Trabajo'; ?>
+                    Bolsa de Trabajo
                 </a>
             </li>
             <?php endif; ?>
@@ -217,6 +217,36 @@ $sidebarBrandLogo = (!empty($siteSidebar['habilitado']) && !empty($siteSidebar['
                         <i class="bi bi-shield-check"></i> ADMINISTRACIÓN
                     </h6>
                 </li>
+
+                <?php if (in_array($userIdRol, [3, 5], true)): ?>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-light d-flex align-items-center"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#bolsa-trabajo-admin-menu"
+                        role="button"
+                        aria-expanded="false">
+                        <i class="bi bi-briefcase me-3"></i>
+                        Gestion Bolsa de Trabajo
+                        <i class="bi bi-chevron-down ms-auto"></i>
+                    </a>
+                    <div class="collapse" id="bolsa-trabajo-admin-menu">
+                        <ul class="nav nav-pills flex-column ms-4 mt-1">
+                            <li class="nav-item">
+                                <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=bolsa-trabajo&amp;seccion=ofertas-laborales">
+                                    <i class="bi bi-megaphone me-2"></i>
+                                    Ofertas laborales
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=bolsa-trabajo&amp;seccion=postulaciones">
+                                    <i class="bi bi-people me-2"></i>
+                                    Postulaciones
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <?php endif; ?>
 
                 <li class="nav-item mb-2">
                     <a class="nav-link text-light d-flex align-items-center"
@@ -253,14 +283,6 @@ $sidebarBrandLogo = (!empty($siteSidebar['habilitado']) && !empty($siteSidebar['
                                 <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=dashboard-admin">
                                     <i class="bi bi-images me-2"></i>
                                     Dashboard Sitio
-                                </a>
-                            </li>
-                            <?php endif; ?>
-                            <?php if (in_array($userIdRol, [3, 5], true)): ?>
-                            <li class="nav-item">
-                                <a class="nav-link text-light py-1" href="<?php echo BASE_URL; ?>/src/Controllers/viewController.php?view=abm-profesores-materias">
-                                    <i class="bi bi-person-workspace me-2"></i>
-                                    ABM Profesor-Materia
                                 </a>
                             </li>
                             <?php endif; ?>

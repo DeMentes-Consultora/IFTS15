@@ -27,6 +27,7 @@ class PostulacionBolsaTrabajo
                 pbt.id_postulacion_bolsa_trabajo,
                 pbt.id_bolsa_trabajo,
                 pbt.cv_url,
+                pbt.cv_public_id,
                 pbt.idCreate AS fecha_postulacion,
                 bt.titulo_oferta,
                 bt.texto_oferta,
@@ -72,6 +73,36 @@ class PostulacionBolsaTrabajo
         return $map;
     }
 
+    public static function obtenerGestionGlobal($conn): array
+    {
+        $sql = "SELECT
+                    pbt.id_postulacion_bolsa_trabajo,
+                    pbt.id_bolsa_trabajo,
+                    pbt.cv_url,
+                    pbt.cv_public_id,
+                    pbt.idCreate AS fecha_postulacion,
+                    bt.titulo_oferta,
+                    bt.habilitado,
+                    u.email,
+                    pe.nombre,
+                    pe.apellido,
+                    pe.foto_perfil_url
+                FROM postulacion_bolsa_trabajo pbt
+                INNER JOIN bolsa_trabajo bt ON bt.id_bolsa_trabajo = pbt.id_bolsa_trabajo
+                INNER JOIN usuario u ON u.id_usuario = pbt.id_usuario
+                INNER JOIN persona pe ON pe.id_persona = u.id_persona
+                WHERE pbt.cancelado = 0
+                  AND bt.cancelado = 0
+                ORDER BY pbt.idCreate DESC";
+
+        $result = $conn->query($sql);
+        if (!$result) {
+            throw new Exception('No se pudieron obtener las postulaciones para gestion');
+        }
+
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
     public static function crearPostulacion($conn, int $idOferta, int $idUsuario, ?string $cvUrl, ?string $cvPublicId): ?int
     {
         $stmt = $conn->prepare(
@@ -98,11 +129,23 @@ class PostulacionBolsaTrabajo
         return $stmt->execute();
     }
 
+    public static function actualizarCvDeAlumno($conn, int $idPostulacion, int $idUsuario, ?string $cvUrl, ?string $cvPublicId): bool
+    {
+        $stmt = $conn->prepare(
+            'UPDATE postulacion_bolsa_trabajo
+             SET cv_url = ?, cv_public_id = ?
+             WHERE id_postulacion_bolsa_trabajo = ? AND id_usuario = ? AND cancelado = 0'
+        );
+        $stmt->bind_param('ssii', $cvUrl, $cvPublicId, $idPostulacion, $idUsuario);
+        $stmt->execute();
+        return $stmt->affected_rows > 0;
+    }
+
     public static function cancelarDeAlumno($conn, int $idPostulacion, int $idUsuario): bool
     {
         $stmt = $conn->prepare(
             'UPDATE postulacion_bolsa_trabajo
-             SET cancelado = 1
+             SET cancelado = 1, cv_url = NULL, cv_public_id = NULL
              WHERE id_postulacion_bolsa_trabajo = ? AND id_usuario = ? AND cancelado = 0'
         );
         $stmt->bind_param('ii', $idPostulacion, $idUsuario);

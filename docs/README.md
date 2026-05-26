@@ -8,6 +8,7 @@ Esta carpeta es la fuente de verdad para la documentacion humana del proyecto.
 - deploy.md: despliegue, checklist operativa, migraciones y notas de produccion.
 - ui-y-componentes.md: documentacion funcional de CSS modular y modal de consultas.
 - historial-tecnico.md: hitos, limpiezas y snapshots historicos relevantes.
+- bolsa-trabajo-referencia.md: implementacion final de bolsa de trabajo, reglas de negocio, Cloudinary, CVs y checklist de portabilidad.
 
 ## Reglas de mantenimiento
 
@@ -21,3 +22,4 @@ Esta carpeta es la fuente de verdad para la documentacion humana del proyecto.
 2. Ir a deploy.md para subir o desplegar.
 3. Ir a ui-y-componentes.md para cambios visuales o de componentes publicos.
 4. Ir a historial-tecnico.md para ver decisiones y cambios relevantes de sesiones anteriores.
+5. Ir a bolsa-trabajo-referencia.md si queres replicar el modulo de bolsa en otro proyecto.

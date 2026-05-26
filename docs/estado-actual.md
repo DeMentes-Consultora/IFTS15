@@ -11,7 +11,7 @@ IFTS15 es un sistema web educativo en PHP con estructura MVC operativa dentro de
 - Conexion a base de datos con MySQLi mediante App\ConectionBD\ConectionDB y App\Database.
 - Sitio publico con modales de login, registro y consultas.
 - Modulos activos de perfil, usuarios, carreras, materias, profesor-materia, novedades y dashboard admin.
-- Modulo de bolsa de trabajo con gestion para roles 3 y 5, visualizacion de publicadas para alumnos y postulaciones con CV.
+- Modulo de bolsa de trabajo con publicacion directa para roles 3 y 5, visualizacion de publicadas para alumnos y postulaciones con CV.
 
 ## Stack tecnico
 
@@ -113,8 +113,14 @@ php -S localhost:8000
 - Asignacion de profesores a materias.
 - Dashboard admin y personalizacion del sitio publico.
 - Novedades y modal de consultas.
-- Bolsa de trabajo con ofertas pendientes y publicadas.
-- Postulaciones de alumnos con CV en Cloudinary y cancelacion de la propia postulacion.
+- Bolsa de trabajo con ofertas publicadas, activacion/desactivacion y ocultado logico.
+- Postulaciones de alumnos con CV en Cloudinary, actualizacion del CV, cancelacion de la propia postulacion y tabla administrativa de postulantes.
+
+## Referencia especifica del modulo bolsa
+
+Para reutilizar o portar este modulo a otro proyecto, ver:
+
+- bolsa-trabajo-referencia.md
 
 ## Rutas utiles
 

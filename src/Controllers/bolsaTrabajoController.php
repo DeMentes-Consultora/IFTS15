@@ -17,6 +17,9 @@ use InvalidArgumentException;
 use Throwable;
 
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../Model/BolsaTrabajo.php';
+require_once __DIR__ . '/../Model/PostulacionBolsaTrabajo.php';
+require_once __DIR__ . '/../Model/User.php';
 require_once __DIR__ . '/../services/CloudinaryService.php';
 require_once __DIR__ . '/../services/MailerService.php';
 
@@ -102,6 +105,105 @@ class BolsaTrabajoController
             'sapi' => PHP_SAPI,
             'php_binary' => PHP_BINARY,
         ];
+    }
+
+    private function inferCvFileName(?string $preferredName, ?string $publicId = null, ?string $cvUrl = null): string
+    {
+        $candidates = [$preferredName, $publicId, $cvUrl];
+
+        foreach ($candidates as $candidate) {
+            $candidate = trim((string)$candidate);
+            if ($candidate === '') {
+                continue;
+            }
+
+            $path = parse_url($candidate, PHP_URL_PATH);
+            $name = basename((string)($path ?: $candidate));
+            if ($name !== '' && $name !== '.' && $name !== '..') {
+                return $name;
+            }
+        }
+
+        return 'cv';
+    }
+
+    private function buildCvDownloadUrl(?string $publicId, ?string $fileName = null, ?string $fallbackUrl = null): ?string
+    {
+        if (is_string($fallbackUrl) && $fallbackUrl !== '' && strpos($fallbackUrl, '/upload/') !== false) {
+            $cleanUrl = preg_replace('#/fl_attachment(?::[^/]+)?/#', '/', $fallbackUrl);
+            return preg_replace('#/upload/#', '/upload/fl_attachment/', $cleanUrl, 1) ?: $fallbackUrl;
+        }
+
+        if (!is_string($publicId) || $publicId === '') {
+            return $fallbackUrl;
+        }
+
+        $cloudName = trim((string)($_ENV['CLOUDINARY_CLOUD_NAME'] ?? ''));
+        if ($cloudName === '') {
+            return $fallbackUrl;
+        }
+
+        return 'https://res.cloudinary.com/' . rawurlencode($cloudName) . '/raw/upload/fl_attachment/' . ltrim($publicId, '/');
+    }
+
+    private function addCvDownloadUrls(array $rows, ?CloudinaryService $cloudinary = null): array
+    {
+        if ($rows === []) {
+            return $rows;
+        }
+
+        foreach ($rows as &$row) {
+            $fileName = $this->inferCvFileName(null, $row['cv_public_id'] ?? null, $row['cv_url'] ?? null);
+            $row['cv_download_url'] = $this->buildCvDownloadUrl(
+                $row['cv_public_id'] ?? null,
+                $fileName,
+                $row['cv_url'] ?? null
+            );
+        }
+        unset($row);
+
+        return $rows;
+    }
+
+    private function deleteCvFromCloudinary(?string $cvPublicId): void
+    {
+        $cvPublicId = trim((string)$cvPublicId);
+        if ($cvPublicId === '') {
+            return;
+        }
+
+        try {
+            $cloudinary = new CloudinaryService();
+            $cloudinary->deleteImage($cvPublicId, 'raw');
+        } catch (Throwable $e) {
+            error_log('[BolsaTrabajoController::deleteCvFromCloudinary] ' . $e->getMessage());
+        }
+    }
+
+    private function obtenerPostulacionPorIdYUsuario(int $idPostulacion, int $idUsuario): ?array
+    {
+        $stmt = $this->conn->prepare(
+            'SELECT id_postulacion_bolsa_trabajo, cancelado, cv_url, cv_public_id
+             FROM postulacion_bolsa_trabajo
+             WHERE id_postulacion_bolsa_trabajo = ? AND id_usuario = ?
+             LIMIT 1'
+        );
+        $stmt->bind_param('ii', $idPostulacion, $idUsuario);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc() ?: null;
+    }
+
+    private function actualizarCvPostulacionEnBd(int $idPostulacion, int $idUsuario, string $cvUrl, string $cvPublicId): bool
+    {
+        $stmt = $this->conn->prepare(
+            'UPDATE postulacion_bolsa_trabajo
+             SET cv_url = ?, cv_public_id = ?
+             WHERE id_postulacion_bolsa_trabajo = ? AND id_usuario = ? AND cancelado = 0'
+        );
+        $stmt->bind_param('ssii', $cvUrl, $cvPublicId, $idPostulacion, $idUsuario);
+        $stmt->execute();
+        return $stmt->affected_rows > 0;
     }
 
     private function validarCV(array $archivo): array
@@ -197,10 +299,24 @@ class BolsaTrabajoController
         $this->requireBolsaManagement();
 
         try {
-            $ofertas = BolsaTrabajo::obtenerPendientes($this->conn);
+            $ofertas = BolsaTrabajo::obtenerOfertasGestion($this->conn);
             $this->jsonResponse(['success' => true, 'ofertas' => $ofertas]);
         } catch (Exception $e) {
             error_log('[BolsaTrabajoController::listarPendientes] ' . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
+        }
+    }
+
+    public function listarPostulacionesGestion(): void
+    {
+        $this->requireBolsaManagement();
+
+        try {
+            $postulaciones = PostulacionBolsaTrabajo::obtenerGestionGlobal($this->conn);
+            $postulaciones = $this->addCvDownloadUrls($postulaciones);
+            $this->jsonResponse(['success' => true, 'postulaciones' => $postulaciones]);
+        } catch (Exception $e) {
+            error_log('[BolsaTrabajoController::listarPostulacionesGestion] ' . $e->getMessage());
             $this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
         }
     }
@@ -242,7 +358,7 @@ class BolsaTrabajoController
 
             $this->jsonResponse([
                 'success' => true,
-                'message' => 'Oferta creada en estado pendiente',
+                'message' => 'Oferta publicada correctamente',
                 'id' => $idOferta,
             ]);
         } catch (Exception $e) {
@@ -262,7 +378,7 @@ class BolsaTrabajoController
         $idOferta = (int)($_POST['id_bolsa_trabajo'] ?? 0);
         $accion = trim((string)($_POST['accion'] ?? ''));
 
-        if ($idOferta <= 0 || !in_array($accion, ['publicar', 'rechazar', 'deshabilitar'], true)) {
+        if ($idOferta <= 0 || !in_array($accion, ['activar', 'desactivar', 'eliminar'], true)) {
             $this->jsonResponse(['success' => false, 'error' => 'Datos invalidos'], 400);
         }
 
@@ -276,17 +392,17 @@ class BolsaTrabajoController
             $message = 'Accion no valida';
 
             switch ($accion) {
-                case 'publicar':
-                    $ok = BolsaTrabajo::publicarOferta($this->conn, $idOferta);
-                    $message = 'Oferta publicada correctamente';
+                case 'activar':
+                    $ok = BolsaTrabajo::activarOferta($this->conn, $idOferta);
+                    $message = 'Oferta activada correctamente';
                     break;
-                case 'rechazar':
-                    $ok = BolsaTrabajo::rechazarOferta($this->conn, $idOferta);
-                    $message = 'Oferta rechazada';
-                    break;
-                case 'deshabilitar':
+                case 'desactivar':
                     $ok = BolsaTrabajo::deshabilitarOferta($this->conn, $idOferta);
-                    $message = 'Oferta enviada nuevamente a pendientes';
+                    $message = 'Oferta desactivada';
+                    break;
+                case 'eliminar':
+                    $ok = BolsaTrabajo::eliminarOferta($this->conn, $idOferta);
+                    $message = 'Oferta ocultada del sistema';
                     break;
             }
 
@@ -308,6 +424,7 @@ class BolsaTrabajoController
         try {
             $idUsuario = (int)($_SESSION['user_id'] ?? 0);
             $postulaciones = PostulacionBolsaTrabajo::obtenerActivasDeAlumno($this->conn, $idUsuario);
+            $postulaciones = $this->addCvDownloadUrls($postulaciones);
             $this->jsonResponse(['success' => true, 'postulaciones' => $postulaciones]);
         } catch (Exception $e) {
             error_log('[BolsaTrabajoController::listarMisPostulaciones] ' . $e->getMessage());
@@ -331,6 +448,7 @@ class BolsaTrabajoController
         }
 
         $transactionStarted = false;
+        $cvPublicIdAnteriorAEliminar = null;
 
         try {
             $oferta = BolsaTrabajo::obtenerPorId($this->conn, $idOferta);
@@ -347,8 +465,8 @@ class BolsaTrabajoController
 
             $cloudinary = new CloudinaryService();
             $upload = $cloudinary->uploadRawFile($archivo['tmp_name'], $archivo['name'], 'ifts15/cv');
-            $cvUrl = $upload['secure_url'] ?? $upload['url'] ?? null;
             $cvPublicId = $upload['public_id'] ?? null;
+            $cvUrl = $upload['secure_url'] ?? $upload['url'] ?? null;
 
             if (!$cvUrl || !$cvPublicId) {
                 throw new Exception('No se pudo subir el CV');
@@ -358,6 +476,7 @@ class BolsaTrabajoController
             $transactionStarted = true;
 
             if ($existente && (int)$existente['cancelado'] === 1) {
+                $cvPublicIdAnteriorAEliminar = $existente['cv_public_id'] ?? null;
                 $ok = PostulacionBolsaTrabajo::reactivarPostulacion(
                     $this->conn,
                     (int)$existente['id_postulacion_bolsa_trabajo'],
@@ -383,6 +502,14 @@ class BolsaTrabajoController
 
             $this->conn->commit();
             $transactionStarted = false;
+
+            if (
+                $cvPublicIdAnteriorAEliminar !== null &&
+                $cvPublicIdAnteriorAEliminar !== '' &&
+                $cvPublicIdAnteriorAEliminar !== $cvPublicId
+            ) {
+                $this->deleteCvFromCloudinary($cvPublicIdAnteriorAEliminar);
+            }
 
             $mailAlumnoEnviado = false;
             $mailAlumnoError = null;
@@ -473,6 +600,78 @@ HTML;
         }
     }
 
+    public function actualizarCvPostulacion(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->jsonResponse(['success' => false, 'error' => 'Metodo no permitido'], 405);
+        }
+
+        $this->requireAlumnoBolsa();
+
+        $idPostulacion = (int)($_POST['id_postulacion_bolsa_trabajo'] ?? 0);
+        $idUsuario = (int)($_SESSION['user_id'] ?? 0);
+
+        if ($idPostulacion <= 0 || $idUsuario <= 0) {
+            $this->jsonResponse(['success' => false, 'error' => 'Datos invalidos'], 400);
+        }
+
+        $transactionStarted = false;
+
+        try {
+            $postulacion = $this->obtenerPostulacionPorIdYUsuario($idPostulacion, $idUsuario);
+            if (!$postulacion || (int)($postulacion['cancelado'] ?? 1) !== 0) {
+                $this->jsonResponse(['success' => false, 'error' => 'Solo podes actualizar una postulacion activa'], 404);
+            }
+
+            $archivo = $this->validarCV($_FILES['cv'] ?? []);
+
+            $cloudinary = new CloudinaryService();
+            $upload = $cloudinary->uploadRawFile($archivo['tmp_name'], $archivo['name'], 'ifts15/cv');
+            $cvPublicId = $upload['public_id'] ?? null;
+            $cvUrl = $upload['secure_url'] ?? $upload['url'] ?? null;
+
+            if (!$cvUrl || !$cvPublicId) {
+                throw new Exception('No se pudo subir el CV');
+            }
+
+            $this->conn->begin_transaction();
+            $transactionStarted = true;
+
+            $ok = $this->actualizarCvPostulacionEnBd($idPostulacion, $idUsuario, $cvUrl, $cvPublicId);
+
+            if (!$ok) {
+                $this->conn->rollback();
+                $this->jsonResponse(['success' => false, 'error' => 'No se pudo actualizar el CV de la postulacion'], 500);
+            }
+
+            $this->conn->commit();
+            $transactionStarted = false;
+
+            $cvPublicIdAnterior = $postulacion['cv_public_id'] ?? null;
+            if (
+                $cvPublicIdAnterior !== null &&
+                $cvPublicIdAnterior !== '' &&
+                $cvPublicIdAnterior !== $cvPublicId
+            ) {
+                $this->deleteCvFromCloudinary($cvPublicIdAnterior);
+            }
+
+            $this->jsonResponse([
+                'success' => true,
+                'message' => 'CV actualizado correctamente',
+                'cv_url' => $cvUrl,
+            ]);
+        } catch (InvalidArgumentException $e) {
+            $this->jsonResponse(['success' => false, 'error' => $e->getMessage()], 400);
+        } catch (Throwable $e) {
+            if ($transactionStarted) {
+                $this->conn->rollback();
+            }
+            error_log('[BolsaTrabajoController::actualizarCvPostulacion] ' . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
+        }
+    }
+
     public function cancelarPostulacion(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -489,10 +688,17 @@ HTML;
         }
 
         try {
+            $postulacion = $this->obtenerPostulacionPorIdYUsuario($idPostulacion, $idUsuario);
+            if (!$postulacion || (int)($postulacion['cancelado'] ?? 1) !== 0) {
+                $this->jsonResponse(['success' => false, 'error' => 'No se encontro una postulacion activa para cancelar'], 404);
+            }
+
             $ok = PostulacionBolsaTrabajo::cancelarDeAlumno($this->conn, $idPostulacion, $idUsuario);
             if (!$ok) {
                 $this->jsonResponse(['success' => false, 'error' => 'No se pudo cancelar la postulacion'], 400);
             }
+
+            $this->deleteCvFromCloudinary($postulacion['cv_public_id'] ?? null);
 
             $this->jsonResponse(['success' => true, 'message' => 'Postulacion cancelada']);
         } catch (Exception $e) {
@@ -513,6 +719,9 @@ if (basename($_SERVER['PHP_SELF']) === 'bolsaTrabajoController.php') {
         case 'listar-pendientes':
             $controller->listarPendientes();
             break;
+        case 'listar-postulaciones-gestion':
+            $controller->listarPostulacionesGestion();
+            break;
         case 'resumen':
             $controller->resumen();
             break;
@@ -527,6 +736,9 @@ if (basename($_SERVER['PHP_SELF']) === 'bolsaTrabajoController.php') {
             break;
         case 'postularse':
             $controller->postularse();
+            break;
+        case 'actualizar-cv-postulacion':
+            $controller->actualizarCvPostulacion();
             break;
         case 'cancelar-postulacion':
             $controller->cancelarPostulacion();

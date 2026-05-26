@@ -40,9 +40,10 @@ Este archivo concentra hitos tecnicos y snapshots historicos que antes estaban d
 ### Cambio funcional
 
 - Se implemento una primera version de bolsa de trabajo en IFTS15.
-- Los roles 3 y 5 pueden crear, publicar, rechazar y enviar nuevamente a pendientes las ofertas.
+- Los roles 3 y 5 pueden publicar ofertas directamente y gestionar su visibilidad.
 - Los alumnos pueden visualizar las ofertas publicadas desde una vista dedicada.
 - Los alumnos pueden postularse con CV y cancelar su propia postulacion.
+- Los roles 3 y 5 ven una tabla de postulantes con CV, foto de perfil y acciones sobre cada oferta.
 
 ### Superficies involucradas
 
@@ -61,6 +62,33 @@ Este archivo concentra hitos tecnicos y snapshots historicos que antes estaban d
 - Se agrego una migracion separada para postulaciones de alumnos.
 - La tabla permite una sola postulacion activa por alumno y por oferta.
 - Se implemento el almacenamiento de cv_url y cv_public_id para la postulacion.
+
+## 25 de mayo de 2026 - Refinamiento final de bolsa de trabajo
+
+### Ajustes funcionales
+
+- Se elimino la logica heredada de revision previa y se consolido el flujo de publicacion directa para roles 3 y 5.
+- Se separo la gestion administrativa en dos subsecciones: ofertas laborales y postulaciones.
+- La vista del alumno en `Mis postulaciones` paso a acciones compactas con iconos para descargar, actualizar CV y cancelar.
+- Se agrego actualizacion de CV sobre postulaciones activas sin necesidad de cancelar antes.
+- Los iconos del alumno pasaron a botones con fondo pintado y tooltips de Bootstrap para mejorar legibilidad y uso.
+
+### Ciclo de vida del CV
+
+- El CV se sube a Cloudinary como archivo raw.
+- Al cancelar una postulacion se elimina el archivo remoto y la fila queda con `cv_url = NULL` y `cv_public_id = NULL`.
+- Si el alumno vuelve a postularse a la misma oferta se reutiliza la misma fila y no se crea una nueva.
+- Si el alumno actualiza el CV en una postulacion activa, el archivo anterior se elimina de Cloudinary.
+
+### Descarga y consistencia
+
+- Se corrigio el problema de nombres de archivo incorrectos en descargas de CV.
+- La base ahora conserva la URL cruda del archivo y la URL de descarga con `fl_attachment` se deriva al listar.
+- Se evito dejar archivos huerfanos en Cloudinary por cancelaciones o reemplazos.
+
+### Referencia de implementacion
+
+- El detalle completo reutilizable del modulo quedo documentado en `docs/bolsa-trabajo-referencia.md`.
 
 ## Hitos operativos relevantes
 

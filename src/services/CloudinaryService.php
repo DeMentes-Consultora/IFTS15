@@ -9,6 +9,38 @@ class CloudinaryService
 {
     private $cloudinary;
 
+    private function normalizeFileName(?string $fileName, string $defaultBase = 'archivo'): string
+    {
+        $fileName = basename(str_replace('\\', '/', (string)$fileName));
+        $extension = strtolower((string)pathinfo($fileName, PATHINFO_EXTENSION));
+        $baseName = (string)pathinfo($fileName, PATHINFO_FILENAME);
+
+        $transliterated = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $baseName);
+        if ($transliterated !== false && $transliterated !== '') {
+            $baseName = $transliterated;
+        }
+
+        $baseName = preg_replace('/[^A-Za-z0-9_-]+/', '-', $baseName) ?? '';
+        $baseName = trim($baseName, '-_.');
+        if ($baseName === '') {
+            $baseName = $defaultBase;
+        }
+
+        $extension = preg_replace('/[^a-z0-9]+/', '', $extension) ?? '';
+
+        return $extension !== '' ? $baseName . '.' . $extension : $baseName;
+    }
+
+    private function buildRawPublicId(string $fileName, string $defaultBase = 'cv'): string
+    {
+        $normalized = $this->normalizeFileName($fileName, $defaultBase);
+        $extension = strtolower((string)pathinfo($normalized, PATHINFO_EXTENSION));
+        $baseName = (string)pathinfo($normalized, PATHINFO_FILENAME);
+        $suffix = substr(sha1($normalized . '|' . microtime(true) . '|' . mt_rand()), 0, 12);
+
+        return $baseName . '-' . $suffix . ($extension !== '' ? '.' . $extension : '');
+    }
+
     public function __construct()
     {
         $cloudName = trim((string)($_ENV['CLOUDINARY_CLOUD_NAME'] ?? ''));
@@ -53,16 +85,38 @@ class CloudinaryService
 
     public function uploadRawFile($fileTmpPath, $fileName, $folder = 'ifts15/cv', $publicId = null)
     {
-        $publicId = $publicId ?: $folder . '/' . uniqid();
+        $publicId = $publicId ?: $this->buildRawPublicId((string)$fileName, 'cv');
+        $downloadName = $this->normalizeFileName((string)$fileName, 'cv');
 
         return $this->cloudinary->uploadApi()->upload($fileTmpPath, [
             'public_id' => $publicId,
             'folder' => $folder,
             'overwrite' => true,
             'resource_type' => 'raw',
-            'use_filename' => true,
-            'unique_filename' => true,
+            'use_filename' => false,
+            'unique_filename' => false,
+            'filename_override' => $downloadName,
         ]);
+    }
+
+    public function buildRawDownloadUrl(?string $publicId, ?string $fileName = null, ?string $fallbackUrl = null): ?string
+    {
+        $attachmentName = rawurlencode($this->normalizeFileName($fileName, 'cv'));
+
+        if (is_string($fallbackUrl) && $fallbackUrl !== '' && strpos($fallbackUrl, '/upload/') !== false) {
+            return preg_replace('#/upload/#', '/upload/fl_attachment:' . $attachmentName . '/', $fallbackUrl, 1) ?: $fallbackUrl;
+        }
+
+        if (!is_string($publicId) || $publicId === '') {
+            return $fallbackUrl;
+        }
+
+        $cloudName = trim((string)($_ENV['CLOUDINARY_CLOUD_NAME'] ?? ''));
+        if ($cloudName === '') {
+            return $fallbackUrl;
+        }
+
+        return 'https://res.cloudinary.com/' . rawurlencode($cloudName) . '/raw/upload/fl_attachment:' . $attachmentName . '/' . ltrim($publicId, '/');
     }
 
     /**
@@ -103,8 +157,11 @@ class CloudinaryService
      * @param string $publicId
      * @return array
      */
-    public function deleteImage($publicId)
+    public function deleteImage($publicId, $resourceType = 'image')
     {
-        return $this->cloudinary->uploadApi()->destroy($publicId);
+        return $this->cloudinary->uploadApi()->destroy($publicId, [
+            'resource_type' => $resourceType,
+            'invalidate' => true,
+        ]);
     }
 }

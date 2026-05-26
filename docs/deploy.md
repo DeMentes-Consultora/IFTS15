@@ -103,6 +103,8 @@ La bolsa de trabajo usa Cloudinary tambien para CVs de postulacion, subidos como
 - Recupero de contraseña envia correo.
 - Perfil actualiza foto solo si Cloudinary esta configurado.
 - Conceptos y promedio se visualizan correctamente en perfil.
+- Bolsa permite postularse con CV, descargarlo, actualizarlo y cancelar sin errores.
+- La descarga del CV del alumno dispara archivo adjunto y no abre una URL invalida de Cloudinary.
 
 ## Paquete historico 14-may-2026
 
