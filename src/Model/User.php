@@ -243,6 +243,42 @@ class User
     }
 
     /**
+     * Buscar usuario por email para recupero de clave.
+     * No exige habilitado=1 porque un usuario pendiente o deshabilitado
+     * puede necesitar restablecer su contraseña igualmente.
+     */
+    public static function buscarPorEmailParaRecupero($conn, $email)
+    {
+        $stmt = $conn->prepare("SELECT * FROM usuario WHERE email = ? AND cancelado = 0 LIMIT 1");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+
+        if ($fila = $resultado->fetch_assoc()) {
+            $user = new User(
+                $fila['email'],
+                $fila['clave'],
+                $fila['id_persona'],
+                $fila['id_rol'],
+                $fila['id_carrera'] ?? null,
+                $fila['id_comision'] ?? null,
+                $fila['id_añoCursada'] ?? null,
+                $fila['id_usuario'],
+                false
+            );
+
+            $user->is_active = $fila['habilitado'] ?? 1;
+            $user->created_at = $fila['idCreate'] ?? $fila['created_at'] ?? null;
+            $user->updated_at = $fila['idUpdate'] ?? $fila['updated_at'] ?? null;
+            $user->last_login = $fila['last_login'] ?? null;
+
+            return $user;
+        }
+
+        return null;
+    }
+
+    /**
      * Obtener usuario con datos de persona y rol
      */
     public static function obtenerUsuarioCompleto($conn, $id_usuario)
