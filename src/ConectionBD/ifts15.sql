@@ -11,7 +11,7 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
-
+CREATE DATABASE IF NOT EXISTS `ifts15` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -20,7 +20,7 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `ifts15`
 --
-
+USE `ifts15`;
 -- --------------------------------------------------------
 
 --

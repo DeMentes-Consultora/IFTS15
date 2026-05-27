@@ -116,6 +116,10 @@ php -S localhost:8000
 - Bolsa de trabajo con ofertas publicadas, activacion/desactivacion y ocultado logico.
 - Postulaciones de alumnos con CV en Cloudinary, actualizacion del CV, cancelacion de la propia postulacion y tabla administrativa de postulantes.
 
+## Roles y permisos
+
+Ver `docs/roles.md` para un resumen operativo de roles utilizado como referencia rapida.
+
 ## Referencia especifica del modulo bolsa
 
 Para reutilizar o portar este modulo a otro proyecto, ver:

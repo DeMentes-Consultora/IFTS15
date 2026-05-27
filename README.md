@@ -6,6 +6,8 @@ Sistema web del Instituto de Formacion Tecnica Superior N. 15 con estructura MVC
 
 La documentacion humana del proyecto fue consolidada en la carpeta docs.
 
+Este proyecto es la referencia base a partir de la cual se generalizo el estandar compartido definido en `../ESTANDAR_DOCUMENTACION_PROYECTOS.md`.
+
 - docs/README.md
 - docs/estado-actual.md
 - docs/deploy.md
@@ -28,3 +30,7 @@ La documentacion humana del proyecto fue consolidada en la carpeta docs.
 ## Nota sobre .copilot
 
 La carpeta .copilot sigue existiendo para contexto interno de asistentes, historial y sincronizacion de trabajo. No es la fuente principal de documentacion humana del proyecto.
+
+## Regla de mantenimiento
+
+Si se reorganiza documentacion en este proyecto, debe seguir manteniendo compatibilidad con el estandar comun de DeMentes y usar `docs/` como fuente principal.
