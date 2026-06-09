@@ -11,7 +11,7 @@ $errorMessages = [
     'campos_vacios' => 'Ingresá un correo electrónico para continuar.',
     'email_no_encontrado' => 'No existe un usuario registrado con ese correo.',
     'token_fallido' => 'No se pudo generar o guardar el token de recupero. Revisá la tabla password_resets en producción.',
-    'smtp_fallido' => 'El servidor no pudo enviar el correo por SMTP. Revisá la configuración o ejecutá smtp_test.php en producción.',
+    'smtp_fallido' => 'El servidor no pudo enviar el correo por SMTP. Revisá la configuración del correo en producción.',
     'envio_fallido' => 'No se pudo enviar el correo de recupero. Revisá spam o intentá nuevamente.',
 ];
 
