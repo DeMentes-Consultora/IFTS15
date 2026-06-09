@@ -521,6 +521,7 @@ class BolsaTrabajoController
                 $nombrePublicador = trim((string)($oferta['nombre'] ?? '') . ' ' . (string)($oferta['apellido'] ?? ''));
 
                 if ($emailAlumno !== '') {
+                    \ensureProjectMailerServiceLoaded();
                     $mailer = new MailerService();
                     $nombreAlumnoSeguro = htmlspecialchars($nombreAlumno !== '' ? $nombreAlumno : 'Alumno', ENT_QUOTES, 'UTF-8');
                     $tituloOfertaSeguro = htmlspecialchars((string)($oferta['titulo_oferta'] ?? 'Oferta laboral'), ENT_QUOTES, 'UTF-8');

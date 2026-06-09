@@ -303,8 +303,12 @@ class AuthController
             $body .= '<p>En cuanto te habiliten recibirás un correo de confirmación.</p>';
             $body .= '<p>Saludos,<br>Equipo IFTS15</p>';
 
+            if (!function_exists('ensureProjectMailerServiceLoaded')) {
+                require_once __DIR__ . '/../config.php';
+            }
+            \ensureProjectMailerServiceLoaded();
             $mailer = new MailerService();
-            $resUserMail = $mailer->send($email, $subject, $body, true, $email);
+            $resUserMail = $mailer->send($email, $subject, $body, true);
             if (!$resUserMail['success']) {
                 error_log('[AuthController::register] Error enviando mail al usuario: ' . ($resUserMail['message'] ?? 'sin detalle'));
             }

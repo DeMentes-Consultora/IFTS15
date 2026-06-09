@@ -34,6 +34,9 @@ class MailerService
         $mail->Username   = $this->envString(['MAIL_USERNAME'], '');
         $mail->Password   = $this->envString(['MAIL_PASSWORD'], '');
         $mail->Port       = intval($this->envString(['MAIL_PORT'], '587'));
+        $mail->CharSet    = defined('PHPMailer\\PHPMailer\\PHPMailer::CHARSET_UTF8') ? PHPMailer::CHARSET_UTF8 : 'UTF-8';
+        $mail->Encoding   = defined('PHPMailer\\PHPMailer\\PHPMailer::ENCODING_BASE64') ? PHPMailer::ENCODING_BASE64 : 'base64';
+        $mail->Timeout    = 30;
 
         $encryption = strtolower($this->envString(['MAIL_ENCRYPTION'], 'tls'));
         if ($encryption === 'ssl' || $encryption === 'smtps') {
@@ -47,6 +50,9 @@ class MailerService
         $fromEmail = $this->envString(['MAIL_FROM', 'MAIL_FROM_ADDRESS', 'MAIL_USERNAME'], 'no-reply@localhost');
         $fromName = $_ENV['MAIL_FROM_NAME'] ?? 'IFTS15';
         $mail->setFrom($fromEmail, $fromName);
+        if (filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
+            $mail->Sender = $fromEmail;
+        }
     }
 
     private function envString(array $keys, $default = '')
@@ -99,13 +105,16 @@ class MailerService
      */
     public function send($to, $subject, $body, $isHtml = true, $replyTo = null)
     {
+        $validAddresses = [];
+
         try {
             $mail = $this->mailer;
             $mail->clearAddresses();
             $mail->clearReplyTos();
+            $mail->clearAttachments();
+            $mail->clearCustomHeaders();
 
             $rawAddresses = is_array($to) ? $to : preg_split('/[,;]+/', (string)$to);
-            $validAddresses = [];
 
             foreach ($rawAddresses as $addr) {
                 $email = trim((string)$addr);
@@ -117,6 +126,8 @@ class MailerService
                 }
             }
 
+            $validAddresses = array_values(array_unique($validAddresses));
+
             if (empty($validAddresses)) {
                 throw new \RuntimeException('No hay destinatarios válidos para el envío.');
             }
@@ -127,7 +138,12 @@ class MailerService
 
             if ($replyTo) {
                 $replyToSanitized = trim((string)$replyTo);
-                if (filter_var($replyToSanitized, FILTER_VALIDATE_EMAIL)) {
+                $fromEmail = (string)$mail->From;
+                if (
+                    filter_var($replyToSanitized, FILTER_VALIDATE_EMAIL)
+                    && strcasecmp($replyToSanitized, $fromEmail) !== 0
+                    && !in_array(strtolower($replyToSanitized), array_map('strtolower', $validAddresses), true)
+                ) {
                     $mail->addReplyTo($replyToSanitized);
                 }
             }
@@ -135,12 +151,36 @@ class MailerService
             $mail->isHTML($isHtml);
             $mail->Subject = $subject;
             $mail->Body = $body;
+            $mail->AltBody = $isHtml ? $this->buildPlainTextBody((string)$body) : (string)$body;
             $mail->send(); // Activado para envío real
             return ['success' => true, 'message' => 'Enviado correctamente'];
         } catch (\Throwable $e) {
-            error_log('MailerService error: ' . $e->getMessage());
-            return ['success' => false, 'message' => $e->getMessage()];
+            $mailError = '';
+            if (isset($mail) && $mail instanceof PHPMailer) {
+                $mailError = trim((string)$mail->ErrorInfo);
+            }
+
+            $errorMessage = $mailError !== '' ? $mailError : $e->getMessage();
+            error_log(
+                'MailerService error: '
+                . $errorMessage
+                . ' | to=' . implode(',', $validAddresses)
+                . ' | subject=' . substr((string)$subject, 0, 180)
+            );
+
+            return ['success' => false, 'message' => $errorMessage];
         }
+    }
+
+    private function buildPlainTextBody(string $body): string
+    {
+        $normalizedBody = preg_replace('/<\s*br\s*\/?\s*>/i', "\n", $body);
+        $normalizedBody = preg_replace('/<\s*\/p\s*>/i', "\n\n", (string)$normalizedBody);
+        $plainText = strip_tags((string)$normalizedBody);
+        $plainText = html_entity_decode($plainText, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $plainText = preg_replace("/\n{3,}/", "\n\n", $plainText);
+
+        return trim((string)$plainText);
     }
 
     public function notificarPostulacionAlumno(string $emailAlumno, string $nombreAlumno, string $tituloOferta, string $nombrePublicador): array

@@ -1,16 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../../vendor/autoload.php';
-
-// Cargar variables de entorno desde .env
-if (file_exists(__DIR__ . '/../../.env')) {
-    $dotenv = Dotenv\Dotenv::createMutable(__DIR__ . '/../../');
-    if (method_exists($dotenv, 'safeLoad')) {
-        $dotenv->safeLoad();
-    } else {
-        try { $dotenv->load(); } catch (Throwable $e) { /* ignore */ }
-    }
-}
+require_once __DIR__ . '/../config.php';
 
 // Iniciar sesión si no está iniciada
 if (session_status() === PHP_SESSION_NONE) {
@@ -23,6 +14,14 @@ use App\ConectionBD\ConectionDB;
 // Utilidad de correo
 use App\Services\MailerService;
 
+function redirectConsultasBack(): void
+{
+    $fallback = defined('BASE_URL') ? BASE_URL . '/index.php' : '/';
+    $referer = trim((string)($_SERVER['HTTP_REFERER'] ?? ''));
+    header('Location: ' . ($referer !== '' ? $referer : $fallback));
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = trim($_POST['nombre'] ?? '');
     $email = trim($_POST['email'] ?? '');
@@ -33,15 +32,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validar campos obligatorios
     if (empty($nombre) || empty($email) || empty($mensaje)) {
         $_SESSION['consultas_message'] = 'Debe completar todos los campos obligatorios (Nombre, Email y Consulta).';
-        header('Location: ' . $_SERVER['HTTP_REFERER']);
-        exit;
+        redirectConsultasBack();
     }
 
     // Validar email
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $_SESSION['consultas_message'] = 'Por favor ingrese un email válido.';
-        header('Location: ' . $_SERVER['HTTP_REFERER']);
-        exit;
+        redirectConsultasBack();
     }
 
     // Crear objeto consulta
@@ -53,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!empty($consulta->getCarrera())) {
             $conectarDB = new ConectionDB();
             $conn = $conectarDB->getConnection();
-            $stmt = $conn->prepare("SELECT carrera FROM carrera WHERE id_carrera = ?");
+            $stmt = $conn->prepare("SELECT nombreCarrera AS carrera FROM carrera WHERE id_carrera = ?");
             $stmt->bind_param("i", $carrera);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -82,22 +79,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('No hay destinatario configurado (ADMIN_EMAILS o MAIL_USERNAME)');
         }
         
+        \ensureProjectMailerServiceLoaded();
         $mailer = new MailerService();
         $result = $mailer->send($destinatarios, $subject, $cuerpoMensaje, true, $consulta->getEmail());
         if ($result['success']) {
+            $subjectUsuario = 'Recibimos tu consulta - IFTS15';
+            $nombreSeguro = htmlspecialchars($consulta->getNombre(), ENT_QUOTES, 'UTF-8');
+            $nombreCarreraSeguro = htmlspecialchars($nombreCarrera, ENT_QUOTES, 'UTF-8');
+            $mensajeSeguro = nl2br(htmlspecialchars($consulta->getMensaje(), ENT_QUOTES, 'UTF-8'));
+            $bodyUsuario = '<p>Hola ' . $nombreSeguro . ',</p>';
+            $bodyUsuario .= '<p>Recibimos correctamente tu consulta en IFTS15.</p>';
+            $bodyUsuario .= '<p><b>Carrera de interés:</b> ' . $nombreCarreraSeguro . '</p>';
+            $bodyUsuario .= '<p><b>Consulta enviada:</b></p><p>' . $mensajeSeguro . '</p>';
+            $bodyUsuario .= '<p>Te responderemos a la brevedad desde nuestro equipo administrativo.</p>';
+            $bodyUsuario .= '<p>Saludos,<br>Equipo IFTS15</p>';
+
+            $resultUsuario = $mailer->send($consulta->getEmail(), $subjectUsuario, $bodyUsuario, true);
+            if (!$resultUsuario['success']) {
+                error_log('Error MailerService confirmacion consultas usuario: ' . ($resultUsuario['message'] ?? 'sin detalle'));
+            }
+
             $_SESSION['consultas_message'] = '¡Consulta enviada correctamente! Te responderemos a la brevedad a tu email: ' . htmlspecialchars($consulta->getEmail());
         } else {
             error_log('Error MailerService en consultas: ' . ($result['message'] ?? 'sin detalle'));
             $_SESSION['consultas_message'] = 'No se pudo enviar el mensaje. Por favor intenta nuevamente más tarde.';
         }
 
-        header('Location: ' . $_SERVER['HTTP_REFERER']);
-        exit;
-    } catch (Exception $e) {
+        redirectConsultasBack();
+    } catch (Throwable $e) {
         error_log('Excepción en consultasController: ' . $e->getMessage());
         $_SESSION['consultas_message'] = 'No se pudo enviar el mensaje. Por favor intenta nuevamente más tarde.';
-        header('Location: ' . $_SERVER['HTTP_REFERER']);
-        exit;
+        redirectConsultasBack();
     }
     exit;
 }
+
+redirectConsultasBack();

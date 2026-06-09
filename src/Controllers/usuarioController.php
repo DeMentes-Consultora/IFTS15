@@ -178,6 +178,7 @@ class usuarioController
 					// Si se habilitó al usuario, notificar por mail
 					if ($habilitado == 1) {
 						try {
+							\ensureProjectMailerServiceLoaded();
 							// obtener datos del usuario para notificar
 							$datosUsuario = User::obtenerUsuarioCompleto($this->conn, $id);
 							if ($datosUsuario && !empty($datosUsuario['email'])) {
@@ -190,12 +191,12 @@ class usuarioController
 								$body .= '<p>Si no reconocés esta acción, contactá con el área de soporte.</p>';
 								$body .= '<p>Saludos,<br>Equipo IFTS15</p>';
 								$mailer = new MailerService();
-								$resMail = $mailer->send($to, $subject, $body, true, $to);
+								$resMail = $mailer->send($to, $subject, $body, true);
 								if (!$resMail['success']) {
 									error_log('[usuarioController::toggleHabilitado] Error enviando mail de habilitación: ' . ($resMail['message'] ?? 'sin detalle'));
 								}
 							}
-						} catch (Exception $e) {
+						} catch (\Throwable $e) {
 							error_log('[usuarioController::toggleHabilitado] Excepción al notificar habilitación por mail: ' . $e->getMessage());
 						}
 					}
@@ -203,7 +204,7 @@ class usuarioController
 			} else {
 				$this->jsonResponse(['success' => false, 'error' => 'No se pudo actualizar'], 500);
 			}
-		} catch (Exception $e) {
+		} catch (\Throwable $e) {
 			error_log('[usuarioController::toggleHabilitado] ' . $e->getMessage());
 			$this->jsonResponse(['success' => false, 'error' => 'Error interno'], 500);
 		}
@@ -254,6 +255,7 @@ class usuarioController
 						$habilitados++;
 						// Enviar mail de habilitación
 						try {
+							\ensureProjectMailerServiceLoaded();
 							$datosUsuario = User::obtenerUsuarioCompleto($this->conn, $id);
 							if ($datosUsuario && !empty($datosUsuario['email'])) {
 								$to = $datosUsuario['email'];
@@ -264,12 +266,12 @@ class usuarioController
 								$body .= '<p>Si no reconocés esta acción, contactá con el área de soporte.</p>';
 								$body .= '<p>Saludos,<br>Equipo IFTS15</p>';
 								$mailer = new MailerService();
-								$resMail = $mailer->send($to, $subject, $body, true, $to);
+								$resMail = $mailer->send($to, $subject, $body, true);
 								if (!$resMail['success']) {
 									error_log('[usuarioController::habilitarLote] Error enviando mail a ' . $to . ': ' . ($resMail['message'] ?? 'sin detalle'));
 								}
 							}
-						} catch (Exception $e) {
+						} catch (\Throwable $e) {
 							error_log('[usuarioController::habilitarLote] Excepción al notificar habilitación por mail para usuario ' . $id . ': ' . $e->getMessage());
 						}
 					} else {

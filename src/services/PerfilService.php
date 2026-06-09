@@ -672,6 +672,10 @@ class PerfilService {
             $body .= '<p>Saludos,<br>Equipo IFTS15</p>';
 
             try {
+                if (!function_exists('ensureProjectMailerServiceLoaded')) {
+                    require_once __DIR__ . '/../config.php';
+                }
+                \ensureProjectMailerServiceLoaded();
                 $mailer = new MailerService();
                 $mailResult = $mailer->send($alumno['email'], $subject, $body, true, null);
                 if (!$mailResult['success']) {

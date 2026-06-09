@@ -106,6 +106,34 @@ function env($key, $default = null) {
     return $_ENV[$key] ?? $default;
 }
 
+function ensureProjectMailerServiceLoaded(): void {
+    $mailerClass = 'App\\Services\\MailerService';
+
+    if (class_exists($mailerClass)) {
+        return;
+    }
+
+    $candidates = [
+        __DIR__ . '/services/MailerService.php',
+        __DIR__ . '/Services/MailerService.php',
+        dirname(__DIR__) . '/src/services/MailerService.php',
+        dirname(__DIR__) . '/src/Services/MailerService.php',
+    ];
+
+    foreach ($candidates as $candidate) {
+        if (!file_exists($candidate)) {
+            continue;
+        }
+
+        require_once $candidate;
+        if (class_exists($mailerClass, false)) {
+            return;
+        }
+    }
+
+    throw new RuntimeException('MailerService no disponible. Revisá la carpeta src/services en producción.');
+}
+
 /**
  * Funciones helper para el sistema
  */
